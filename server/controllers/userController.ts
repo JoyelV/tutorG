@@ -13,3 +13,10 @@ export const getUserProfile = async (userId: string): Promise<IUser | null> => {
         throw new Error(error.message);
     }
 };
+
+// Controller function to update user profile by userId
+export const updateUserProfile = async (userId: string, updatedData: Partial<IUser>) => {
+    const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+    if (!user) throw new Error('User not found');
+    return user;
+};

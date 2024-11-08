@@ -11,11 +11,23 @@ function App() {
     return (
         <div className="App font-sans text-gray-800">
             <HeroSection />
+            <hr></hr>
+
             <Topics />
+            <hr></hr>
+
             <ImageCard />
+            <hr></hr>
+
             <RecentlyAddedCourses />
+            <hr></hr>
+
             <BecomeInstructor />
+            <hr></hr>
+
             <TopInstructors />
+            <hr></hr>
+
             <TrustedCompanies />
         </div>
     );

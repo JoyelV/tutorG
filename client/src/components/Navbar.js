@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton, InputBase, Button, Select, MenuItem, Box, Badge } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -17,14 +16,14 @@ const Navbar = () => {
     };
 
     return (
-        <AppBar position="static" color="default" elevation={1}>
+        <AppBar position="static" color="default" elevation={1} sx={{ backgroundColor: 'white' }}>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                 {/* Logo and Brand Name */}
                 <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
                     {/* Logo Icon */}
                     <Box
                         component="img"
-                        src={assets.logo} // Replace with your logo path or image URL
+                        src={assets.logo} 
                         alt="Logo"
                         sx={{ width: 36, height: 36, borderRadius: 1 }}
                     />

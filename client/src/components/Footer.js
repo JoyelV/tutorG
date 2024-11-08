@@ -12,7 +12,7 @@ const Footer = () => {
           <Box display="flex" alignItems="center" gap={1} mb={2}>
             {/* Logo Image */}
             <img
-              src={assets.logo} // Replace with the actual path to your logo image
+              src={assets.logo} 
               alt="TutorG Logo"
               style={{ width: 36, height: 36, borderRadius: 4 }}
             />
@@ -79,40 +79,6 @@ const Footer = () => {
           <Typography variant="body2" color={grey[400]}>FAQs</Typography>
           <Typography variant="body2" color={grey[400]}>Terms & Condition</Typography>
           <Typography variant="body2" color={grey[400]}>Privacy Policy</Typography>
-        </Grid>
-
-        {/* Download App */}
-        <Grid item xs={12} md={3}>
-          <Typography variant="subtitle1" fontWeight="bold" color={grey[100]} gutterBottom>
-            Download Our App
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Apple />}
-            sx={{
-              backgroundColor: grey[800],
-              color: grey[100],
-              width: '100%',
-              mb: 1,
-              justifyContent: 'flex-start',
-              '&:hover': { backgroundColor: grey[700] },
-            }}
-          >
-            App Store
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Google />}
-            sx={{
-              backgroundColor: grey[800],
-              color: grey[100],
-              width: '100%',
-              justifyContent: 'flex-start',
-              '&:hover': { backgroundColor: grey[700] },
-            }}
-          >
-            Play Store
-          </Button>
         </Grid>
       </Grid>
     </Box>
