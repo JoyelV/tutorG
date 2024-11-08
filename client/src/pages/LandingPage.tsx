@@ -1,6 +1,6 @@
 import HeroSection from '../components/HeroSection';
 import Topics from '../components/Topics';
-import BestSellingCourses from '../components/BestSellingCourses';
+import ImageCard from '../components/ImageCard';
 import RecentlyAddedCourses from '../components/RecentlyAddedCourses';
 import BecomeInstructor from '../components/BecomeInstructor';
 import TopInstructors from '../components/TopInstructors';
@@ -12,7 +12,7 @@ function App() {
         <div className="App font-sans text-gray-800">
             <HeroSection />
             <Topics />
-            <BestSellingCourses />
+            <ImageCard />
             <RecentlyAddedCourses />
             <BecomeInstructor />
             <TopInstructors />

@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+
+body {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  height: 100vh;
+  color: #333;
+}
+
+a {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

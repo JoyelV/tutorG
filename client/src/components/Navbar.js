@@ -1,66 +1,119 @@
+import React from 'react';
+import { AppBar, Toolbar, Typography, IconButton, InputBase, Button, Select, MenuItem, Box, Badge } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import SearchIcon from '@mui/icons-material/Search';
+import { assets } from '../assets/assets_user/assets';
 
 const Navbar = () => {
     const navigate = useNavigate();
-
-    const isLoggedIn = Boolean(localStorage.getItem('token')); // Check if a token exists in localStorage
+    const isLoggedIn = Boolean(localStorage.getItem('token'));
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Remove token on logout
-        window.location.reload(); // Reload to reflect changes (or use a more advanced state management approach)
+        localStorage.removeItem('token');
+        window.location.reload();
     };
 
     return (
-        <header className="flex items-center justify-between p-4 bg-white text-gray-800 border-b border-gray-300">
-            <div className="text-2xl font-bold">
-                <h2>
-                    Tutor<span className="text-blue-600">G</span>
-                </h2>
-            </div>
-            <div className="flex items-center gap-3 w-full max-w-md">
-                <select className="p-2 border border-gray-300 rounded">
-                    <option>Browse</option>
-                    <option>Category 1</option>
-                    <option>Category 2</option>
-                </select>
-                <input
-                    type="text"
-                    placeholder="What do you want to learn..."
-                    className="p-2 border border-gray-300 rounded w-full"
-                />
-            </div>
-            <div className="flex gap-4">
-                <span className="text-xl cursor-pointer">🔔</span> {/* Notification Icon */}
-                <span className="text-xl cursor-pointer">❤️</span> {/* Favorite Icon */}
-                <span className="text-xl cursor-pointer">🛒</span> {/* Cart Icon */}
-            </div>
-            <div className="flex gap-2">
-                {isLoggedIn ? (
-                    <button
-                        onClick={handleLogout}
-                        className="px-4 py-2 bg-red-500 text-white rounded transition duration-300 ease-in-out hover:bg-red-600"
+        <AppBar position="static" color="default" elevation={1}>
+            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                {/* Logo and Brand Name */}
+                <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+                    {/* Logo Icon */}
+                    <Box
+                        component="img"
+                        src={assets.logo} // Replace with your logo path or image URL
+                        alt="Logo"
+                        sx={{ width: 36, height: 36, borderRadius: 1 }}
+                    />
+                    <Typography 
+                        variant="h5" 
+                        color="#F29D38" 
+                        sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}
                     >
-                        Logout
-                    </button>
-                ) : (
-                    <>
-                        <button
-                            onClick={() => navigate('/register')}
-                            className="px-4 py-2 bg-orange-500 text-white rounded transition duration-300 ease-in-out hover:bg-orange-600"
+                        Tutor
+                        <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
+                    </Typography>
+                </Box>
+
+                {/* Search and Category Selector */}
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, maxWidth: 600, gap: 1 }}>
+                    <Select
+                        defaultValue="Browse"
+                        variant="outlined"
+                        size="small"
+                        sx={{ bgcolor: 'white', borderRadius: 1, width: 120 }}
+                    >
+                        <MenuItem value="Browse">Browse</MenuItem>
+                        <MenuItem value="Category 1">Category 1</MenuItem>
+                        <MenuItem value="Category 2">Category 2</MenuItem>
+                    </Select>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, bgcolor: 'white', borderRadius: 1, paddingX: 1 }}>
+                        <SearchIcon color="action" />
+                        <InputBase
+                            placeholder="What do you want to learn..."
+                            fullWidth
+                            sx={{ ml: 1 }}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Icons */}
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <IconButton color="default">
+                        <Badge badgeContent={4} color="secondary">
+                            <NotificationsIcon />
+                        </Badge>
+                    </IconButton>
+                    <IconButton color="default">
+                        <FavoriteBorderIcon />
+                    </IconButton>
+                    <IconButton color="default">
+                        <Badge badgeContent={3} color="secondary">
+                            <ShoppingCartIcon />
+                        </Badge>
+                    </IconButton>
+                </Box>
+
+                {/* Auth Buttons */}
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    {isLoggedIn ? (
+                        <Button
+                            onClick={handleLogout}
+                            variant="contained"
+                            color="error"
+                            sx={{
+                                fontWeight: 'bold',
+                                textTransform: 'none',
+                            }}
                         >
-                            Create Account
-                        </button>
-                        <button
-                            onClick={() => navigate('/login')}
-                            className="px-4 py-2 text-orange-500 border border-orange-500 rounded transition duration-300 ease-in-out hover:bg-orange-500 hover:text-white"
-                        >
-                            Sign In
-                        </button>
-                    </>
-                )}
-            </div>
-        </header>
+                            Logout
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                onClick={() => navigate('/register')}
+                                variant="contained"
+                                color="warning"
+                                sx={{ fontWeight: 'bold', textTransform: 'none' }}
+                            >
+                                Create Account
+                            </Button>
+                            <Button
+                                onClick={() => navigate('/login')}
+                                variant="outlined"
+                                color="warning"
+                                sx={{ fontWeight: 'bold', textTransform: 'none' }}
+                            >
+                                Sign In
+                            </Button>
+                        </>
+                    )}
+                </Box>
+            </Toolbar>
+        </AppBar>
     );
 };
 

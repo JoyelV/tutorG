@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  Avatar,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from '@mui/material';
 
 interface Address {
   line1?: string;
@@ -19,21 +35,26 @@ interface UserData {
 
 const MyProfile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userId = localStorage.getItem('userId'); // Retrieve userId from local storage
+        setLoading(true);
+        const userId = localStorage.getItem('userId');
         if (userId) {
           const response = await axios.get<UserData>(`http://localhost:5000/api/users/profile/${userId}`);
-          console.log("Response data:", response.data);
           setUserData(response.data);
         } else {
-          console.error("No userId found in local storage");
+          setError("No userId found in local storage");
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        setError('Failed to load user data');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -47,7 +68,7 @@ const MyProfile: React.FC = () => {
   };
 
   const handleAddressChange = (line: keyof Address, value: string) => {
-    if (userData && userData.address) {
+    if (userData) {
       setUserData({
         ...userData,
         address: { ...userData.address, [line]: value },
@@ -55,108 +76,150 @@ const MyProfile: React.FC = () => {
     }
   };
 
-  if (!userData) {
-    return <div>Loading...</div>;
-  }
+  const saveProfile = async () => {
+    try {
+      if (userData) {
+        await axios.put(`http://localhost:5000/api/users/profile/${userData._id}`, userData);
+        setIsEdit(false);
+      }
+    } catch (error) {
+      console.error("Error saving user data:", error);
+      setError("Failed to save user data.");
+    } finally {
+      setConfirmDialogOpen(false);
+    }
+  };
+
+  const handleSaveClick = () => {
+    if (isEdit) {
+      setConfirmDialogOpen(true);
+    } else {
+      setIsEdit(true);
+    }
+  };
+
+  const handleConfirmSave = () => {
+    saveProfile();
+  };
+
+  if (loading) return <Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>;
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <div className="max-w-lg flex flex-col gap-2 text-sm">
-      <img className="w-36 rounded" src={userData.image || 'default_image_path'} alt={userData.name || "User Profile"} />
-      {isEdit ? (
-        <input
-          className='bg-gray-50 text-3xl font-medium max-w-60 mt-4'
-          type='text'
-          value={userData.name}
-          onChange={(e) => handleInputChange('name', e.target.value)}
-        />
-      ) : (
-        <p className='font-medium text-3xl text-neutral-800 mt-4'>{userData.name}</p>
-      )}
-      <hr className="bg-zinc-400 h-[1px] border-none" />
-      <div>
-        <p className="text-neutral-500 underline mt-3">CONTACT INFORMATION</p>
-        <div className="grid grid-cols-[1fr_3fr] gap-y-2.5 mt-3 text-neutral-700">
-          <p className="font-medium">Email id:</p>
-          <p className="text-blue-500">{userData.email}</p>
-          <p className="font-medium">Phone:</p>
-          {isEdit ? (
-            <input
-              className='bg-gray-100 max-w-52'
-              type='text'
-              value={userData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-            />
-          ) : (
-            <p>{userData.phone}</p>
-          )}
-          <p className="font-medium">Address:</p>
-          {isEdit ? (
-            <p>
-              <input
-                className="bg-gray-50"
-                onChange={(e) => handleAddressChange('line1', e.target.value)}
-                value={userData.address?.line1 || ''}
-              /><br />
-              <input
-                className="bg-gray-50"
-                onChange={(e) => handleAddressChange('line2', e.target.value)}
-                value={userData.address?.line2 || ''}
-              />
-            </p>
-          ) : (
-            <p className="text-gray-500">
-              {userData.address?.line1}<br />{userData.address?.line2}
-            </p>
-          )}
-        </div>
-      </div>
-      <div>
-        <p className="text-neutral-500 underline mt-3">BASIC INFORMATION</p>
-        <div className="grid grid-cols-[1fr_3fr] gap-y-2.5 mt-3 text-neutral-700">
-          <p className="font-medium">Gender:</p>
-          {isEdit ? (
-            <select
-              className="max-w-20 bg-gray-100"
-              onChange={(e) => handleInputChange('gender', e.target.value)}
-              value={userData.gender}
-            >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-          ) : (
-            <p className="text-gray-400">{userData.gender}</p>
-          )}
-          <p className="font-medium">Birthday:</p>
-          {isEdit ? (
-            <input
-              className="max-w-2 bg-gray-100"
-              type="date"
-              onChange={(e) => handleInputChange('dob', e.target.value)}
-              value={userData.dob}
-            />
-          ) : (
-            <p className="text-gray-400">{userData.dob}</p>
-          )}
-        </div>
-      </div>
-      <div className="mt-10">
+    <Container maxWidth="sm" sx={{ my: 4, p: 3, borderRadius: 2, boxShadow: 3, bgcolor: 'background.paper' }}>
+      <Box textAlign="center" mb={3}>
+        <Avatar src={userData?.image || 'default_image_path'} alt={userData?.name} sx={{ width: 80, height: 80, mb: 2 }} />
         {isEdit ? (
-          <button
-            className="border border-primary px-8 py-2 rounded-full hover:bg-primary hover:text-white transition-all"
-            onClick={() => setIsEdit(false)}
-          >
-            Save Info
-          </button>
+          <TextField
+            fullWidth
+            label="Name"
+            variant="outlined"
+            value={userData?.name || ''}
+            onChange={(e) => handleInputChange('name', e.target.value)}
+            sx={{ mb: 2 }}
+          />
         ) : (
-          <button
-            className="border border-primary px-8 py-2 rounded-full hover:bg-primary hover:text-white transition-all"
-            onClick={() => setIsEdit(true)}
-          >
-            Edit
-          </button>
+          <Typography variant="h5" component="div" fontWeight="medium">
+            {userData?.name}
+          </Typography>
         )}
-      </div>
-    </div>
+      </Box>
+
+      <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+        Contact Information
+      </Typography>
+      <Box display="grid" gridTemplateColumns="1fr 3fr" gap={2} mb={2}>
+        <Typography fontWeight="bold">Email:</Typography>
+        <Typography color="primary">{userData?.email}</Typography>
+
+        <Typography fontWeight="bold">Phone:</Typography>
+        {isEdit ? (
+          <TextField
+            fullWidth
+            variant="outlined"
+            value={userData?.phone || ''}
+            onChange={(e) => handleInputChange('phone', e.target.value)}
+          />
+        ) : (
+          <Typography>{userData?.phone}</Typography>
+        )}
+
+        <Typography fontWeight="bold">Address:</Typography>
+        {isEdit ? (
+          <Box>
+            <TextField
+              fullWidth
+              placeholder="Line 1"
+              variant="outlined"
+              value={userData?.address?.line1 || ''}
+              onChange={(e) => handleAddressChange('line1', e.target.value)}
+              sx={{ mb: 1 }}
+            />
+            <TextField
+              fullWidth
+              placeholder="Line 2"
+              variant="outlined"
+              value={userData?.address?.line2 || ''}
+              onChange={(e) => handleAddressChange('line2', e.target.value)}
+            />
+          </Box>
+        ) : (
+          <Typography color="textSecondary">
+            {userData?.address?.line1} <br />
+            {userData?.address?.line2}
+          </Typography>
+        )}
+      </Box>
+
+      <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+        Basic Information
+      </Typography>
+      <Box display="grid" gridTemplateColumns="1fr 3fr" gap={2} mb={3}>
+        <Typography fontWeight="bold">Gender:</Typography>
+        {isEdit ? (
+          <Select
+            value={userData?.gender || ''}
+            onChange={(e) => handleInputChange('gender', e.target.value)}
+            fullWidth
+          >
+            <MenuItem value="Male">Male</MenuItem>
+            <MenuItem value="Female">Female</MenuItem>
+          </Select>
+        ) : (
+          <Typography>{userData?.gender}</Typography>
+        )}
+
+        <Typography fontWeight="bold">Birthday:</Typography>
+        {isEdit ? (
+          <TextField
+            type="date"
+            fullWidth
+            value={userData?.dob || ''}
+            onChange={(e) => handleInputChange('dob', e.target.value)}
+          />
+        ) : (
+          <Typography>{userData?.dob}</Typography>
+        )}
+      </Box>
+
+      <Button variant="contained" color="primary" onClick={handleSaveClick}>
+        {isEdit ? "Save" : "Edit Profile"}
+      </Button>
+
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+      >
+        <DialogTitle>Save Changes</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to save the changes?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} color="primary">Cancel</Button>
+          <Button onClick={handleConfirmSave} color="primary" autoFocus>Save</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 
