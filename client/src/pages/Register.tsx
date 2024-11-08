@@ -1,24 +1,62 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Grid, Alert, Link } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, Box, Avatar, Grid, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { Google as GoogleIcon, Facebook as FacebookIcon } from '@mui/icons-material';
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import firebaseApp from '../config/firebaseConfig'; 
 
 const Register: React.FC = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [passwordMismatch, setPasswordMismatch] = useState(false);
     const navigate = useNavigate();
+    const auth = getAuth(firebaseApp);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Password validation
+        if (password !== confirmPassword) {
+            setPasswordMismatch(true);
+            return;
+        } else {
+            setPasswordMismatch(false);
+        }
+
         try {
             await axios.post('http://localhost:5000/api/auth/register', { username, email, password, role: 'user' });
             navigate('/login');
         } catch (err) {
             setError('Registration failed. Please try again.');
             console.error('Registration failed:', err);
+        }
+    };
+
+    // Social auth handlers
+    const handleGoogleSignIn = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+            navigate('/'); // Redirect to home or dashboard on success
+        } catch (err) {
+            setError('Google sign-in failed. Please try again.');
+            console.error('Google sign-in failed:', err);
+        }
+    };
+
+    const handleFacebookSignIn = async () => {
+        try {
+            const provider = new FacebookAuthProvider();
+            await signInWithPopup(auth, provider);
+            navigate('/');
+        } catch (err) {
+            setError('Facebook sign-in failed. Please try again.');
+            console.error('Facebook sign-in failed:', err);
         }
     };
 
@@ -33,6 +71,7 @@ const Register: React.FC = () => {
                         Sign Up
                     </Typography>
                     {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
+                    {passwordMismatch && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>Passwords do not match!</Alert>}
                     <Box component="form" onSubmit={handleRegister} sx={{ mt: 1 }}>
                         <TextField
                             label="Username"
@@ -63,18 +102,16 @@ const Register: React.FC = () => {
                             margin="normal"
                             variant="outlined"
                         />
-                        <Grid container justifyContent="flex-end" sx={{ mt: 1 }}>
-                            <Grid item>
-                                <Link
-                                    variant="body2"
-                                    color="secondary"
-                                    onClick={() => navigate('/forgot-password')}
-                                    sx={{ cursor: 'pointer', textDecoration: 'underline' }}
-                                >
-                                    Forgot password?
-                                </Link>
-                            </Grid>
-                        </Grid>
+                        <TextField
+                            label="Confirm Password"
+                            type="password"
+                            fullWidth
+                            required
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            margin="normal"
+                            variant="outlined"
+                        />
                         <Button
                             type="submit"
                             fullWidth
@@ -89,15 +126,35 @@ const Register: React.FC = () => {
                         >
                             Register
                         </Button>
-                        <Grid container justifyContent="flex-end">
+                        <Grid container justifyContent="flex-end" sx={{ mt: 3 }}>
                             <Grid item>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                <Typography variant="body2">
                                     Already have an account?{' '}
                                     <Button color="secondary" onClick={() => navigate('/login')}>
                                         Sign in
                                     </Button>
                                 </Typography>
                             </Grid>
+                        </Grid>
+                        <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
+                            OR
+                        </Typography>
+                        <hr />
+                        <Grid container spacing={4} justifyContent="center" sx={{ mt: 1 }}>
+                            <Button
+                                onClick={handleGoogleSignIn}
+                                variant="outlined"
+                                startIcon={<GoogleIcon />}
+                            >
+                                Google
+                            </Button>
+                            <Button
+                                onClick={handleFacebookSignIn}
+                                variant="outlined"
+                                startIcon={<FacebookIcon />}
+                            >
+                                Facebook
+                            </Button>
                         </Grid>
                     </Box>
                 </Box>

@@ -1,5 +1,3 @@
-// src/components/Header.js
-import React from 'react';
 
 const Header = () => (
     <header className="flex justify-between items-center p-4 bg-gray-800 text-white">

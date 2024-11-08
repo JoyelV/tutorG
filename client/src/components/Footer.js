@@ -1,7 +1,7 @@
-import { Box, Grid, Typography, IconButton, Button } from '@mui/material';
+import { Box, Grid, Typography, IconButton } from '@mui/material';
 import { grey, orange } from '@mui/material/colors';
 import { assets } from '../assets/assets_user/assets';
-import { Facebook, Instagram, LinkedIn, Twitter, YouTube, Apple, Google } from '@mui/icons-material';
+import { Facebook, Instagram, LinkedIn, Twitter, YouTube } from '@mui/icons-material';
 
 const Footer = () => {
   return (

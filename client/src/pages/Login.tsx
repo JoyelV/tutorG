@@ -3,12 +3,16 @@ import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert, Gr
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Google as GoogleIcon, Facebook as FacebookIcon } from '@mui/icons-material';
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import firebaseApp from '../config/firebaseConfig'; 
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const auth = getAuth(firebaseApp);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,10 +22,33 @@ const Login: React.FC = () => {
             const token = response.data.token;
             localStorage.setItem('token', token);
             localStorage.setItem('userId', userId);
-            navigate('/'); 
+            navigate('/');
         } catch (error) {
             setError('Login failed. Please check your credentials and try again.');
             console.error('Login failed:', error);
+        }
+    };
+
+    // Social auth handlers
+    const handleGoogleSignIn = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+            navigate('/'); // Redirect to home or dashboard on success
+        } catch (err) {
+            setError('Google sign-in failed. Please try again.');
+            console.error('Google sign-in failed:', err);
+        }
+    };
+
+    const handleFacebookSignIn = async () => {
+        try {
+            const provider = new FacebookAuthProvider();
+            await signInWithPopup(auth, provider);
+            navigate('/');
+        } catch (err) {
+            setError('Facebook sign-in failed. Please try again.');
+            console.error('Facebook sign-in failed:', err);
         }
     };
 
@@ -91,6 +118,27 @@ const Login: React.FC = () => {
                                     </Button>
                                 </Typography>
                             </Grid>
+                        </Grid>
+
+                        <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
+                            OR
+                        </Typography>
+                        <hr></hr>
+                        <Grid container spacing={4} justifyContent="center" sx={{ mt: 1 }}>
+                                <Button
+                                    onClick={handleGoogleSignIn}
+                                    variant="outlined"
+                                    startIcon={<GoogleIcon />}
+                                >
+                                    Google
+                                </Button>
+                                <Button
+                                    onClick={handleFacebookSignIn}
+                                    variant="outlined"
+                                    startIcon={<FacebookIcon />}
+                                >
+                                    Facebook
+                                </Button>
                         </Grid>
                     </Box>
                 </Box>
