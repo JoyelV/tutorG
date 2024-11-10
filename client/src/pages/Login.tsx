@@ -20,8 +20,15 @@ const Login: React.FC = () => {
             const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
             const userId = response.data.user.id;
             const token = response.data.token;
+            const userRole = response.data.user.role;
+            console.log(userRole,"userRole.....................")
+            if (userRole !== 'user') {
+                setError('Access denied. Enter valid credentials.');
+                return;
+            }
             localStorage.setItem('token', token);
             localStorage.setItem('userId', userId);
+            localStorage.setItem('role', userRole);
             navigate('/');
         } catch (error) {
             setError('Login failed. Please check your credentials and try again.');

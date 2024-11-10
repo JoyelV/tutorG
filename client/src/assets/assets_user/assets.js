@@ -124,7 +124,6 @@ export const assets = {
     slackLogo,
     googleLogo,
     youtubeLogo,
-    youtubeLogo,
     netflixLogo,
     lenovoLogo,
     logo,

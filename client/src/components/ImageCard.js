@@ -1,5 +1,5 @@
-import React from 'react';
 import { assets } from '../assets/assets_user/assets';
+import { useNavigate } from 'react-router-dom';
 
 const courses = [
   { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹499", image: assets.DESIGN, rating: "5.0", students: "265.7K" },
@@ -34,18 +34,27 @@ const getCategoryColor = (category) => {
 };
 
 function ImageCard() {
+  const navigate = useNavigate();
+
+  const handleCardClick = (index) => {
+    navigate(`/course/details/:${index}`); 
+  };
+
   return (
     <>
-      <div className="mt-10 w-full flex justify-center items-center p-10 font-bold text-3xl text-sky-600">
-        Best Selling Courses
-      </div>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-gray-100">
         {courses.map((course, index) => (
-          <div key={index} className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl">
-            <div className="h-48 bg-cover bg-center rounded-t-2xl" style={{ backgroundImage: `url(${course.image})` }}></div>
+          <div
+            key={index}
+            className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
+            onClick={() => handleCardClick(index)} // Trigger navigation on click
+          >
+            <div
+              className="h-48 bg-cover bg-center rounded-t-2xl"
+              style={{ backgroundImage: `url(${course.image})` }}
+            ></div>
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
-                {/* Category with dynamic background color */}
                 <div className={`${getCategoryColor(course.category)} px-2 py-1 rounded-full text-xs font-semibold uppercase`}>
                   {course.category}
                 </div>

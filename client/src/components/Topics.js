@@ -1,4 +1,6 @@
-import { assets } from '../assets/assets_user/assets'; 
+import React from 'react';
+import { assets } from '../assets/assets_user/assets';
+import { useNavigate } from 'react-router-dom';
 
 const topics = [
     { name: "Business", courses: "32,821 Courses", icon: assets.Business_icon ,bgColor: "#e8f5e9"},
@@ -11,35 +13,41 @@ const topics = [
     { name: "Label", courses: "33,417 Courses", icon: assets.logo,bgColor: "#f0eaff" },
 ];
 
-const Topics = () => (
-    <section className="p-8 bg-white">
-        <h3 className="text-2xl font-bold mb-4">Topics recommended for you</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {topics.map((topic, index) => (
-                <div
-                    key={index}
-                    className="flex flex-col items-center p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
-                    style={{ backgroundColor: topic.bgColor }}
+const Topics = () => {
+    const navigate = useNavigate();
+
+    const handleBrowseMoreClick = () => {
+        navigate('/course-listing'); 
+    };
+
+    return (
+        <section className="p-8 bg-white">
+            <h3 className="text-2xl font-bold mb-4">Topics recommended for you</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {topics.map((topic, index) => (
+                    <div
+                        key={index}
+                        className="flex flex-col items-center p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                        style={{ backgroundColor: topic.bgColor }}
+                    >
+                        <img src={topic.icon} alt={`${topic.name} Icon`} className="w-8 h-8 text-indigo-500 mb-2" />
+                        <h4 className="text-gray-900 font-semibold">{topic.name}</h4>
+                        <p className="text-gray-500 text-sm">{topic.courses}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="flex flex-col items-center text-center mt-4">
+                <p className="text-gray-600 mb-2">We have more categories & subcategories.</p>
+                <button
+                    onClick={handleBrowseMoreClick} // Trigger navigation on click
+                    className="flex items-center gap-2 bg-white px-8 py-2 rounded-full text-orange-500 text-sm hover:scale-105 transition-all duration-300"
                 >
-                    <img src={topic.icon} alt={`${topic.name} Icon`} className="w-8 h-8 text-indigo-500 mb-2" />
-                    <h4 className="text-gray-900 font-semibold">{topic.name}</h4>
-                    <p className="text-gray-500 text-sm">{topic.courses}</p>
-                </div>
-            ))}
-        </div>
-        <div className="flex flex-col items-center text-center mt-4">
-    <p className="text-gray-600 mb-2">We have more categories & subcategories.</p>
-    <a
-        href="#courses"
-        className="flex items-center gap-2 bg-white px-8 py-2 rounded-full text-orange-500 text-sm hover:scale-105 transition-all duration-300"
-    >
-        Browse More
-        <img className="w-3" src={assets.arrow_icon} alt="Arrow Icon" />
-    </a>
-</div>
-
-
-    </section>
-);
+                    Browse More
+                    <img className="w-3" src={assets.arrow_icon} alt="Arrow Icon" />
+                </button>
+            </div>
+        </section>
+    );
+};
 
 export default Topics;

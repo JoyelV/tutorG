@@ -212,7 +212,6 @@ const AccountSettings = () => {
                                 onClick={() => togglePasswordVisibility(setShowCurrentPassword)}
                                 className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
                             >
-                                👁️
                             </button>
                         </Grid>
 
@@ -232,7 +231,6 @@ const AccountSettings = () => {
                                 onClick={() => togglePasswordVisibility(setShowNewPassword)}
                                 className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
                             >
-                                👁️
                             </button>
                         </Grid>
 
@@ -252,7 +250,6 @@ const AccountSettings = () => {
                                 onClick={() => togglePasswordVisibility(setShowConfirmPassword)}
                                 className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
                             >
-                                👁️
                             </button>
                         </Grid>
                     </Grid>
