@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, Button, Grid, TextField, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { assets } from '../assets/assets_user/assets';
@@ -19,6 +19,27 @@ const AccountSettings = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // Fetch existing user data
+    const fetchUserData = async () => {
+        try {
+            const userId = localStorage.getItem('userId');
+            const response = await axios.get(`http://localhost:5000/api/user/profile/${userId}`);
+            const data = response.data;
+
+            // Ensure default values are set as empty strings or other appropriate values
+            setUsername(data.username || '');
+            setEmail(data.email || '');
+            setPhone(data.phone || '');
+            setAddressLine1(data.address?.line1 || '');
+            setAddressLine2(data.address?.line2 || '');
+            setGender(data.gender || '');
+            setDob(data.dob || '');
+            setImage(data.image || null);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
+
     // Handle image upload
     const handleImageChange = (e) => {
         const file = e.target.files ? e.target.files[0] : null;
@@ -29,47 +50,67 @@ const AccountSettings = () => {
         }
     };
 
-    // Handle password visibility toggle
-    const togglePasswordVisibility = (setter) => {
-        setter((prev) => !prev);
+// Profile Update Form
+const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+
+    const profileData = {
+        username,
+        email,
+        phone,
+        address: {
+            line1: addressLine1,
+            line2: addressLine2,
+        },
+        gender,
+        dob,
+        image,
     };
 
-    // Handle form submit
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (newPassword !== confirmPassword) {
-            alert('New passwords do not match');
-            return;
-        }
-
-        // Collect all form data
-        const formData = {
-            username,
-            email,
-            phone,
-            address: {
-                line1: addressLine1,
-                line2: addressLine2,
+    try {
+        const userId = localStorage.getItem('userId');
+        console.log(userId, "userId");
+        console.log("formData", profileData);
+        const response = await axios.put(`http://localhost:5000/api/user/update/${userId}`, profileData, {
+            headers: {
+                'Content-Type': 'application/json',
             },
-            gender,
-            dob,
-            currentPassword,
-            newPassword,
-            image, 
-        };
+        });
+        console.log(response.data);
+    } catch (error) {
+        console.error('Error updating profile:', error);
+    }
+};
 
-        try {
-            // Send data to your backend (Make sure to implement API route on your backend)
-            const response = await axios.put('/api/user/update', formData, {
-                headers: { 'Content-Type': 'application/json' },
-            });
-            console.log(response.data);
-            alert('Account updated successfully!');
-        } catch (error) {
-            console.error(error);
-            alert('An error occurred while updating the account.');
-        }
+  
+  // Password Update Form
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+  
+    const passwordData = {
+      currentPassword,
+      newPassword,
     };
+  
+    try {
+        const userId = localStorage.getItem('userId');
+        console.log(userId,"userId")
+        console.log("formData",passwordData)
+      const response = await axios.put(`http://localhost:5000/api/user/update-password/${userId}`, passwordData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error updating password:', error);
+    }
+  };
+  
+
+    useEffect(() => {
+        fetchUserData();
+    }, []);
 
     return (
         <Box p={4}>
@@ -87,9 +128,9 @@ const AccountSettings = () => {
                         />
                         <label htmlFor="profile-image-upload">
                             <Avatar
-                                src={image ||assets.Instructor3}
+                                src={image || assets.Instructor3}
                                 sx={{ width: 250, height: 250, cursor: 'pointer', borderRadius: 2 }}
-                             />
+                            />
                         </label>
                     </div>
                     <Typography variant="body2" color="textSecondary" mt={2}>
@@ -104,7 +145,7 @@ const AccountSettings = () => {
 
                 {/* Account Information Form */}
                 <Grid item xs={12} sm={8}>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleProfileSubmit}>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -194,9 +235,8 @@ const AccountSettings = () => {
             {/* Change Password Section */}
             <Box mt={6}>
                 <Typography variant="h5" gutterBottom>Change Password</Typography>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handlePasswordSubmit}>
                     <Grid container spacing={2}>
-                        {/* Current Password */}
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
@@ -207,15 +247,8 @@ const AccountSettings = () => {
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
                             />
-                            <button
-                                type="button"
-                                onClick={() => togglePasswordVisibility(setShowCurrentPassword)}
-                                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
-                            >
-                            </button>
                         </Grid>
 
-                        {/* New Password */}
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
@@ -226,15 +259,8 @@ const AccountSettings = () => {
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                             />
-                            <button
-                                type="button"
-                                onClick={() => togglePasswordVisibility(setShowNewPassword)}
-                                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
-                            >
-                            </button>
                         </Grid>
 
-                        {/* Confirm New Password */}
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
@@ -245,18 +271,12 @@ const AccountSettings = () => {
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
-                            <button
-                                type="button"
-                                onClick={() => togglePasswordVisibility(setShowConfirmPassword)}
-                                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
-                            >
-                            </button>
                         </Grid>
                     </Grid>
 
-                    <Box mt={4}>
+                    <Box mt={2}>
                         <Button type="submit" variant="contained" color="warning">
-                            Save Password Changes
+                            Update Password
                         </Button>
                     </Box>
                 </form>

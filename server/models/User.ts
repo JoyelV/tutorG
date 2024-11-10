@@ -27,7 +27,7 @@ const userSchema = new Schema<IUser>({
         line2: { type: String }
     },
     gender: { type: String },
-    dob: { type: String }
+    dob: { type: Date }
 });
 
 export default model<IUser>('User', userSchema);

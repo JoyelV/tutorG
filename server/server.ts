@@ -27,7 +27,7 @@ const connectToDatabase = async () => {
 connectToDatabase();
 
 app.use('/api/auth', authRoutes);  
-app.use('/api/users', userRoutes);  
+app.use('/api/user', userRoutes);  
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
