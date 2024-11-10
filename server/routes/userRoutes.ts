@@ -1,5 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { getUserProfile, updateUserProfile } from '../controllers/userController';
+import { updatePassword } from '../controllers/userController';
 
 const router = Router();
 
@@ -32,6 +33,18 @@ router.put('/update/:userId', async (req: Request<UserProfileParams>, res: Respo
         } else {
             res.status(500).json({ message: 'An unknown error occurred' });
         }
+    }
+});
+
+router.put('/update-password/:userId', async (req, res) => {
+    const { userId } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+        await updatePassword(userId, currentPassword, newPassword);
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(400).json({ message: error instanceof Error ? error.message : 'Error updating password' });
     }
 });
 

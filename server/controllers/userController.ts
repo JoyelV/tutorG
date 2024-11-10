@@ -25,29 +25,17 @@ interface ProfileUpdateBody {
     address?: { line1: string; line2: string };
     gender?: string;
     dob?: string;
-    currentPassword?: string;
-    newPassword?: string;
     image?: string;
 }
 
-export const updateUserProfile = async (userId: string, userData: any): Promise<IUser | null> => {
+export const updateUserProfile = async (userId: string, userData: ProfileUpdateBody): Promise<IUser | null> => {
     try {
         const user = await User.findById(userId);
         if (!user) {
             throw new Error('User not found');
         }
 
-        const { username, email, phone, address, gender, dob, currentPassword, newPassword, image } = userData;
-
-        if (currentPassword && newPassword) {
-            const isMatch = await bcrypt.compare(currentPassword, user.password);
-            if (!isMatch) {
-                throw new Error('Current password is incorrect');
-            }
-            user.password = await bcrypt.hash(newPassword, 12);
-        } else if (currentPassword || newPassword) {
-            throw new Error('Please provide both current and new passwords');
-        }
+        const { username, email, phone, address, gender, dob, image } = userData;
 
         user.username = username || user.username;
         user.email = email || user.email;
@@ -59,6 +47,30 @@ export const updateUserProfile = async (userId: string, userData: any): Promise<
 
         await user.save();
         return user;
+
+    } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred');
+    }
+};
+
+export const updatePassword = async (userId: string, currentPassword: string, newPassword: string): Promise<void> => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Verify the current password
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            throw new Error('Current password is incorrect');
+        }
+
+        // Hash the new password and update it
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+
+        await user.save();
     } catch (error) {
         throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
