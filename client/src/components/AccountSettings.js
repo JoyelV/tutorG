@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, Button, Grid, TextField, Box, Typography } from '@mui/material';
+import { Avatar, Button, Grid, TextField, Box, Typography, IconButton, InputAdornment } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../assets/assets_user/assets';
 
 const AccountSettings = () => {
@@ -19,94 +22,192 @@ const AccountSettings = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Fetch existing user data
+    // Function to toggle password visibility
+    const togglePasswordVisibility = (type) => {
+        switch (type) {
+            case 'current':
+                setShowCurrentPassword(!showCurrentPassword);
+                break;
+            case 'new':
+                setShowNewPassword(!showNewPassword);
+                break;
+            case 'confirm':
+                setShowConfirmPassword(!showConfirmPassword);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const validateProfile = () => {
+        // Check if any required field is empty
+        if (!username || !email || !phone || !addressLine1 || !addressLine2 || !gender || !dob) {
+            toast.error('All fields are required.');
+            return false;
+        }
+    
+        // Validate email format
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if (!emailRegex.test(email)) {
+            toast.error('Invalid email format.');
+            return false;
+        }
+    
+        // Validate phone number (10 digits)
+        if (!/^\d{10}$/.test(phone)) {
+            toast.error('Phone number should be exactly 10 digits.');
+            return false;
+        }
+    
+        // Gender validation (only male, female, transgender allowed)
+        const validGenders = ['male', 'female', 'transgender'];
+        if (!validGenders.includes(gender)) {
+            toast.error('Please select a valid gender');
+            return false;
+        }
+    
+        // Date of birth validation (check if it's a valid date)
+        const dobDate = new Date(dob);
+        if (isNaN(dobDate.getTime())) {
+            toast.error('Invalid date of birth.');
+            return false;
+        }
+    
+        // Validate that address fields do not contain special characters or numbers (if required)
+        const addressRegex = /^[A-Za-z0-9\s]+$/;
+        if (!addressRegex.test(addressLine1) || !addressRegex.test(addressLine2)) {
+            toast.error('Address should contain only letters,numbers and spaces.');
+            return false;
+        }
+    
+        // Validate that username contains only letters and spaces (if required)
+        const usernameRegex = /^[A-Za-z\s]+$/;
+        if (!usernameRegex.test(username)) {
+            toast.error('Username should contain only letters and spaces.');
+            return false;
+        }
+    
+        return true;
+    };
+    
+
+    const validatePassword = () => {
+        // Check if any password fields are empty
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            toast.error('All password fields are required.');
+            return false;
+        }
+    
+        // Validate new password strength (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character)
+        const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordStrengthRegex.test(newPassword)) {
+            toast.error('New password must be at least 8 characters long, include uppercase, lowercase, number, and special character.');
+            return false;
+        }
+    
+        // Check if new password matches confirm password
+        if (newPassword !== confirmPassword) {
+            toast.error('New passwords do not match.');
+            return false;
+        }
+    
+        return true;
+    };
+    
+
     const fetchUserData = async () => {
         try {
             const userId = localStorage.getItem('userId');
             const response = await axios.get(`http://localhost:5000/api/user/profile/${userId}`);
             const data = response.data;
 
-            // Ensure default values are set as empty strings or other appropriate values
             setUsername(data.username || '');
             setEmail(data.email || '');
             setPhone(data.phone || '');
             setAddressLine1(data.address?.line1 || '');
             setAddressLine2(data.address?.line2 || '');
             setGender(data.gender || '');
-            setDob(data.dob || '');
+            const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
+            setDob(formattedDob);
             setImage(data.image || null);
         } catch (error) {
             console.error('Error fetching user data:', error);
+            toast.error('Error fetching user data');
         }
     };
 
-    // Handle image upload
     const handleImageChange = (e) => {
         const file = e.target.files ? e.target.files[0] : null;
         if (file && file.size <= 1 * 1024 * 1024) {
             setImage(URL.createObjectURL(file));
         } else {
-            alert('Image size should be under 1MB');
+            toast.error('Image size should be under 1MB');
         }
     };
 
-// Profile Update Form
-const handleProfileSubmit = async (e) => {
-    e.preventDefault();
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
 
-    const profileData = {
-        username,
-        email,
-        phone,
-        address: {
-            line1: addressLine1,
-            line2: addressLine2,
-        },
-        gender,
-        dob,
-        image,
-    };
-
-    try {
-        const userId = localStorage.getItem('userId');
-        console.log(userId, "userId");
-        console.log("formData", profileData);
-        const response = await axios.put(`http://localhost:5000/api/user/update/${userId}`, profileData, {
-            headers: {
-                'Content-Type': 'application/json',
+        if (!validateProfile()) return;
+        
+        const profileData = {
+            username,
+            email,
+            phone,
+            address: {
+                line1: addressLine1,
+                line2: addressLine2,
             },
-        });
-        console.log(response.data);
-    } catch (error) {
-        console.error('Error updating profile:', error);
-    }
-};
-
-  
-  // Password Update Form
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-  
-    const passwordData = {
-      currentPassword,
-      newPassword,
+            gender,
+            dob,
+            image, 
+        };
+        
+        try {
+            const userId = localStorage.getItem('userId');
+            const response = await axios.put(`http://localhost:5000/api/user/update/${userId}`, profileData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            toast.success('Profile updated successfully!');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            toast.error('Failed to update profile');
+        }
     };
-  
-    try {
-        const userId = localStorage.getItem('userId');
-        console.log(userId,"userId")
-        console.log("formData",passwordData)
-      const response = await axios.put(`http://localhost:5000/api/user/update-password/${userId}`, passwordData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error updating password:', error);
-    }
-  };
-  
+    
+    
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validatePassword()) return;
+    
+        if (newPassword !== confirmPassword) {
+            toast.error('New passwords do not match');
+            return;
+        }
+    
+        const passwordData = {
+            currentPassword,
+            newPassword,
+        };
+    
+        try {
+            const userId = localStorage.getItem('userId');
+            await axios.put(`http://localhost:5000/api/user/update-password/${userId}`, passwordData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            toast.success('Password updated successfully!');
+        } catch (error) {
+            console.error('Error updating password:', error);
+            toast.error('Failed to update password');
+        }
+    };
+    
 
     useEffect(() => {
         fetchUserData();
@@ -114,6 +215,7 @@ const handleProfileSubmit = async (e) => {
 
     return (
         <Box p={4}>
+            <ToastContainer />
             <Grid container spacing={4}>
                 {/* Profile Image Section */}
                 <Grid item xs={12} sm={4} container direction="column" alignItems="center">
@@ -246,6 +348,15 @@ const handleProfileSubmit = async (e) => {
                                 placeholder="Enter your current password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => togglePasswordVisibility('current')}>
+                                                {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
                             />
                         </Grid>
 
@@ -258,6 +369,15 @@ const handleProfileSubmit = async (e) => {
                                 placeholder="Enter your new password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => togglePasswordVisibility('new')}>
+                                                {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
                             />
                         </Grid>
 
@@ -270,13 +390,22 @@ const handleProfileSubmit = async (e) => {
                                 placeholder="Confirm your new password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => togglePasswordVisibility('confirm')}>
+                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
                             />
                         </Grid>
                     </Grid>
 
-                    <Box mt={2}>
+                    <Box mt={4}>
                         <Button type="submit" variant="contained" color="warning">
-                            Update Password
+                            Change Password
                         </Button>
                     </Box>
                 </form>
@@ -284,5 +413,6 @@ const handleProfileSubmit = async (e) => {
         </Box>
     );
 };
+
 
 export default AccountSettings;
