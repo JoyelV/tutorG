@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt';
 import { IUser } from '../models/User';
 import User from '../models/User';
+import { Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
 
 export const getUserProfile = async (userId: string): Promise<IUser | null> => {
     try {
@@ -60,13 +63,11 @@ export const updatePassword = async (userId: string, currentPassword: string, ne
             throw new Error('User not found');
         }
 
-        // Verify the current password
         const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
         if (!isPasswordValid) {
             throw new Error('Current password is incorrect');
         }
 
-        // Hash the new password and update it
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
 
@@ -74,4 +75,29 @@ export const updatePassword = async (userId: string, currentPassword: string, ne
     } catch (error) {
         throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
+};
+
+export const uploadUserImage = async (userId: string, imageUrl: string) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, { image: imageUrl }, { new: true });
+        if (!updatedUser) {
+            throw new Error('User not found');
+        }
+        await updatedUser.save();
+        return updatedUser;
+    } catch (error) {
+        throw new Error('Error updating user image');
+    }
+};
+
+export const getUserImage = (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const imageDirectory = path.join(__dirname, '..', 'public', 'images');
+  const imagePath = path.join(imageDirectory, `${userId}.jpg`); 
+  
+  if (fs.existsSync(imagePath)) {
+    res.sendFile(imagePath);
+  } else {
+    res.status(404).json({ message: 'Image not found for user with ID ' + userId });
+  }
 };
