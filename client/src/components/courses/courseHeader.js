@@ -23,13 +23,8 @@ const CourseHeader = () => {
             alt="Dianne Russell"
             className="w-8 h-8 rounded-full border border-gray-200"
           />
-          <img
-            src="https://randomuser.me/api/portraits/men/1.jpg"
-            alt="Kristin Watson"
-            className="w-8 h-8 rounded-full border border-gray-200 -ml-2"
-          />
           <p className="text-sm text-gray-700">
-            Created by: <span className="font-medium">Dianne Russell</span> &bull; <span className="font-medium">Kristin Watson</span>
+            Created by: <span className="font-medium">Dianne Russell</span> &bull; 
           </p>
         </div>
         

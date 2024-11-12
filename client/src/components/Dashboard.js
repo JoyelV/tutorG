@@ -18,6 +18,7 @@ const topics = [
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const name = localStorage.getItem('username'); 
 
     return (
         <>
@@ -50,7 +51,7 @@ const Dashboard = () => {
                 </div>
 
             <div className="mt-10 w-full text-3xl font-bold text-black text-center">
-                Let’s start learning, Kevin
+                Let’s start learning, {name}
             </div>
 
             {/* Courses Section */}

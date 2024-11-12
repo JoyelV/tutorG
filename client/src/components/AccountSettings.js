@@ -120,7 +120,8 @@ const AccountSettings = () => {
             const userId = localStorage.getItem('userId');
             const response = await axios.get(`http://localhost:5000/api/user/profile/${userId}`);
             const data = response.data;
-
+            console.log(data,"data in fetch");
+            
             setUsername(data.username || '');
             setEmail(data.email || '');
             setPhone(data.phone || '');
@@ -129,22 +130,60 @@ const AccountSettings = () => {
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
-            setImage(data.image || null);
+            setImage(data.image ? `http://localhost:5000${data.image}` : '');
+            console.log(data.image,"image in fetchUser");
+            console.log(image,"image from state");
+
         } catch (error) {
             console.error('Error fetching user data:', error);
             toast.error('Error fetching user data');
         }
     };
+    
 
     const handleImageChange = (e) => {
         const file = e.target.files ? e.target.files[0] : null;
-        if (file && file.size <= 1 * 1024 * 1024) {
-            setImage(URL.createObjectURL(file));
+        if (file && file.size <= 1 * 1024 * 1024) {  // Validate size < 1MB
+          setImage(URL.createObjectURL(file));  // Preview the selected image
+          uploadImage(file);  
         } else {
-            toast.error('Image size should be under 1MB');
+          toast.error('Image size should be under 1MB');
         }
-    };
-
+      };
+    
+const uploadImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);  
+  
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        toast.error('User not logged in');
+        return;
+      }
+  
+      const response = await axios.put(
+        `http://localhost:5000/api/user/upload-image/${userId}`, 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', 
+          },
+        }
+      );
+  
+      console.log(response.data, "image uploaded details");
+      if (response.data.success) {
+        toast.success('Image uploaded successfully!');
+      } else {
+        toast.error('Failed to upload image');
+      }
+    } catch (error) {
+      toast.error('Error uploading image');
+      console.error(error);
+    }
+  };
+  
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
 
@@ -196,6 +235,7 @@ const AccountSettings = () => {
     
         try {
             const userId = localStorage.getItem('userId');
+            console.log("userId password",userId)
             await axios.put(`http://localhost:5000/api/user/update-password/${userId}`, passwordData, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -209,9 +249,9 @@ const AccountSettings = () => {
     };
     
 
-    useEffect(() => {
-        fetchUserData();
-    }, []);
+useEffect(() => {
+    fetchUserData();
+}, [fetchUserData]);
 
     return (
         <Box p={4}>

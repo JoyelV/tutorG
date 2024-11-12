@@ -21,7 +21,8 @@ const Login: React.FC = () => {
             const userId = response.data.user.id;
             const token = response.data.token;
             const userRole = response.data.user.role;
-            console.log(userRole,"userRole.....................")
+            const username = response.data.user.username;
+            
             if (userRole !== 'user') {
                 setError('Access denied. Enter valid credentials.');
                 return;
@@ -29,6 +30,7 @@ const Login: React.FC = () => {
             localStorage.setItem('token', token);
             localStorage.setItem('userId', userId);
             localStorage.setItem('role', userRole);
+            localStorage.setItem('username',username)
             navigate('/');
         } catch (error) {
             setError('Login failed. Please check your credentials and try again.');

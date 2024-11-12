@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert,Link } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -19,19 +19,23 @@ const InstructorLogin: React.FC = () => {
             const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
             const token = response.data.token;
             const userRole = response.data.user.role;
+            console.log("instructor side",userRole);
+            localStorage.setItem('token', token);
+            localStorage.setItem('role', userRole);
 
             if (userRole !== 'instructor') {
                 setError('Access denied. Only Instructors can log in.');
                 return;
             }
-
-            localStorage.setItem('token', token);
-            localStorage.setItem('role', userRole);
-            navigate('/instructor/dashboard');
+            navigate('/instructor/instructor-dashboard');
         } catch (error) {
             setError('Instructor login failed. Please check your credentials.');
             console.error('Instructor login error:', error);
         }
+    };
+
+    const handleForgotPassword = () => {
+        navigate('/forgot-password');
     };
 
     return (
@@ -79,6 +83,16 @@ const InstructorLogin: React.FC = () => {
                         >
                             Instructor Login
                         </Button>
+                        <Box display="flex" justifyContent="flex-end">
+                            <Link
+                                component="button"
+                                variant="body2"
+                                onClick={handleForgotPassword}
+                                sx={{ cursor: 'pointer', color: 'primary.main' }}
+                            >
+                                Forgot Password?
+                            </Link>
+                        </Box>
                     </Box>
                 </Box>
             </Paper>
