@@ -17,7 +17,7 @@ const ProfileViewChart = () => {
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold">Revenue</h3>
+      <h3 className="text-lg font-semibold">Total Students</h3>
       <Line data={data} />
     </div>
   );

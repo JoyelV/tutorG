@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; 
+import { assets } from '../../assets/assets_user/assets';
 
 const TopNav: React.FC = () => {
   return (
@@ -7,7 +8,7 @@ const TopNav: React.FC = () => {
       <input type="text" placeholder="Search" className="border p-2 rounded" />
       <div className="flex items-center">
         <img
-          src="" 
+          src={assets.Instructor3} 
           alt="Profile"
           className="w-10 h-10 rounded-full"
         />

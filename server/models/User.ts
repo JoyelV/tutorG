@@ -13,6 +13,7 @@ export interface IUser extends Document {
     };
     gender?: string;
     dob?: string;
+    blocked: boolean; 
 }
 
 const userSchema = new Schema<IUser>({
@@ -27,7 +28,8 @@ const userSchema = new Schema<IUser>({
         line2: { type: String }
     },
     gender: { type: String },
-    dob: { type: Date }
+    dob: { type: Date },
+    blocked: { type: Boolean, default: false } 
 });
 
 export default model<IUser>('User', userSchema);

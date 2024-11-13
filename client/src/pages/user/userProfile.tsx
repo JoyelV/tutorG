@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ProfileDashboard from '../../components/ProfileDashboard';
 import AccountSettings from '../../components/AccountSettings';
 import Dashboard from '../../components/Dashboard'
+import Navbar from '../../components/Navbar';
 
 type Section = 'Dashboard' | 'Courses' | 'Teachers' | 'Message' | 'Wishlist' | 'Purchase History' | 'Settings'
 
@@ -14,6 +15,7 @@ const UserProfile = () => {
 
     return (
         <div className="App font-sans text-gray-800 p-4">
+            <Navbar />
             <ProfileDashboard onSectionChange={handleSectionChange} />
 
             <div className="mt-6">

@@ -9,9 +9,10 @@ import {
     uploadUserImage,
     updatePassword, 
     getAllUsers,
-    getAllInstructors} 
+    getAllInstructors,
+  } 
 from '../controllers/adminController';
-
+import Instructor from '../models/Instructor';
 import multer from 'multer';
 
 const storage = multer.diskStorage({

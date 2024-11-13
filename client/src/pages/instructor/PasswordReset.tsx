@@ -27,10 +27,10 @@ export const PasswordReset: React.FC = () => {
       });
        
       if(!response){
-         setError('Password cannot be reset rightnow')
+         setError('Password cannot be reset right now');
       }
       const userRole = response.data.role; 
-      console.log(userRole,"userRole");
+      console.log(userRole, "userRole");
       navigate('/instructor/');
 
     } catch (error) {
@@ -40,30 +40,51 @@ export const PasswordReset: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        type="password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        placeholder="New Password"
-        required
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <input
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        placeholder="Confirm New Password"
-        required
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <button
-        type="submit"
-        className="w-full px-4 py-2 mt-4 font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
-      >
-        Reset Password
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
-    </form>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Reset Your Password</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-600">New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter your new password"
+              required
+              className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-600">Confirm New Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your new password"
+              required
+              className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full px-4 py-3 mt-4 font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+          >
+            Reset Password
+          </button>
+          
+          {error && (
+            <div className="mt-4 text-center">
+              <p className="text-red-500 text-sm">{error}</p>
+            </div>
+          )}
+        </form>
+      </div>
+    </div>
   );
 };

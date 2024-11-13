@@ -18,11 +18,7 @@ const UsersPage: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col ml-64">
-        {/* Top Navigation */}
-        <div className="fixed top-0 left-64 right-0">
-          <TopNav />
-        </div>
-
+      <TopNav/>
         {/* Main Body Content */}
         <div className="pt-16 p-6 overflow-y-auto h-full">
           <div>

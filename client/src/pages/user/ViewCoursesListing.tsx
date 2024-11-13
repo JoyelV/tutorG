@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import TopActionBar from '../../components/TopActionBar';
 import { Pagination } from '@mui/material';
 import ImageCard from '../../components/ImageCard';
+import Navbar from '../../components/Navbar';
 
 interface ViewCoursesListingProps {}
 
@@ -14,7 +15,9 @@ const ViewCoursesListing: React.FC<ViewCoursesListingProps> = () => {
   };
 
   return (
-    <><TopActionBar />
+    <>
+    <Navbar />
+    <TopActionBar />
 
     <div className="min-h-screen flex flex-col items-center justify-center">
       <ImageCard />

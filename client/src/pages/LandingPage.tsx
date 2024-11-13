@@ -6,11 +6,13 @@ import BecomeInstructor from '../components/BecomeInstructor';
 import TopInstructors from '../components/TopInstructors';
 import TrustedCompanies from '../components/TrustedCompanies';
 import HeroSection2 from '../components/HeroSection2';
+import Navbar from '../components/Navbar';
 
 
 function App() {
     return (
         <div className="App font-sans text-gray-800">
+        <Navbar />
             <HeroSection />
             <Topics />
             <div className="mt-10 w-full flex justify-center items-center p-10 font-bold text-3xl text-sky-600">

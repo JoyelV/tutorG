@@ -57,7 +57,7 @@ const TutorsTable: React.FC = () => {
     <div className="overflow-x-auto">
       <div className="flex space-x-4 mb-4">
         <button
-          onClick={() => navigate('/add-tutor')}
+          onClick={() => navigate('/admin/add-tutor')}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Add Tutor

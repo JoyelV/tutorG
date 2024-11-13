@@ -1,4 +1,5 @@
 import React from 'react';
+import { assets } from '../../assets/assets_user/assets';
 
 const DashboardHeader = () => {
   return (
@@ -13,7 +14,7 @@ const DashboardHeader = () => {
           placeholder="Search"
           className="border rounded-lg p-2"
         />
-        <img src="/profile.jpg" alt="Profile" className="w-10 h-10 rounded-full" />
+        <img src={assets.Instructor3} alt="Profile" className="w-10 h-10 rounded-full" />
       </div>
     </header>
   );

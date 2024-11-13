@@ -20,16 +20,38 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <button type="submit">Send OTP</button>
-      {message && <p>{message}</p>}
-    </form>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Forgot Password</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-gray-700 font-medium">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Enter your registered email"
+              className="w-full p-3 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="mb-4">
+            <button
+              type="submit"
+              className="w-full p-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Send OTP
+            </button>
+          </div>
+          {message && (
+            <p className={`text-center font-semibold ${message.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+              {message}
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
   );
 };
 

@@ -7,6 +7,7 @@ import AdminProfile from '../pages/admin/adminProfile'
 import ForgotPassword from '../components/admin/ForgotPassword';
 import VerifyOtp from '../pages/admin/VerifyOtp';
 import { PasswordReset } from '../pages/admin/PasswordReset';
+import AddForm from '../pages/instructor/AddTutor';
 
 const AdminRoutes = () => {
     
@@ -36,6 +37,10 @@ const AdminRoutes = () => {
                 path="/adminProfile"
                 element={isAdmin ? <AdminProfile/>
                     : <Navigate to="/admin" />}/>
+            <Route
+                path="/add-tutor"
+                element={isAdmin ? <AddForm /> : <Navigate to="/admin" />}
+            />
         </Routes>
         
     );

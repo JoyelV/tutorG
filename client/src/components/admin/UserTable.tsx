@@ -37,16 +37,25 @@ const UserTable: React.FC = () => {
       user.id === userId ? { ...user, blocked: !user.blocked } : user
     );
     setUsers(updatedUsers);
-
+  
     // Optionally send the update to the backend
     axios
       .patch(`http://localhost:5000/api/admin/users/${userId}/block`, {
         blocked: updatedUsers.find((user) => user.id === userId)?.blocked,
       })
+      .then((response) => {
+        // If update successful, you may want to update the user in the UI with the response
+        const updatedUser = response.data;
+        const newUsers = users.map((user) =>
+          user.id === updatedUser.id ? updatedUser : user
+        );
+        setUsers(newUsers);
+      })
       .catch(() => {
         setError('Failed to update block status');
       });
   };
+  
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;

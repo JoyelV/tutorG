@@ -9,6 +9,7 @@ import InstructorInfo from "../../components/courses/InstructorInfo";
 import RelatedCourses from "../../components/courses/RelatedCourses";
 import StudentFeedback from "../../components/courses/StudentFeedback";
 import CourseHeader from "../../components/courses/courseHeader";
+import Navbar from '../../components/Navbar';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Rating' | 'Feedback';
 
@@ -21,6 +22,7 @@ const CoursePage = () => {
 
   return (
     <div className="flex flex-col w-full min-h-screen p-4">
+              <Navbar />
       {/* Main Content Section */}
       <div className="flex flex-col md:flex-row w-full flex-grow bg-white shadow-lg rounded-lg overflow-hidden">
         
