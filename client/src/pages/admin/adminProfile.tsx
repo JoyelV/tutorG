@@ -131,7 +131,7 @@ const AccountSettings = () => {
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
-            setImage(data.image || '');
+            setImage(data.image || null); // Set the image URL fetched from the database
             console.log(data.image, "image in fetchUser");
             console.log(image, "image from state");
 
@@ -253,7 +253,7 @@ const AccountSettings = () => {
 
     useEffect(() => {
         fetchUserData();
-    }, [fetchUserData]);
+    }, []);
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -355,12 +355,20 @@ const AccountSettings = () => {
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             fullWidth
+                                            select
                                             label="Gender"
-                                            variant="outlined"
                                             value={gender}
                                             onChange={(e) => setGender(e.target.value)}
-                                            placeholder="Enter your gender"
-                                        />
+                                            SelectProps={{
+                                                native: true,
+                                            }}
+                                        >
+                                            <option value="" disabled></option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="transgender">Transgender</option>
+                                        </TextField>
+
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField

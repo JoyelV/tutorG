@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert,Link } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert,Link,Grid } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -13,20 +13,25 @@ const InstructorLogin: React.FC = () => {
     const navigate = useNavigate();
     const auth = getAuth(firebaseApp);
 
-    const handleAdminLogin = async (e: React.FormEvent) => {
+    const handleInstructorLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const response = await axios.post('http://localhost:5000/api/instructor/login', { email, password });
+            const userId = response.data.user.id;
             const token = response.data.token;
             const userRole = response.data.user.role;
-            console.log("instructor side",userRole);
+            const username = response.data.user.username;
+            
             localStorage.setItem('token', token);
+            localStorage.setItem('userId', userId);
             localStorage.setItem('role', userRole);
+            localStorage.setItem('username',username);
 
             if (userRole !== 'instructor') {
                 setError('Access denied. Only Instructors can log in.');
                 return;
             }
+            console.log("userRole in instructor",userRole);
             navigate('/instructor/instructor-dashboard');
         } catch (error) {
             setError('Instructor login failed. Please check your credentials.');
@@ -35,7 +40,7 @@ const InstructorLogin: React.FC = () => {
     };
 
     const handleForgotPassword = () => {
-        navigate('/forgot-password');
+        navigate('/instructor/forgot-password');
     };
 
     return (
@@ -49,7 +54,7 @@ const InstructorLogin: React.FC = () => {
                     Instructor Sign In
                     </Typography>
                     {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-                    <Box component="form" onSubmit={handleAdminLogin} sx={{ mt: 1 }}>
+                    <Box component="form" onSubmit={handleInstructorLogin} sx={{ mt: 1 }}>
                         <TextField
                             label="Instructor Email"
                             fullWidth
@@ -93,6 +98,16 @@ const InstructorLogin: React.FC = () => {
                                 Forgot Password?
                             </Link>
                         </Box>
+                        <Grid container justifyContent="flex-end">
+                            <Grid item>
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                    Don't have an account?{' '}
+                                    <Button color="secondary" onClick={() => navigate('/instructor/tutor-register')}>
+                                        Sign Up
+                                    </Button>
+                                </Typography>
+                            </Grid>
+                        </Grid>
                     </Box>
                 </Box>
             </Paper>

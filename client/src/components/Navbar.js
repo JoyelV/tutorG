@@ -10,9 +10,9 @@ const Navbar = () => {
     const navigate = useNavigate();
     const isLoggedIn = Boolean(localStorage.getItem('token'));
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        window.location.reload();
+    const handleLogout = async () => {
+        localStorage.clear(); 
+        navigate('/login');
     };
 
     return (

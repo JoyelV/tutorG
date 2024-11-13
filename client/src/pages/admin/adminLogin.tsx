@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert, Link } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert,Grid, Link } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +16,16 @@ const AdminLogin: React.FC = () => {
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const response = await axios.post('http://localhost:5000/api/admin/login', { email, password });
+            const userId = response.data.user.id;
             const token = response.data.token;
             const userRole = response.data.user.role;
+            const username = response.data.user.username;
+            
             localStorage.setItem('token', token);
+            localStorage.setItem('userId', userId);
             localStorage.setItem('role', userRole);
+            localStorage.setItem('username',username);
 
             if (userRole !== 'admin') {
                 setError('Access denied. Only administrators can log in.');
@@ -35,7 +40,7 @@ const AdminLogin: React.FC = () => {
     };
 
     const handleForgotPassword = () => {
-        navigate('/forgot-password');
+        navigate('/admin/forgot-password');
     };
 
     return (

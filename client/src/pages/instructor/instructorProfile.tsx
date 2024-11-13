@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../assets/assets_user/assets';
 import Sidebar from '../../components/instructor/Sidebar';
-import TopNav from '../../components/admin/TopNav';
+import TopNav from '../../components/instructor/DashboardHeader';
 
 const InstructorProfile = () => {
     const [image, setImage] = useState<string | null>(null);
@@ -119,7 +119,7 @@ const InstructorProfile = () => {
     const fetchUserData = async () => {
         try {
             const userId = localStorage.getItem('userId');
-            const response = await axios.get(`http://localhost:5000/api/admin/profile/${userId}`);
+            const response = await axios.get(`http://localhost:5000/api/instructor/profile/${userId}`);
             const data = response.data;
             console.log(data, "data in fetch");
 
@@ -131,7 +131,7 @@ const InstructorProfile = () => {
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
-            setImage(data.image || '');
+            setImage(data.image || null); // Set the image URL fetched from the database
             console.log(data.image, "image in fetchUser");
             console.log(image, "image from state");
 
@@ -165,7 +165,7 @@ const InstructorProfile = () => {
             }
 
             const response = await axios.put(
-                `http://localhost:5000/api/admin/upload-image/${userId}`,
+                `http://localhost:5000/api/instructor/upload-image/${userId}`,
                 formData,
                 {
                     headers: {
@@ -206,7 +206,7 @@ const InstructorProfile = () => {
 
         try {
             const userId = localStorage.getItem('userId');
-            const response = await axios.put(`http://localhost:5000/api/admin/update/${userId}`, profileData, {
+            const response = await axios.put(`http://localhost:5000/api/instructor/update/${userId}`, profileData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -238,7 +238,7 @@ const InstructorProfile = () => {
         try {
             const userId = localStorage.getItem('userId');
             console.log("userId password", userId)
-            await axios.put(`http://localhost:5000/api/admin/update-password/${userId}`, passwordData, {
+            await axios.put(`http://localhost:5000/api/instructor/update-password/${userId}`, passwordData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -253,7 +253,7 @@ const InstructorProfile = () => {
 
     useEffect(() => {
         fetchUserData();
-    }, [fetchUserData]);
+    }, []);
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -355,12 +355,20 @@ const InstructorProfile = () => {
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             fullWidth
+                                            select
                                             label="Gender"
-                                            variant="outlined"
                                             value={gender}
                                             onChange={(e) => setGender(e.target.value)}
-                                            placeholder="Enter your gender"
-                                        />
+                                            SelectProps={{
+                                                native: true,
+                                            }}
+                                        >
+                                            <option value="" disabled></option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="transgender">Transgender</option>
+                                        </TextField>
+
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField

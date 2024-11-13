@@ -1,45 +1,81 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 type User = {
-  name: string;
+  id: string;
+  username: string;
   email: string;
-  headline: string;
-  courses: number;
-  qualification: string;
+  phone: string;
+  gender: number;
+  role: string;
+  blocked: boolean; // Track block/unblock status
 };
 
-const users: User[] = Array(8).fill({
-  name: 'Jonathan Doe',
-  email: 'jonathan@gmail.com',
-  headline: 'Web developer, UX/UI Designer, and Teacher',
-  courses: 10,
-  qualification: 'B.Tech'
-});
-
 const UserTable: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:5000/api/admin/users')
+      .then((response) => {
+        setUsers(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError('Failed to load users');
+        setLoading(false);
+      });
+  }, []);
+
+  const toggleBlockStatus = (userId: string) => {
+    // Toggle the block status locally first
+    const updatedUsers = users.map((user) =>
+      user.id === userId ? { ...user, blocked: !user.blocked } : user
+    );
+    setUsers(updatedUsers);
+
+    // Optionally send the update to the backend
+    axios
+      .patch(`http://localhost:5000/api/admin/users/${userId}/block`, {
+        blocked: updatedUsers.find((user) => user.id === userId)?.blocked,
+      })
+      .catch(() => {
+        setError('Failed to update block status');
+      });
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-blue-200 rounded-lg">
         <thead>
           <tr>
-            {['Name', 'Email Id', 'Headline', 'Courses', 'Qualification', 'Update','Action'].map((header) => (
+            {['Name', 'Email Id', 'Phone', 'Gender', 'Role', 'Action'].map((header) => (
               <th key={header} className="p-4 border-b border-blue-300 text-left">{header}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
-            <tr key={index} className="bg-blue-100 even:bg-blue-200">
-              <td className="p-4 border-b border-blue-300">{user.name}</td>
+          {users.map((user) => (
+            <tr key={user.id} className="bg-blue-100 even:bg-blue-200">
+              <td className="p-4 border-b border-blue-300">{user.username}</td>
               <td className="p-4 border-b border-blue-300">{user.email}</td>
-              <td className="p-4 border-b border-blue-300">{user.headline}</td>
-              <td className="p-4 border-b border-blue-300">{user.courses}</td>
-              <td className="p-4 border-b border-blue-300">{user.qualification}</td>
+              <td className="p-4 border-b border-blue-300">{user.phone}</td>
+              <td className="p-4 border-b border-blue-300">{user.gender}</td>
+              <td className="p-4 border-b border-blue-300">{user.role}</td>
               <td className="p-4 border-b border-blue-300">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded">Update</button>
-              </td>
-              <td className="p-4 border-b border-blue-300">
-                <button className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
+                <button
+                  onClick={() => toggleBlockStatus(user.id)}
+                  className={`px-4 py-2 rounded ${user.blocked ? 'bg-green-500' : 'bg-red-500'} text-white`}
+                >
+                  {user.blocked ? 'Unblock' : 'Block'}
+                </button>
               </td>
             </tr>
           ))}

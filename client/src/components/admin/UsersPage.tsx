@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
 import UserTable from './UserTable';
@@ -6,6 +7,7 @@ import TutorsTable from '../../pages/admin/TutorsTable';
 
 const UsersPage: React.FC = () => {
   const [isShowingStudents, setIsShowingStudents] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <div className="h-screen bg-gray-100 flex">
@@ -23,16 +25,18 @@ const UsersPage: React.FC = () => {
 
         {/* Main Body Content */}
         <div className="pt-16 p-6 overflow-y-auto h-full">
-          <div><h1 className="text-2xl font-bold mb-4">Users</h1></div>
+          <div>
+            <h1 className="text-2xl font-bold mb-4">USERS</h1>
+          </div>
           <div className="flex space-x-4 mb-4">
-            <button 
-              onClick={() => setIsShowingStudents(true)} 
+            <button
+              onClick={() => setIsShowingStudents(true)}
               className={`text-blue-500 ${isShowingStudents ? 'border-b-2 border-blue-500' : ''}`}
             >
               Students
             </button>
-            <button 
-              onClick={() => setIsShowingStudents(false)} 
+            <button
+              onClick={() => setIsShowingStudents(false)}
               className={`text-blue-500 ${!isShowingStudents ? 'border-b-2 border-blue-500' : ''}`}
             >
               Tutors

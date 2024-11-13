@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import { Avatar, Button, Grid, TextField, Box, Typography, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
@@ -115,13 +115,13 @@ const AccountSettings = () => {
     };
     
 
-    const fetchUserData = async () => {
+    const fetchUserData = useCallback(async () => {
         try {
             const userId = localStorage.getItem('userId');
             const response = await axios.get(`http://localhost:5000/api/user/profile/${userId}`);
             const data = response.data;
-            console.log(data,"data in fetch");
             
+            // Update states with fetched data
             setUsername(data.username || '');
             setEmail(data.email || '');
             setPhone(data.phone || '');
@@ -131,14 +131,12 @@ const AccountSettings = () => {
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
             setImage(data.image ? `http://localhost:5000${data.image}` : '');
-            console.log(data.image,"image in fetchUser");
-            console.log(image,"image from state");
 
         } catch (error) {
             console.error('Error fetching user data:', error);
             toast.error('Error fetching user data');
         }
-    };
+    }, []); // Empty dependency array to ensure function is only created once
     
 
     const handleImageChange = (e) => {
