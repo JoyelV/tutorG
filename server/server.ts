@@ -2,9 +2,9 @@ import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
-
+import adminRoutes from './routes/adminRoutes'
+import instructorRoutes from './routes/instructorRoutes'
 dotenv.config();
 
 const app = express();
@@ -20,8 +20,9 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes); 
+app.use('/api/admin', adminRoutes); 
+app.use('/api/instructor', instructorRoutes); 
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
