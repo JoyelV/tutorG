@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { register, login, sendOtp, verifyOtp, resetPassword,getUserProfile, updateUserProfile, uploadUserImage } from '../controllers/userController';
+import { login, sendOtp, resetPassword,getUserProfile, updateUserProfile, uploadUserImage, register, verifyRegisterOTP, verifyPasswordOtp } from '../controllers/userController';
 import { updatePassword } from '../controllers/userController';
 import multer from 'multer';
 import path from 'path';
@@ -22,9 +22,10 @@ interface UserProfileParams {
 
 // AUTHENTICATION
 router.post('/register', register);
+router.post('/verify-registerotp',verifyRegisterOTP)
 router.post('/login', login); 
 router.post('/send-otp', sendOtp);
-router.post('/verify-otp', verifyOtp);
+router.post('/verify-otp', verifyPasswordOtp);
 router.post('/reset-password', resetPassword);
 
 //USER PROFILE 
@@ -75,7 +76,7 @@ router.put('/upload-image/:userId', upload.single('image'), async (req: Request,
     }
 
     const { userId } = req.params;
-    const imagePath = `/public/${req.file.filename}`;
+    const imagePath = `/images/${req.file.filename}`; 
 
   try {
         const updatedUser = await uploadUserImage(userId, imagePath);

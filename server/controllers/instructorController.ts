@@ -2,7 +2,8 @@ import bcrypt from 'bcrypt';
 import path from 'path';
 import fs from 'fs';
 import { Request, Response, NextFunction } from 'express';
-import Instructor,{IInstructor} from '../models/Instructor'
+import Instructor from '../models/Instructor';
+import {IInstructor} from '../entities/IInstructor';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 

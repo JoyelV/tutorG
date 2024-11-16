@@ -17,7 +17,7 @@ import multer from 'multer';
 
 const storage = multer.diskStorage({
   destination: (req: Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, 'uploads/'); 
+    cb(null, './public'); 
   },
   filename: (req: Request, file: Express.Multer.File, cb: Function) => {
     cb(null, Date.now() + "-" + file.originalname);
@@ -89,7 +89,7 @@ router.put('/upload-image/:userId', upload.single('image'), async (req: Request,
     console.log("hi testing image upload.......")
 
     const { userId } = req.params;
-    const imagePath = `${req.file.filename}`;
+    const imagePath = `/images/${req.file.filename}`; 
 
     try {
         const updatedAdmin = await uploadUserImage(userId, imagePath);

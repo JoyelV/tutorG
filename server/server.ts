@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use('/images', express.static('public')); 
 
 const MONGO_URI = process.env.MONGO_URI || '';
 mongoose.connect(MONGO_URI)

@@ -1,20 +1,5 @@
-import { Schema, model, Document } from 'mongoose';
-
-export interface IUser extends Document {
-    username: string;
-    email: string;
-    password: string;
-    role?: string;
-    phone?: string;
-    image?: string;
-    address?: {
-        line1: string;
-        line2: string;
-    };
-    gender?: string;
-    dob?: string;
-    blocked: boolean; 
-}
+import { Schema, model } from 'mongoose';
+import { IUser } from '../entities/IUser';
 
 const userSchema = new Schema<IUser>({
     username: { type: String, required: true },
@@ -25,11 +10,11 @@ const userSchema = new Schema<IUser>({
     image: { type: String },
     address: {
         line1: { type: String },
-        line2: { type: String }
+        line2: { type: String },
     },
     gender: { type: String },
     dob: { type: Date },
-    blocked: { type: Boolean, default: false } 
+    isBlocked: { type: Boolean, default: false },
 });
 
 export default model<IUser>('User', userSchema);

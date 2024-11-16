@@ -2,14 +2,49 @@ import bcrypt from 'bcrypt';
 import path from 'path';
 import fs from 'fs';
 import { Request, Response, NextFunction } from 'express';
-import User, { IUser } from '../models/User';
+import User from '../models/User';
+import { IUser } from '../entities/IUser';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-//REGISTRATION
+interface OtpStorageEntry {
+  otp: string;
+  username: string;
+  password: string;
+}
+
+// In-memory storage to keep OTP and user data temporarily
+let otpStorage: { [key: string]: OtpStorageEntry } = {};
+
+// Function to generate OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+};
+
+// Function to send OTP via email
+const sendOTPEmail = async (email: string, otp: string) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER as string,
+      pass: process.env.EMAIL_PASS as string,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER as string,
+    to: email,
+    subject: 'OTP for User Registration',
+    text: `Your OTP code is: ${otp}`,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+// Registration Route (to send OTP)
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
@@ -19,23 +54,49 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      res.status(400).json({
-        message: 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character',
-      });
+    // Generate OTP and store it with user details in otpStorage
+    const otp = generateOTP();
+    otpStorage[email] = { otp, username, password };
+
+    // Send OTP to email
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+//OTP Verification Route
+export const verifyRegisterOTP = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp } = req.body;
+    // console.log(req.body,"data in verifyotp")
+    if (!email || !otp) {
+      res.status(400).json({ message: 'Email and OTP are required' });
       return;
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400).json({ message: 'Email is already in use' });
+    const storedEntry = otpStorage[email];
+
+    if (!storedEntry) {
+      res.status(400).json({ message: 'OTP expired or not sent' });
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
+    if (storedEntry.otp !== otp) {
+      res.status(400).json({ message: 'Invalid OTP' });
+      return;
+    }
+
+    // OTP is valid, proceed with user registration
+    const hashedPassword = await bcrypt.hash(storedEntry.password, 10);
+    const newUser = new User({ username: storedEntry.username, email, password: hashedPassword });
     await newUser.save();
+
+    // Clear OTP and user data from memory after successful verification
+    delete otpStorage[email];
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -43,6 +104,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+//AUTHENTICATION
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, password } = req.body;
@@ -123,7 +186,7 @@ export const sendOtp = (req: Request, res: Response): void => {
   });
 };
 
-export const verifyOtp = (req: Request, res: Response): void => {
+export const verifyPasswordOtp = (req: Request, res: Response): void => {
   const { email, otp } = req.body;
   if (otpStore[email] && otpStore[email] === parseInt(otp, 10)) {
     delete otpStore[email];
