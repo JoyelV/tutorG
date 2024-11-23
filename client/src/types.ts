@@ -13,3 +13,7 @@ export interface Address {
     address: Address;
   }
   
+  export type AdminCategoryData = {
+    categoryname: string;
+    description: string;
+  }
