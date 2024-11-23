@@ -7,6 +7,7 @@ import ForgotPassword from '../components/admin/ForgotPassword';
 import VerifyOtp from '../pages/admin/VerifyOtp';
 import { PasswordReset } from '../pages/admin/PasswordReset';
 import AddForm from '../pages/admin/AddTutor';
+import CategoryPage from '../pages/admin/CategoryPage';
 
 const AdminRoutes = () => {
     
@@ -27,6 +28,10 @@ const AdminRoutes = () => {
             <Route
                 path="/dashboard"
                 element={isAdmin ? <AdminDashboard />
+                    : <Navigate to="/admin" />}/>
+            <Route
+                path="/category"
+                element={isAdmin ? <CategoryPage />
                     : <Navigate to="/admin" />}/>
             <Route
                 path="/users"
