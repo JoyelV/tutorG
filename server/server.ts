@@ -3,14 +3,15 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
-import adminRoutes from './routes/adminRoutes'
-import instructorRoutes from './routes/instructorRoutes'
+import adminRoutes from './routes/adminRoutes';
+import instructorRoutes from './routes/instructorRoutes';
+import path from 'path';
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/images', express.static('public')); 
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = process.env.MONGO_URI || '';
 mongoose.connect(MONGO_URI)

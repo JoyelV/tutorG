@@ -1,11 +1,11 @@
-import { ObjectId } from 'mongoose';
+import { ObjectId,Document } from 'mongoose';
 
 export interface Address {
     line1: string;
     line2: string;
 }
 
-export interface IAdmin {
+export interface IAdmin extends Document {
     _id: ObjectId; 
     username: string;
     email: string;

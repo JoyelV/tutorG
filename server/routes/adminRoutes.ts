@@ -1,103 +1,69 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { 
     login, 
     sendOtp, 
-    verifyOtp, 
     resetPassword,
-    getUserProfile, 
-    updateUserProfile, 
-    uploadUserImage,
-    updatePassword, 
+    verifyPasswordOtp,
+    fetchUserProfile,
+    editUserProfile,
+    editPassword,
+    uploadImage,
     getAllUsers,
     getAllInstructors,
   } 
 from '../controllers/adminController';
-import Instructor from '../models/Instructor';
-import multer from 'multer';
-
-const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, './public'); 
-  },
-  filename: (req: Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage:storage, limits: { fileSize: 1 * 1024 * 1024 } }); 
+import {uploadProfileImage} from '../config/multerConfig';
+import { toggleUserStatus } from '../controllers/userController';
+import { toggleTutorStatus } from '../controllers/instructorController';
+import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
 
 const router = Router();
-
-interface UserProfileParams {
-  userId: string;
-}
 
 // AUTHENTICATION
 router.post('/login', login); 
 router.post('/send-otp', sendOtp);
-router.post('/verify-otp', verifyOtp);
+router.post('/verify-otp',verifyPasswordOtp );
 router.post('/reset-password', resetPassword);
-router.get('/users', getAllUsers);
-router.get('/instructors', getAllInstructors);
 
 //PROFILE MANAGEMENT
-router.get('/profile/:userId', async (req: Request<UserProfileParams>, res: Response) => {
-  try {
-    const Admin = await getUserProfile(req.params.userId);
-    res.json(Admin);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(404).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-});
+router.get('/profile/:userId',fetchUserProfile);
+router.put('/update/:userId', editUserProfile);
+router.put('/update-password/:userId', editPassword);
+router.put('/upload-image/:userId', uploadProfileImage, uploadImage);
 
-router.put('/update/:userId', async (req: Request<UserProfileParams>, res: Response) => {
-  try {
-    const updatedAdmin = await updateUserProfile(req.params.userId, req.body);
-    console.log('updatedAdmin....', updatedAdmin);
-    res.json(updatedAdmin);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-});
+//Student & Tutor Management
+router.get('/users', getAllUsers);
+router.get('/instructors', getAllInstructors);
+router.patch('/users/:userId', toggleUserStatus);
+router.patch('/instructors/:tutorId', toggleTutorStatus);
 
-router.put('/update-password/:userId', async (req, res) => {
-  const { userId } = req.params;
-  const { currentPassword, newPassword } = req.body;
-  console.log('updatedAdmin Password', req.body);
+//Category Management
+/**
+ * @route   GET /admin/categories
+ * @desc    Fetch all categories and subcategories
+ * @access  Admin
+ */
+router.get('/categories', getCategories);
 
-  try {
-    await updatePassword(userId, currentPassword, newPassword);
-    res.status(200).json({ message: 'Password updated successfully' });
-  } catch (error) {
-    res.status(400).json({ message: error instanceof Error ? error.message : 'Error updating password' });
-  }
-});
+/**
+ * @route   POST /admin/categories
+ * @desc    Add a new category with subcategories
+ * @access  Admin
+ */
+router.post('/categories', saveCategory);
 
-router.put('/upload-image/:userId', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
-    if (!req.file) {
-        res.status(400).json({ success: false, message: 'No file uploaded' });
-        return ;
-    }
-    console.log("hi testing image upload.......")
+/**
+ * @route   PUT /admin/categories/:id
+ * @desc    Edit an existing category and its subcategories
+ * @access  Admin
+ */
+router.put('/categories/:id', saveCategory);
 
-    const { userId } = req.params;
-    const imagePath = `/images/${req.file.filename}`; 
-
-    try {
-        const updatedAdmin = await uploadUserImage(userId, imagePath);
-        res.status(200).json({ success: true, imageUrl: imagePath, user: updatedAdmin });
-    } catch (error) {
-        res.status(500).json({ message: error instanceof Error ? error.message : 'Error uploading image' });
-    }
-});
-
+/**
+ * @route   DELETE /admin/categories/:id
+ * @desc    Delete a category and its subcategories
+ * @access  Admin
+ */
+router.patch('/categories/block/:id', deleteCategory);
 
 export default router;

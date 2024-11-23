@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongoose';
+import { ObjectId,Document } from 'mongoose';
 
 export interface Address {
     line1: string;
@@ -12,7 +12,7 @@ export interface SocialLinks {
     facebook?: string;
 }
 
-export interface IInstructor {
+export interface IInstructor extends Document {
     _id: ObjectId; 
     username: string;
     email: string;

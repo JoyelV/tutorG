@@ -1,50 +1,15 @@
-import bcrypt from 'bcrypt';
-import path from 'path';
-import fs from 'fs';
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/User';
-import { IUser } from '../entities/IUser';
-import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
-
+import { sendOTPEmail } from '../utils/emailService';
+import { generateOTP } from '../utils/otpGenerator';
+import { verifyOTP, loginService, resetPasswordService } from '../services/authService';
+import { otpService } from '../services/otpService';
+import { otpRepository } from '../repositories/otpRepository';
+import jwt from 'jsonwebtoken';
+import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
+import User from '../models/User'
 dotenv.config();
 
-interface OtpStorageEntry {
-  otp: string;
-  username: string;
-  password: string;
-}
-
-// In-memory storage to keep OTP and user data temporarily
-let otpStorage: { [key: string]: OtpStorageEntry } = {};
-
-// Function to generate OTP
-const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-};
-
-// Function to send OTP via email
-const sendOTPEmail = async (email: string, otp: string) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER as string,
-      pass: process.env.EMAIL_PASS as string,
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER as string,
-    to: email,
-    subject: 'OTP for User Registration',
-    text: `Your OTP code is: ${otp}`,
-  };
-
-  await transporter.sendMail(mailOptions);
-};
-
-// Registration Route (to send OTP)
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
@@ -54,11 +19,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Generate OTP and store it with user details in otpStorage
     const otp = generateOTP();
-    otpStorage[email] = { otp, username, password };
-
-    // Send OTP to email
+    otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
     await sendOTPEmail(email, otp);
 
     res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
@@ -68,76 +30,59 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-//OTP Verification Route
+/**
+ * Resend OTP to the student email for registration.
+ */
+export const resendOtp = async (req:Request, res:Response,next: NextFunction) => {
+  const { username, email, password } = req.body;
+  try {
+    if (!email) {
+      res.status(400).json({ message: 'Email is required' });
+      return;
+    }
+    const otp = generateOTP();
+    otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
+    await sendOTPEmail(email, otp);
+    console.log(otp);
+    
+    res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    next(error);
+  }
+};
+
 export const verifyRegisterOTP = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, otp } = req.body;
-    // console.log(req.body,"data in verifyotp")
     if (!email || !otp) {
       res.status(400).json({ message: 'Email and OTP are required' });
       return;
     }
 
-    const storedEntry = otpStorage[email];
-
-    if (!storedEntry) {
-      res.status(400).json({ message: 'OTP expired or not sent' });
-      return;
-    }
-
-    if (storedEntry.otp !== otp) {
-      res.status(400).json({ message: 'Invalid OTP' });
-      return;
-    }
-
-    // OTP is valid, proceed with user registration
-    const hashedPassword = await bcrypt.hash(storedEntry.password, 10);
-    const newUser = new User({ username: storedEntry.username, email, password: hashedPassword });
-    await newUser.save();
-
-    // Clear OTP and user data from memory after successful verification
-    delete otpStorage[email];
-
-    res.status(201).json({ message: 'User registered successfully' });
+    const message = await verifyOTP(email, otp);
+    res.status(201).json({ message });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    if (error instanceof Error) {
+      console.error('Error:', error.message);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error('Unknown error:', error);
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
   }
-};
-
-//AUTHENTICATION
+}
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, password } = req.body;
-
   try {
-    const user: IUser | null = await User.findOne({ email });
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      res.status(400).json({ message: 'Invalid credentials' });
-      return;
-    }
-
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET environment variable is not set');
-    }
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
+    const { token, refreshToken ,user } = await loginService(email, password);
     res.status(200).json({
       message: 'Login successful',
       token,
+      refreshToken, 
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -145,180 +90,179 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     });
   } catch (error) {
     console.error('Login error:', error);
+    res.status(500).json({ message: 'An unknown error occurred' });
+  }
+};
+
+export const refreshAccessToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+      res.status(401).json({ message: 'Refresh token is required' });
+      return ;
+  }
+
+  try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
+      
+      const newToken = jwt.sign(
+          { id: (decoded as any).id, role: (decoded as any).role },
+          process.env.JWT_SECRET!,
+          { expiresIn: '15m' } 
+      );
+      console.log("called refereshtoken",newToken);
+
+      res.status(200).json({ token: newToken });
+  } catch (error) {
+      console.error('Error refreshing token:', error);
+      res.status(403).json({ message: 'Invalid or expired refresh token' });
+  }
+};
+
+export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      res.status(400).json({ message: 'Email is required' });
+      return;
+    }
+    await otpService.generateAndSendOtp(email);
+    res.status(200).send('OTP sent to email');
+  } catch (error) {
+    console.error('Error sending OTP:', error);
     next(error);
   }
 };
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER as string,
-    pass: process.env.EMAIL_PASS as string,
-  },
-});
-
-interface OtpStore {
-  [email: string]: number;
-}
-
-const otpStore: OtpStore = {};
-
-export const sendOtp = (req: Request, res: Response): void => {
-  const { email } = req.body;
-  console.log('Email:', req.body.email); // Log email to verify if it's correct
-  console.log('Env Variables:', process.env.EMAIL_USER, process.env.EMAIL_PASS); // Log env variables
-  const otp = Math.floor(100000 + Math.random() * 900000);
-  otpStore[email] = otp;
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER as string,
-    to: email,
-    subject: 'Your OTP for Password Reset',
-    text: `Your OTP code is ${otp}`,
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error)  {
-        console.error('Error sending OTP:', error); 
-        return res.status(500).send('Error sending OTP');
-      }
-    res.status(200).send('OTP sent to email');
-  });
-};
-
-export const verifyPasswordOtp = (req: Request, res: Response): void => {
+export const verifyPasswordOtp = (req: Request, res: Response, next: NextFunction): void => {
   const { email, otp } = req.body;
-  if (otpStore[email] && otpStore[email] === parseInt(otp, 10)) {
-    delete otpStore[email];
-    const token = jwt.sign({ email }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
-    console.log("token in verifyOtp",token);
+
+  try {
+    if (!email || !otp) {
+      res.status(400).json({ message: 'Email and OTP are required' });
+      return;
+    }
+
+    const token = otpService.verifyOtpAndGenerateToken(email, otp);
+    console.log('Generated token:', token);
 
     res.status(200).json({ token });
-    return ;
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    next(error);
   }
-  res.status(400).send('Invalid OTP');
 };
 
 export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   const { token, newPassword } = req.body;
-  
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    const user = await User.findOne({ email:decoded.email });
-   
-    if (user) {
-      user.password = hashedPassword;
-      await user.save();
-      res.status(200).json({
-        message: 'Password reset successful',
-        role: user.role, 
-      });
+    const message = await resetPasswordService(token, newPassword);
+    res.status(200).json({ message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error('An unexpected error occurred');
     }
-  } catch (error) {
-    res.status(400).send('Invalid or expired token');
   }
-};
-
-//USER PROFILE
-export const getUserProfile = async (userId: string): Promise<IUser | null> => {
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new Error('User not found');
-        }
-        return user;
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            throw new Error(error.message);
-        } else {
-            throw new Error('An unexpected error occurred');
-        }
-    }
-};
-
-interface ProfileUpdateBody {
-    username?: string;
-    email?: string;
-    phone?: string;
-    address?: { line1: string; line2: string };
-    gender?: string;
-    dob?: string;
-    image?: string;
 }
 
-export const updateUserProfile = async (userId: string, userData: ProfileUpdateBody): Promise<IUser | null> => {
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new Error('User not found');
-        }
+export const fetchUserProfile = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+  console.log("fetchUserProfile", req.params);
+  try {
+    const user = await getUserProfileService(userId);
+    console.log("user", user);
 
-        const { username, email, phone, address, gender, dob, image } = userData;
+    res.status(200).json(user);
+  } catch (error: unknown) {
+    res.status(404).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+  }
+}
 
-        user.username = username || user.username;
-        user.email = email || user.email;
-        user.phone = phone || user.phone;
-        user.address = address || user.address;
-        user.gender = gender || user.gender;
-        user.dob = dob || user.dob;
-        user.image = image || user.image;
+export const editUserProfile = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+  const updates = req.body;
+  console.log("req.params", req.params);
 
-        await user.save();
-        return user;
+  console.log("updates", updates);
 
-    } catch (error) {
-        throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred');
+  try {
+    const updatedUser = await updateUserProfile(userId, updates);
+    console.log("updatedUser", updatedUser);
+
+    res.status(200).json(updatedUser);
+  } catch (error: unknown) {
+    res.status(400).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+  }
+}
+
+export const editPassword = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+  const { currentPassword, newPassword } = req.body;
+  console.log("req.params in editPassword", req.params);
+
+  try {
+    await updatePassword(userId, currentPassword, newPassword);
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error: unknown) {
+    res.status(400).json({ message: error instanceof Error ? error.message : 'An error occurred' });
+  }
+}
+
+export const uploadImage = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+  if (!req.file) {
+    res.status(400).json({ success: false, message: 'No file uploaded' });
+    return;
+  }
+  console.log("req.file.path", req.file.path);
+  const imageUrl = req.file ? req.file.path : "";
+
+  try {
+    const updatedUser = await uploadUserImage(userId, imageUrl);
+    console.log("updatedUser", updatedUser);
+
+    res.status(200).json({ success: true, imageUrl, user: updatedUser });
+  } catch (error: unknown) {
+    res.status(500).json({ message: error instanceof Error ? error.message : 'An error occurred' });
+  }
+}
+
+export const toggleUserStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('Request Params:', req.params); 
+    console.log('Request Body:', req.body);     
+
+    const { userId } = req.params;
+    const { isBlocked } = req.body;
+
+    if (!userId) {
+      res.status(400).json({ message: 'Missing userId in request parameters' });
+      return;
     }
-};
 
-export const updatePassword = async (userId: string, currentPassword: string, newPassword: string): Promise<void> => {
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new Error('User not found');
-        }
-
-        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        if (!isPasswordValid) {
-            throw new Error('Current password is incorrect');
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashedPassword;
-
-        await user.save();
-    } catch (error) {
-        throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred');
+    if (typeof isBlocked !== 'boolean') {
+      res.status(400).json({ message: 'Invalid or missing isBlocked value' });
+      return;
     }
-};
 
-export const uploadUserImage = async (userId: string, imageUrl: string) => {
-    try {
-        const updatedUser = await User.findByIdAndUpdate(userId, { image: imageUrl }, { new: true });
-        if (!updatedUser) {
-            throw new Error('User not found');
-        }
-        await updatedUser.save();
-        return updatedUser;
-    } catch (error) {
-        throw new Error('Error updating user image');
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { isBlocked },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
-};
 
-export const getUserImage = (req: Request, res: Response) => {
-  const userId = req.params.userId;
-  const imageDirectory = path.join(__dirname, '..', 'public', 'images');
-  const imagePath = path.join(imageDirectory, `${userId}.jpg`); 
-  
-  if (fs.existsSync(imagePath)) {
-    res.sendFile(imagePath);
-  } else {
-    res.status(404).json({ message: 'Image not found for user with ID ' + userId });
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    res.status(500).json({ message: 'Failed to update user status', error: error });
   }
 };
-
-
-
 

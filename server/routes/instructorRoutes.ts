@@ -1,100 +1,47 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { 
     login, 
     sendOtp, 
-    verifyOtp, 
     resetPassword,
-    getUserProfile, 
-    updateUserProfile, 
-    uploadUserImage,
-    updatePassword, 
-    register} 
+    register,
+    fetchUserProfile,
+    verifyPasswordOtp,
+    verifyRegisterOTP,
+    refreshAccessToken,
+    resendOtp,
+    editUserProfile,
+    editPassword,
+    uploadImage} 
 from '../controllers/instructorController';
+import {uploadProfileImage, uploadCourseFiles} from '../config/multerConfig';
+import { createCourse, publishCourse, saveAdvanceInfo } from '../controllers/courseController';
 
-import multer from 'multer';
-import path from 'path';
-
-const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, './public'); 
-  },
-  filename: (req: Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  },
-});
-
-const upload = multer({ storage, limits: { fileSize: 1 * 1024 * 1024 } }); 
 const router = Router();
-
-interface UserProfileParams {
-  userId: string;
-}
 
 // AUTHENTICATION
 router.post('/login', login); 
 router.post('/register', register); 
-
+router.post('/verify-registerotp',verifyRegisterOTP)
+router.post('/refresh-token',refreshAccessToken)
 router.post('/send-otp', sendOtp);
-router.post('/verify-otp', verifyOtp);
+router.post('/resend-otp',resendOtp );
+router.post('/verify-otp', verifyPasswordOtp);
 router.post('/reset-password', resetPassword);
 
 //PROFILE MANAGEMENT
-router.get('/profile/:userId', async (req: Request<UserProfileParams>, res: Response) => {
-  try {
-    const Admin = await getUserProfile(req.params.userId);
-    res.json(Admin);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(404).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-});
+router.get('/profile/:userId', fetchUserProfile);
+router.put('/update/:userId', editUserProfile);
+router.put('/update-password/:userId',editPassword);
+router.put('/upload-image/:userId',uploadProfileImage,uploadImage);
 
-router.put('/update/:userId', async (req: Request<UserProfileParams>, res: Response) => {
-  try {
-    const updatedAdmin = await updateUserProfile(req.params.userId, req.body);
-    console.log('updatedAdmin....', updatedAdmin);
-    res.json(updatedAdmin);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-});
+//COURSE MANAGEMENT
 
-router.put('/update-password/:userId', async (req, res) => {
-  const { userId } = req.params;
-  const { currentPassword, newPassword } = req.body;
-  console.log('updatedAdmin Password', req.body);
-
-  try {
-    await updatePassword(userId, currentPassword, newPassword);
-    res.status(200).json({ message: 'Password updated successfully' });
-  } catch (error) {
-    res.status(400).json({ message: error instanceof Error ? error.message : 'Error updating password' });
-  }
-});
-
-router.put('/upload-image/:userId', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
-    if (!req.file) {
-        res.status(400).json({ success: false, message: 'No file uploaded' });
-        return ;
-    }
-
-    const { userId } = req.params;
-    const imagePath = `/public/${req.file.filename}`;
-
-    try {
-        const updatedAdmin = await uploadUserImage(userId, imagePath);
-        res.status(200).json({ success: true, imageUrl: imagePath, user: updatedAdmin });
-    } catch (error) {
-        res.status(500).json({ message: error instanceof Error ? error.message : 'Error uploading image' });
-    }
-});
-
+router.post("/create", createCourse );
+router.post(
+  "/advanced-info",
+  uploadCourseFiles,
+  saveAdvanceInfo
+);
+router.post("/publish", publishCourse);
 
 export default router;
