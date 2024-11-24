@@ -1,33 +1,22 @@
-import { assets } from '../../../assets/assets_user/assets';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../infrastructure/api/api';
 
 interface Course {
-  name: string;
+  _id: string;
+  title: string;
   category: string;
-  price: string;
-  image: string;
-  rating: string;
-  students: string;
+  courseFee: number;
+  thumbnail: string;
+  rating: number;
+  students: number;
 }
-
-const courses: Course[] = [
-  { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹499", image: assets.DESIGN, rating: "5.0", students: "265.7K" },
-  { name: "How to Learn HTML and CSS With Zero Experience", category: "WEB DEVELOPMENT", price: "₹700", image: assets.LIFESTYLE, rating: "4.5", students: "180K" },
-  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹800", image: assets.BUSINESS, rating: "4.8", students: "200K" },
-  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "4.8", students: "200K" },
-  { name: "Reiki Level I, II and Master/Teacher Program", category: "IT & SOFTWARE", price: "₹800", image: assets.Health, rating: "4.8", students: "200K" },
-  { name: "The Complete Foundation Stock Trading Course", category: "MUSIC", price: "₹800", image: assets.Music, rating: "4.8", students: "200K" },
-  { name: "Beginner to Pro in Excel: Financial Modeling", category: "MARKETING", price: "₹800", image: assets.MachineLearning, rating: "4.8", students: "200K" },
-  { name: "HTML and CSS", category: "WEB DEVELOPMENT", price: "₹700", image: assets.Web_Development, rating: "4.5", students: "180K" },
-  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹800", image: assets.BUSINESS, rating: "4.8", students: "200K" },
-  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "4.8", students: "200K" },
-];
 
 const getCategoryColor = (category: string): string => {
   switch (category) {
     case "DESIGN":
       return "bg-pink-100 text-pink-600";
-    case "WEB DEVELOPMENT":
+    case "FULL STACK WEB DEVELOPMENT":
       return "bg-blue-100 text-blue-600";
     case "DATABASE":
       return "bg-yellow-100 text-yellow-600";
@@ -43,11 +32,40 @@ const getCategoryColor = (category: string): string => {
 };
 
 const ImageCard: React.FC = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
   const navigate = useNavigate();
 
-  const handleCardClick = (index: number) => {
-    
-    navigate(`/course/details/:${index}`);
+  // Fetch courses from the database (API call)
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await api.get('/user/courses');  // Update this with your API endpoint
+        const data = response.data;
+
+        // Assuming data contains an array of courses and category info
+        const coursesData = data.map((course: any) => ({
+          _id: course._id,
+          title: course.title,
+          category: course.category,
+          subCategory: course.subCategory,
+          courseFee: course.courseFee,
+          thumbnail: course.thumbnail,
+          rating: course.rating,
+          students: course.students.length,  // Assuming students is an array of student objects
+        }));
+
+        setCourses(coursesData);
+
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const handleCardClick = (courseId: string) => {
+    navigate(`/course/details/${courseId}`); 
   };
 
   return (
@@ -56,11 +74,11 @@ const ImageCard: React.FC = () => {
         <div
           key={index}
           className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
-          onClick={() => handleCardClick(index)} 
+          onClick={() => handleCardClick(course._id)}  // Pass course _id to navigate
         >
           <div
             className="h-48 bg-cover bg-center rounded-t-2xl"
-            style={{ backgroundImage: `url(${course.image})` }}
+            style={{ backgroundImage: `url(${course.thumbnail})` }}
           ></div>
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
@@ -68,11 +86,12 @@ const ImageCard: React.FC = () => {
                 {course.category}
               </div>
               <div className="font-bold text-xl text-green-500">
-                {course.price}
+                ₹{course.courseFee}
               </div>
             </div>
+            {/* Displaying course title */}
             <h2 className="text-start px-2 py-1 rounded-full text-xs font-semibold uppercase text-gray-800 leading-tight">
-              {course.name}
+              {course.title}
             </h2>
             <div className="flex items-center justify-between mb-3">
               <div><span className="text-yellow-500 font-semibold mr-1"> ★ {course.rating}</span></div>

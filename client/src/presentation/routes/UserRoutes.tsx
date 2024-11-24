@@ -29,7 +29,7 @@ const UserRoutes = () => {
                 element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" />}
             />
             <Route path="/course-listing" element={<ViewCoursesListing />} />
-            <Route path="/course/details/:id" element={<DetailedCoursePage />} />
+            <Route path="/course/details/:courseId" element={<DetailedCoursePage />} />
         </Routes>
         <Footer />
         </>

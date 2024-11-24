@@ -12,6 +12,10 @@ export interface ICourse extends Document{
   thumbnail: string;
   trailer: string;
   description: string;
+  learningPoints:string;
+  targetAudience:string;
+  feedback:string;
+  requirements:string;
   instructorId: Types.ObjectId;
   status: "draft" | "submitted" | "published";
   createdAt: Date;

@@ -1,33 +1,59 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
+import api from '../../../infrastructure/api/api';
 
-const CourseHeader: React.FC = () => {
+interface CourseHeaderProps {
+  courseTitle: string;
+  courseSubtitle: string;
+  instructorId: string;
+}
+
+interface Instructor {
+  username: string;
+  image: string;
+}
+
+const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle, instructorId }) => {
+  const [instructor, setInstructor] = useState<Instructor | null>(null);
+  const url = 'http://localhost:5000';
+
+  useEffect(() => {
+    // Simulate fetching instructor data
+    const fetchInstructorData = async () => {
+      // Replace this mock API call with a real one
+      const response = await api.get(`/instructor/profile/${instructorId}`)
+      setInstructor(response.data);
+    };
+
+    fetchInstructorData();
+  }, [instructorId]);
+
+  if (!instructor) {
+    return <p>Loading instructor information...</p>;
+  }
+
   return (
     <div className="bg-white p-4 md:p-8">
       {/* Course Title */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">
-        Complete Web Design: from Figma to Webflow - 2024 UI
-      </h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">{courseTitle}</h1>
       
       {/* Course Subtitle */}
-      <p className="text-lg text-gray-600 mb-4">
-        3 in 1 Course: Learn to design websites with Figma, build with Webflow, and make a living freelancing.
-      </p>
+      <p className="text-lg text-gray-600 mb-4">{courseSubtitle}</p>
       
       {/* Instructor and Rating Section */}
       <div className="flex items-center">
         {/* Instructors */}
         <div className="flex items-center space-x-2">
           <img
-            src="https://randomuser.me/api/portraits/women/1.jpg"
-            alt="Dianne Russell"
+          src={`${url}/${instructor.image}`}
+          alt={instructor.username}
             className="w-8 h-8 rounded-full border border-gray-200"
           />
           <p className="text-sm text-gray-700">
-            Created by: <span className="font-medium">Dianne Russell</span> &bull;
+            Created by: <span className="font-medium">{instructor.username}</span> &bull;
           </p>
         </div>
         
-        {/* Rating */}
+        {/* Rating (this can also be dynamic based on props or API) */}
         <div className="flex items-center ml-4">
           <span className="text-orange-500 text-lg">★★★★★</span>
           <p className="text-gray-700 text-sm ml-2">4.8 (451,444 Ratings)</p>

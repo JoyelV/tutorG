@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response,NextFunction } from "express";
 import Course from "../models/Course";
 import Category from "../models/Category";
 /**
@@ -6,7 +6,7 @@ import Category from "../models/Category";
  */
 export const createCourse = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, subtitle, category, language, level, duration, courseFee, description, instructorId, thumbnail, trailer } = req.body;
+    const { title, subtitle, category, language, level, duration, courseFee, description,requirements, learningPoints,targetAudience,instructorId, thumbnail, trailer } = req.body;
     console.log(req.body, "............hello course data...........");
     const categoryData = await Category.findById(category);
     const categoryName = categoryData?.categoryName;
@@ -22,6 +22,9 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       duration: duration,
       courseFee,
       description: description,
+      requirements:requirements,
+      learningPoints:learningPoints,
+      targetAudience:targetAudience,
       thumbnail: thumbnail || " ",
       trailer: trailer || " ",
       instructorId: instructorId, 
@@ -32,5 +35,29 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
   } catch (error) {
     console.error("Error creating course:", error);
     res.status(500).json({ message: "Failed to create course" });
+  }
+};
+
+export const getCourses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const courses = await Course.find();
+    res.status(200).json(courses);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    next({ status: 500, message: 'Error fetching categories', error });
+  }
+};
+
+export const getIndividualCourses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { courseId } = req.params;
+    const courses = await Course.findById(courseId);
+    if(!courses){
+      res.status(400).json({message:"Not valid request"})
+    }
+    res.status(200).json(courses);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    next({ status: 500, message: 'Error fetching categories', error });
   }
 };

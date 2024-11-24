@@ -4,12 +4,11 @@ import { toast } from 'react-toastify';
 import api from '../../../infrastructure/api/api';
 import axios from "axios";
 
-
 function AddCourse() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const userInfo  = localStorage.getItem('userId');
+  const userInfo = localStorage.getItem('userId');
   // State for course inputs
   const [courseName, setCourseName] = useState("");
   const [courseSubtitle, setCourseSubtitle] = useState("");
@@ -17,7 +16,10 @@ function AddCourse() {
   const [courseLanguage, setCourseLanguage] = useState("");
   const [courseLevel, setCourseLevel] = useState("");
   const [courseDuration, setCourseDuration] = useState("");
+  const [courseRequirements, setCourseRequirements] = useState("");
   const [courseFee, setCourseFee] = useState("");
+  const [courseLearningPoints, setCourseLearningPoints] = useState("");
+  const [courseTargetAudience, setCourseTargetAudience] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [trailer, setTrailer] = useState<File | null>(null);
@@ -33,18 +35,18 @@ function AddCourse() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("file image frontend",file)
+    console.log("file image frontend", file)
     if (file && ["image/jpeg", "image/png"].includes(file.type)) {
       setImage(file);
     } else {
       toast.error("Invalid file type. Please upload a valid image (JPEG or PNG).");
     }
   };
-  
-  
+
+
   const handleTrailerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("file Trailer frontend",file)
+    console.log("file Trailer frontend", file)
 
     if (file && ["video/mp4"].includes(file.type)) {
       setTrailer(file);
@@ -52,7 +54,7 @@ function AddCourse() {
       toast.error("Please select a trailer Video file(MP4).");
     }
   };
-  
+
 
   const submitImage = async () => {
     if (!image) return "";
@@ -60,7 +62,7 @@ function AddCourse() {
     formData.append("file", image);
     formData.append("upload_preset", "images_preset");
     formData.append("cloud_name", "dazdngh4i");
-  
+
     try {
       const res = await axios.post(
         "https://api.cloudinary.com/v1_1/dazdngh4i/image/upload",
@@ -73,7 +75,7 @@ function AddCourse() {
       return "";
     }
   };
-  
+
 
   const submitTrailer = async () => {
     if (!trailer) return "";
@@ -87,7 +89,7 @@ function AddCourse() {
         "https://api.cloudinary.com/v1_1/dazdngh4i/video/upload",
         formData
       );
-      console.log(res,"video data cloud")
+      console.log(res, "video data cloud")
       return res.data.url;
     } catch (error) {
       console.error("Error uploading trailer:", error);
@@ -98,45 +100,48 @@ function AddCourse() {
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-  
-    // Check if all required fields are filled
-    if (!courseName || !courseSubtitle || !selectCategory || !courseLanguage || !courseLevel || !courseDuration || !courseDescription) {
-        toast.error("Please fill out all required fields.");
-        return;
-    }
-  
-    try {
-        setLoading(true);
-        // Upload image and trailer if provided
-        const imageUrl = await submitImage();
-        const trailerUrl = await submitTrailer();
-  
-        // Send the course data to the server
-        const courseData = {
-            title: courseName,
-            subtitle: courseSubtitle,
-            category: selectCategory,
-            subCategory: "", 
-            language: courseLanguage,
-            level: courseLevel,
-            duration: courseDuration,
-            courseFee: courseFee,
-            description: courseDescription,
-            instructorId: userInfo,
-            thumbnail: imageUrl,
-            trailer: trailerUrl,
-        };
-  
-        const response = await api.post('/instructor/addCourse', courseData);
-        console.log(response,"response");
-        console.log(courseData,"courseData")
 
-        toast.success("Course added successfully!");
-        navigate("/courses"); // Navigate to courses list or appropriate page
+    // Check if all required fields are filled
+    if (!courseName || !courseSubtitle || !selectCategory || !courseLanguage || !courseLevel || !courseDuration || !courseDescription||!courseLearningPoints||!courseTargetAudience) {
+      toast.error("Please fill out all required fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Upload image and trailer if provided
+      const imageUrl = await submitImage();
+      const trailerUrl = await submitTrailer();
+
+      // Send the course data to the server
+      const courseData = {
+        title: courseName,
+        subtitle: courseSubtitle,
+        category: selectCategory,
+        subCategory: "",
+        language: courseLanguage,
+        level: courseLevel,
+        duration: courseDuration,
+        courseFee: courseFee,
+        description: courseDescription,
+        requirements:courseRequirements,
+        learningPoints:courseLearningPoints,
+        targetAudience:courseTargetAudience,
+        instructorId: userInfo,
+        thumbnail: imageUrl,
+        trailer: trailerUrl,
+      };
+
+      const response = await api.post('/instructor/addCourse', courseData);
+      console.log(response, "response");
+      console.log(courseData, "courseData")
+
+      toast.success("Course added successfully!");
+      navigate("/instructor/my-courses"); 
     } catch (error: any) {
-        toast.error("Error creating course: " + error.message);
+      toast.error("Error creating course: " + error.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -166,7 +171,7 @@ function AddCourse() {
 
         {/* Course Category */}
         <select onChange={(e) => setSelectCategory(e.target.value)} value={selectCategory}>
-        <option value="" disabled>Select Category</option>
+          <option value="" disabled>Select Category</option>
           {categories.map((category: any) => (
             <option key={category._id} value={category._id}>
               {category.categoryName}
@@ -176,24 +181,24 @@ function AddCourse() {
 
         {/* Language and Level */}
         <select
-  value={courseLanguage}
-  onChange={(e) => setCourseLanguage(e.target.value)}
->
-<option value="" disabled>Select Language</option>
-  <option value="English">English</option>
-  <option value="Malayalam">Malayalam</option>
-  <option value="Hindi">Hindi</option>
-</select>
+          value={courseLanguage}
+          onChange={(e) => setCourseLanguage(e.target.value)}
+        >
+          <option value="" disabled>Select Language</option>
+          <option value="English">English</option>
+          <option value="Malayalam">Malayalam</option>
+          <option value="Hindi">Hindi</option>
+        </select>
 
-<select
-  value={courseLevel}
-  onChange={(e) => setCourseLevel(e.target.value)}
->
-<option value="" disabled>Select Level</option>
-  <option value="Beginner">Beginner</option>
-  <option value="Intermediate">Intermediate</option>
-  <option value="Advanced">Advanced</option>
-</select>
+        <select
+          value={courseLevel}
+          onChange={(e) => setCourseLevel(e.target.value)}
+        >
+          <option value="" disabled>Select Level</option>
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select>
 
 
         {/* Duration and Fee */}
@@ -215,6 +220,21 @@ function AddCourse() {
           value={courseDescription}
           onChange={(e) => setCourseDescription(e.target.value)}
           placeholder="Course Description"
+        />
+         <textarea
+          value={courseRequirements}
+          onChange={(e) => setCourseRequirements(e.target.value)}
+          placeholder="Course Requirements"
+        />
+        <textarea
+          value={courseTargetAudience}
+          onChange={(e) => setCourseTargetAudience(e.target.value)}
+          placeholder="Course TargetAudience"
+        />
+        <textarea
+          value={courseLearningPoints}
+          onChange={(e) => setCourseLearningPoints(e.target.value)}
+          placeholder="Course LearningPoints"
         />
 
         {/* Image Upload */}
