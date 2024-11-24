@@ -35,6 +35,6 @@ router.put('/update-password/:userId',editPassword);
 router.put('/upload-image/:userId',upload.single('image'),uploadImage);
 
 //COURSE MANAGEMENT
-router.post("/addCourse", upload.single('image'), createCourse);
+router.post("/addCourse", createCourse);
 
 export default router;

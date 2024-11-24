@@ -5,7 +5,7 @@ export interface ICourse extends Document{
   subtitle: string;
   category: string;
   subCategory: string;
-  language:  "English" | "Malalayam" | "Hindi";
+  language:  string;
   level: string;
   duration: number;
   courseFee: number;

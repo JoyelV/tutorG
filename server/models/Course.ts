@@ -6,7 +6,7 @@ const CourseSchema = new Schema<ICourse>({
   subtitle: { type: String, required: true },
   category: { type: String, required: true },
   subCategory: { type: String},
-  language: { type: String, enum: ["English", "Malalayam", "Hindi"], default: "English"},
+  language: { type: String },
   level: { type: String, required: true },
   duration: { type: Number, required: true },
   courseFee: { type: Number, required: true },
