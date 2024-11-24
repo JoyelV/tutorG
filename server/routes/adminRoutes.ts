@@ -12,7 +12,7 @@ import {
     getAllInstructors,
   } 
 from '../controllers/adminController';
-import {uploadProfileImage} from '../config/multerConfig';
+import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { toggleTutorStatus } from '../controllers/instructorController';
 import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
@@ -29,7 +29,7 @@ router.post('/reset-password', resetPassword);
 router.get('/profile/:userId',fetchUserProfile);
 router.put('/update/:userId', editUserProfile);
 router.put('/update-password/:userId', editPassword);
-router.put('/upload-image/:userId', uploadProfileImage, uploadImage);
+router.put('/upload-image/:userId', upload.single('image'), uploadImage);
 
 //Student & Tutor Management
 router.get('/users', getAllUsers);

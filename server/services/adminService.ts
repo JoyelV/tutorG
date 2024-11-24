@@ -1,8 +1,6 @@
 import bcrypt from 'bcrypt';
 import { otpRepository } from '../repositories/otpRepository';
 import { adminRepository } from '../repositories/adminRepository';
-import { userRepository } from '../repositories/userRepository';
-import { instructorRepository } from '../repositories/instructorRepository';
 import jwt from 'jsonwebtoken';
 import { IAdmin } from '../entities/IAdmin';
 

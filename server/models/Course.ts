@@ -5,15 +5,20 @@ const CourseSchema = new Schema<ICourse>({
   title: { type: String, required: true },
   subtitle: { type: String, required: true },
   category: { type: String, required: true },
-  subCategory: { type: String, required: true },
-  language: { type: String, required: true },
+  subCategory: { type: String},
+  language: { type: String, enum: ["English", "Malalayam", "Hindi"], default: "English"},
   level: { type: String, required: true },
   duration: { type: Number, required: true },
+  courseFee: { type: Number, required: true },
   thumbnail: { type: String, default: "" },
   trailer: { type: String, default: "" },
-  description: { type: String, default: "" },
-  status: { type: String, enum: ["draft", "published"], default: "draft" },
+  description: { type: String, required: true },
+  instructorId: { type: mongoose.Schema.Types.ObjectId, ref: "Instructor", required: true },
+  status: { type: String, enum: ["draft", "submitted", "published"], default: "draft" },
   createdAt: { type: Date, default: Date.now },
+  students: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  rating: { type: Number, default: 0 },
+  isApproved: { type: Boolean, default: false }
 });
 
 const Course = mongoose.model<ICourse>("Course", CourseSchema);

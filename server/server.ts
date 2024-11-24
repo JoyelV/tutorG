@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
 import adminRoutes from './routes/adminRoutes';
 import instructorRoutes from './routes/instructorRoutes';
+import connectCloudinary from '../server/config/cloudinary'
 import path from 'path';
 dotenv.config();
 
@@ -20,6 +21,8 @@ mongoose.connect(MONGO_URI)
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
+  
+connectCloudinary();
 
 app.use('/api/user', userRoutes); 
 app.use('/api/admin', adminRoutes); 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, refreshAccessToken } from '../controllers/userController';
-import {uploadProfileImage} from '../config/multerConfig';
+import upload from '../config/multerConfig';
 
 const router = Router();
 
@@ -18,6 +18,6 @@ router.post('/reset-password', resetPassword);
 router.get('/profile/:userId', fetchUserProfile);
 router.put('/update/:userId', editUserProfile);
 router.put('/update-password/:userId', editPassword );
-router.put('/upload-image/:userId', uploadProfileImage,uploadImage);
+router.put('/upload-image/:userId', upload.single('image'),uploadImage);
 
 export default router;

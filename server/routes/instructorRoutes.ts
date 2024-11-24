@@ -13,8 +13,8 @@ import {
     editPassword,
     uploadImage} 
 from '../controllers/instructorController';
-import {uploadProfileImage, uploadCourseFiles} from '../config/multerConfig';
-import { createCourse, publishCourse, saveAdvanceInfo } from '../controllers/courseController';
+import upload from '../config/multerConfig';
+import { createCourse } from '../controllers/courseController';
 
 const router = Router();
 
@@ -32,16 +32,9 @@ router.post('/reset-password', resetPassword);
 router.get('/profile/:userId', fetchUserProfile);
 router.put('/update/:userId', editUserProfile);
 router.put('/update-password/:userId',editPassword);
-router.put('/upload-image/:userId',uploadProfileImage,uploadImage);
+router.put('/upload-image/:userId',upload.single('image'),uploadImage);
 
 //COURSE MANAGEMENT
-
-router.post("/create", createCourse );
-router.post(
-  "/advanced-info",
-  uploadCourseFiles,
-  saveAdvanceInfo
-);
-router.post("/publish", publishCourse);
+router.post("/addCourse", upload.single('image'), createCourse);
 
 export default router;
