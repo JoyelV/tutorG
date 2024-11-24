@@ -32,14 +32,27 @@ function AddCourse() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file) setImage(file);
+    const file = e.target.files?.[0];
+    console.log("file image frontend",file)
+    if (file && ["image/jpeg", "image/png"].includes(file.type)) {
+      setImage(file);
+    } else {
+      toast.error("Invalid file type. Please upload a valid image (JPEG or PNG).");
+    }
   };
-
+  
+  
   const handleTrailerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file) setTrailer(file);
+    const file = e.target.files?.[0];
+    console.log("file Trailer frontend",file)
+
+    if (file && ["video/mp4"].includes(file.type)) {
+      setTrailer(file);
+    } else {
+      toast.error("Please select a trailer Video file(MP4).");
+    }
   };
+  
 
   const submitImage = async () => {
     if (!image) return "";
@@ -47,20 +60,20 @@ function AddCourse() {
     formData.append("file", image);
     formData.append("upload_preset", "images_preset");
     formData.append("cloud_name", "dazdngh4i");
-
+  
     try {
       const res = await axios.post(
         "https://api.cloudinary.com/v1_1/dazdngh4i/image/upload",
         formData
       );
-      console.log(res,"image data cloud")
       return res.data.url;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Error uploading image");
+    } catch (error: any) {
+      console.error("Cloudinary error:", error.response?.data || error.message);
+      toast.error(`Error uploading image: ${error.response?.data?.message || error.message}`);
       return "";
     }
   };
+  
 
   const submitTrailer = async () => {
     if (!trailer) return "";
@@ -153,7 +166,7 @@ function AddCourse() {
 
         {/* Course Category */}
         <select onChange={(e) => setSelectCategory(e.target.value)} value={selectCategory}>
-          <option>Select Category</option>
+        <option value="" disabled>Select Category</option>
           {categories.map((category: any) => (
             <option key={category._id} value={category._id}>
               {category.categoryName}
@@ -162,18 +175,26 @@ function AddCourse() {
         </select>
 
         {/* Language and Level */}
-        <input
-          type="text"
-          value={courseLanguage}
-          onChange={(e) => setCourseLanguage(e.target.value)}
-          placeholder="Course Language"
-        />
-        <input
-          type="text"
-          value={courseLevel}
-          onChange={(e) => setCourseLevel(e.target.value)}
-          placeholder="Course Level"
-        />
+        <select
+  value={courseLanguage}
+  onChange={(e) => setCourseLanguage(e.target.value)}
+>
+<option value="" disabled>Select Language</option>
+  <option value="English">English</option>
+  <option value="Malayalam">Malayalam</option>
+  <option value="Hindi">Hindi</option>
+</select>
+
+<select
+  value={courseLevel}
+  onChange={(e) => setCourseLevel(e.target.value)}
+>
+<option value="" disabled>Select Level</option>
+  <option value="Beginner">Beginner</option>
+  <option value="Intermediate">Intermediate</option>
+  <option value="Advanced">Advanced</option>
+</select>
+
 
         {/* Duration and Fee */}
         <input

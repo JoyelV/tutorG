@@ -49,7 +49,7 @@ const CourseImage = () => {
       {/* Background Video */}
       <video
         ref={videoRef}
-        src={coursePreview} 
+        src={'http://res.cloudinary.com/dazdngh4i/video/upload/v1732434714/hxkeqoh7gqdmaeitxjfj.mp4'} 
         style={{
           width: '100%',
           height: 'auto',

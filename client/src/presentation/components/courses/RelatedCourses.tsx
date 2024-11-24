@@ -40,21 +40,20 @@ const getCategoryColor = (category: string): string => {
 const RelatedCourses: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleCardClick = (index: number): void => {
+  const handleCardClick = (index: number) => {
     navigate(`/course/details/:${index}`);
   };
-
   return (
     <>
       <br />
       <h3 className="font-bold text-2xl text-left pl-10">Related Courses</h3>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-gray-100">
-        {courses.map((course, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
-            onClick={() => handleCardClick(index)} // Trigger navigation on click
-          >
+      {courses.map((course, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
+          onClick={() => handleCardClick(index)} 
+        >
             <div
               className="h-48 bg-cover bg-center rounded-t-2xl"
               style={{ backgroundImage: `url(${course.image})` }}
