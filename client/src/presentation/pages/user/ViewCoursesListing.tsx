@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopActionBar from '../../components/common/TopActionBar';
 import { Pagination } from '@mui/material';
-import ImageCard from '../../components/common/ImageCard';
+import ImageCard from '../../components/users/ImageCard';
 import Navbar from '../../components/common/Navbar';
 
 interface ViewCoursesListingProps {}

@@ -51,7 +51,7 @@ const Sidebar: React.FC = () => {
                     </li>
                     <li>
                         <NavLink 
-                            to="#courses"
+                            to="/admin/courses"
                             className={`${baseLinkClasses} hover:bg-gray-700`}
                         >
                             <School fontSize="small" className="mr-3" />

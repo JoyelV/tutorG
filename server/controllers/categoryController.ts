@@ -68,11 +68,11 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
       res.status(404).json({ message: 'Category not found' });
       return;
     }
-    category.status = category.status === 'active' ? 'blocked' : 'active';
+    category.status = category.status ? false : true;
     const updatedCategory = await category.save();
 
     res.status(200).json({
-      message: `Category ${updatedCategory.status === 'active' ? 'unblocked' : 'blocked'} successfully`,
+      message: `Category ${updatedCategory.status ? 'unblocked' : 'blocked'} successfully`,
       category: updatedCategory,
     });
   } catch (error) {

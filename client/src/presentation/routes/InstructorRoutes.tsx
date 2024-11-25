@@ -7,13 +7,16 @@ import VerifyOtp from '../pages/instructor/VerifyOtp';
 import { PasswordReset } from '../pages/instructor/PasswordReset';
 import InstructorRegister from '../pages/instructor/instructorRegister';
 import CreateCourse from '../pages/instructor/CreateCourse';
+import MyCourses from '../pages/instructor/MyCourses';
+import ErrorBoundary from '../../utils/ErrorBoundary';
+import CourseView from '../pages/instructor/CourseView';
 
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
     console.log(value,"ins")
     const isInstructor = value === 'instructor';
     console.log("isinstr",isInstructor);
-    
+
     return (
         <Routes>
             <Route path="/" element={<InstructorLogin />} />
@@ -29,6 +32,14 @@ const InstructorRoutes = () => {
                 path="/instructor-createCourse"
                 element={isInstructor ? <CreateCourse /> : <Navigate to="/instructor" />}
             />
+             <Route
+                path="/my-courses"
+                element={isInstructor ?  <ErrorBoundary>
+                    <MyCourses />
+                  </ErrorBoundary> : <Navigate to="/instructor" />}
+            />
+            <Route path="/course-view/:courseId" element={<CourseView />} />
+
             <Route
                 path="/instructor-Profile"
                 element={isInstructor ? <InstructorProfile /> : <Navigate to="/instructor" />}

@@ -9,6 +9,7 @@ function AddCourse() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const userInfo = localStorage.getItem('userId');
+
   // State for course inputs
   const [courseName, setCourseName] = useState("");
   const [courseSubtitle, setCourseSubtitle] = useState("");
@@ -26,7 +27,7 @@ function AddCourse() {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/admin/categories')
+      const response = await api.get('/admin/categories');
       setCategories(response.data);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
@@ -35,7 +36,6 @@ function AddCourse() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("file image frontend", file)
     if (file && ["image/jpeg", "image/png"].includes(file.type)) {
       setImage(file);
     } else {
@@ -43,18 +43,14 @@ function AddCourse() {
     }
   };
 
-
   const handleTrailerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("file Trailer frontend", file)
-
     if (file && ["video/mp4"].includes(file.type)) {
       setTrailer(file);
     } else {
-      toast.error("Please select a trailer Video file(MP4).");
+      toast.error("Please select a trailer Video file (MP4).");
     }
   };
-
 
   const submitImage = async () => {
     if (!image) return "";
@@ -69,13 +65,12 @@ function AddCourse() {
         formData
       );
       return res.data.url;
-    } catch (error: any) {
+    } catch (error:any) {
       console.error("Cloudinary error:", error.response?.data || error.message);
       toast.error(`Error uploading image: ${error.response?.data?.message || error.message}`);
       return "";
     }
   };
-
 
   const submitTrailer = async () => {
     if (!trailer) return "";
@@ -89,7 +84,6 @@ function AddCourse() {
         "https://api.cloudinary.com/v1_1/dazdngh4i/video/upload",
         formData
       );
-      console.log(res, "video data cloud")
       return res.data.url;
     } catch (error) {
       console.error("Error uploading trailer:", error);
@@ -102,18 +96,16 @@ function AddCourse() {
     e.preventDefault();
 
     // Check if all required fields are filled
-    if (!courseName || !courseSubtitle || !selectCategory || !courseLanguage || !courseLevel || !courseDuration || !courseDescription||!courseLearningPoints||!courseTargetAudience) {
+    if (!courseName || !courseSubtitle || !selectCategory || !courseLanguage || !courseLevel || !courseDuration || !courseDescription || !courseLearningPoints || !courseTargetAudience) {
       toast.error("Please fill out all required fields.");
       return;
     }
 
     try {
       setLoading(true);
-      // Upload image and trailer if provided
       const imageUrl = await submitImage();
       const trailerUrl = await submitTrailer();
 
-      // Send the course data to the server
       const courseData = {
         title: courseName,
         subtitle: courseSubtitle,
@@ -124,21 +116,18 @@ function AddCourse() {
         duration: courseDuration,
         courseFee: courseFee,
         description: courseDescription,
-        requirements:courseRequirements,
-        learningPoints:courseLearningPoints,
-        targetAudience:courseTargetAudience,
+        requirements: courseRequirements,
+        learningPoints: courseLearningPoints,
+        targetAudience: courseTargetAudience,
         instructorId: userInfo,
         thumbnail: imageUrl,
         trailer: trailerUrl,
       };
 
       const response = await api.post('/instructor/addCourse', courseData);
-      console.log(response, "response");
-      console.log(courseData, "courseData")
-
       toast.success("Course added successfully!");
-      navigate("/instructor/my-courses"); 
-    } catch (error: any) {
+      navigate("/instructor/my-courses");
+    } catch (error:any) {
       toast.error("Error creating course: " + error.message);
     } finally {
       setLoading(false);
@@ -150,103 +139,160 @@ function AddCourse() {
   }, []);
 
   return (
-    <div>
-      <h1>Add New Course</h1>
-      <form>
-        {/* Course Title */}
-        <input
-          type="text"
-          value={courseName}
-          onChange={(e) => setCourseName(e.target.value)}
-          placeholder="Course Name"
-        />
+    <div className="p-6">
+      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 className="text-2xl font-bold mb-4">Add New Course</h1>
+        <form>
+          {/* Form Fields */}
+          <div className="mb-4">
+          {/* Course Name */}
+          <input
+            type="text"
+            value={courseName}
+            onChange={(e) => setCourseName(e.target.value)}
+            placeholder="Course Name"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
 
         {/* Course Subtitle */}
-        <input
-          type="text"
-          value={courseSubtitle}
-          onChange={(e) => setCourseSubtitle(e.target.value)}
-          placeholder="Course Subtitle"
-        />
+        <div className="mb-4">
+          <input
+            type="text"
+            value={courseSubtitle}
+            onChange={(e) => setCourseSubtitle(e.target.value)}
+            placeholder="Course Subtitle"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
 
         {/* Course Category */}
-        <select onChange={(e) => setSelectCategory(e.target.value)} value={selectCategory}>
-          <option value="" disabled>Select Category</option>
-          {categories.map((category: any) => (
-            <option key={category._id} value={category._id}>
-              {category.categoryName}
-            </option>
-          ))}
-        </select>
+        <div className="mb-4">
+          <select
+            onChange={(e) => setSelectCategory(e.target.value)}
+            value={selectCategory}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          >
+            <option value="" disabled>Select Category</option>
+            {categories.map((category: any) => (
+              <option key={category._id} value={category._id}>
+                {category.categoryName}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* Language and Level */}
-        <select
-          value={courseLanguage}
-          onChange={(e) => setCourseLanguage(e.target.value)}
-        >
-          <option value="" disabled>Select Language</option>
-          <option value="English">English</option>
-          <option value="Malayalam">Malayalam</option>
-          <option value="Hindi">Hindi</option>
-        </select>
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <select
+            value={courseLanguage}
+            onChange={(e) => setCourseLanguage(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          >
+            <option value="" disabled>Select Language</option>
+            <option value="English">English</option>
+            <option value="Malayalam">Malayalam</option>
+            <option value="Hindi">Hindi</option>
+          </select>
 
-        <select
-          value={courseLevel}
-          onChange={(e) => setCourseLevel(e.target.value)}
-        >
-          <option value="" disabled>Select Level</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Intermediate">Intermediate</option>
-          <option value="Advanced">Advanced</option>
-        </select>
-
+          <select
+            value={courseLevel}
+            onChange={(e) => setCourseLevel(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          >
+            <option value="" disabled>Select Level</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
 
         {/* Duration and Fee */}
-        <input
-          type="number"
-          value={courseDuration}
-          onChange={(e) => setCourseDuration(e.target.value)}
-          placeholder="Course Duration"
-        />
-        <input
-          type="number"
-          value={courseFee}
-          onChange={(e) => setCourseFee(e.target.value)}
-          placeholder="Course Fee"
-        />
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <input
+            type="number"
+            value={courseDuration}
+            onChange={(e) => setCourseDuration(e.target.value)}
+            placeholder="Course Duration"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+          <input
+            type="number"
+            value={courseFee}
+            onChange={(e) => setCourseFee(e.target.value)}
+            placeholder="Course Fee"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
 
         {/* Description */}
-        <textarea
-          value={courseDescription}
-          onChange={(e) => setCourseDescription(e.target.value)}
-          placeholder="Course Description"
-        />
-         <textarea
-          value={courseRequirements}
-          onChange={(e) => setCourseRequirements(e.target.value)}
-          placeholder="Course Requirements"
-        />
-        <textarea
-          value={courseTargetAudience}
-          onChange={(e) => setCourseTargetAudience(e.target.value)}
-          placeholder="Course TargetAudience"
-        />
-        <textarea
-          value={courseLearningPoints}
-          onChange={(e) => setCourseLearningPoints(e.target.value)}
-          placeholder="Course LearningPoints"
-        />
+        <div className="mb-4">
+          <textarea
+            value={courseDescription}
+            onChange={(e) => setCourseDescription(e.target.value)}
+            placeholder="Course Description"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div className="mb-4">
+          <textarea
+            value={courseRequirements}
+            onChange={(e) => setCourseRequirements(e.target.value)}
+            placeholder="Course Requirements"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div className="mb-4">
+          <textarea
+            value={courseTargetAudience}
+            onChange={(e) => setCourseTargetAudience(e.target.value)}
+            placeholder="Course Target Audience"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div className="mb-4">
+          <textarea
+            value={courseLearningPoints}
+            onChange={(e) => setCourseLearningPoints(e.target.value)}
+            placeholder="Course Learning Points"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
 
         {/* Image Upload */}
-        <input type="file" onChange={handleImageChange} />
+        <div className="mb-4">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
 
         {/* Trailer Upload */}
-        <input type="file" onChange={handleTrailerChange} />
+        <div className="mb-4">
+          <input
+            type="file"
+            accept="video/mp4"
+            onChange={handleTrailerChange}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          />
+        </div>
 
-        <button type="button" onClick={handleSubmit}>
-          {loading ? "Loading..." : "Submit"}
-        </button>
+        <div className="text-center">
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+            disabled={loading}
+          >
+            {loading ? "Adding..." : "Add Course"}
+          </button>
+        </div>
       </form>
+    </div>
     </div>
   );
 }

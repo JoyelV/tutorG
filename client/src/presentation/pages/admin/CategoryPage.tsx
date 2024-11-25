@@ -22,22 +22,21 @@ interface Category {
   categoryName: string;
   subCategories: SubCategory[];
   createdByAdmin: boolean;
-  blocked: boolean; // Add blocked property
+  status: boolean;
 }
 
 const CategoryPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
   const [categoryName, setCategoryName] = useState<string>('');
   const [subCategories, setSubCategories] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, []);  
 
   const fetchCategories = async () => {
     try {
@@ -58,11 +57,11 @@ const CategoryPage: React.FC = () => {
 
     try {
       const payload = { categoryName, subCategories };
-
       const response = editingCategory
         ? await api.put(`/admin/categories/${editingCategory._id}`, payload)
         : await api.post('/admin/categories', payload);
 
+      // Update categories based on whether it's a new category or an update
       const updatedCategories = editingCategory
         ? categories.map((category) =>
             category._id === editingCategory._id ? response.data : category
@@ -97,25 +96,37 @@ const CategoryPage: React.FC = () => {
         confirmButtonText: 'Yes, Proceed!',
         cancelButtonText: 'Cancel',
       });
-
+  
       if (result.isConfirmed) {
         const response = await api.patch(`/admin/categories/block/${id}`);
+        const updatedCategory = response.data;
+  
         setCategories(categories.map((category) =>
-          category._id === id ? { ...category, blocked: !category.blocked } : category
-        ));
-        Swal.fire('Success', response.data.message, 'success');
+          category._id === id ? { ...category, status: updatedCategory.status } : category
+        ));        
+  
+        Swal.fire('Success', updatedCategory.message, 'success');
       }
     } catch (error) {
       console.error('Error blocking/unblocking category:', error);
       Swal.fire('Error', 'Failed to block/unblock category. Please try again.', 'error');
     }
   };
+  
 
   const resetForm = () => {
     setEditingCategory(null);
     setCategoryName('');
     setSubCategories([]);
   };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const filteredCategories = categories.filter((category) =>
+    category.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -126,6 +137,15 @@ const CategoryPage: React.FC = () => {
       <main className="flex-1 p-6">
         <TopNav />
         <h1 className="text-3xl font-semibold text-gray-800 mb-4">Category Management</h1>
+
+        <TextField
+          label="Search Categories"
+          value={searchQuery}
+          onChange={handleSearch}
+          fullWidth
+          margin="normal"
+          variant="outlined"
+        />
 
         <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
           {editingCategory ? 'Edit Category' : 'Add Category'}
@@ -165,7 +185,7 @@ const CategoryPage: React.FC = () => {
           <div className="flex justify-center">
             <CircularProgress />
           </div>
-        ) : categories.length > 0 ? (
+        ) : filteredCategories.length > 0 ? (
           <table className="w-full border-collapse mt-4">
             <thead>
               <tr className="bg-gray-200 text-left">
@@ -175,7 +195,7 @@ const CategoryPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {categories.map((category) => (
+              {filteredCategories.map((category) => (
                 <tr key={category._id} className="border-t">
                   <td className="p-3">{category.categoryName}</td>
                   <td className="p-3">
@@ -189,13 +209,13 @@ const CategoryPage: React.FC = () => {
                     >
                       Edit
                     </Button>
-                    <Button
-                      variant="contained"
-                      color={category.blocked ? 'success' : 'warning'}
-                      onClick={() => handleToggleBlockCategory(category._id!)}
-                    >
-                      {category.blocked ? 'Unblock' : 'Block'}
-                    </Button>
+                    <button
+                  onClick={() => handleToggleBlockCategory(category._id!)}
+                  className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
+                    } text-white`}
+                >
+                  {category.status ? 'Unblock' : 'Block'}
+                </button>
                   </td>
                 </tr>
               ))}

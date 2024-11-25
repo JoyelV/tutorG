@@ -16,6 +16,7 @@ import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { toggleTutorStatus } from '../controllers/instructorController';
 import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
+import { courseStatus, getCourses } from '../controllers/courseController';
 
 const router = Router();
 
@@ -38,32 +39,12 @@ router.patch('/users/:userId', toggleUserStatus);
 router.patch('/instructors/:tutorId', toggleTutorStatus);
 
 //Category Management
-/**
- * @route   GET /admin/categories
- * @desc    Fetch all categories and subcategories
- * @access  Admin
- */
 router.get('/categories', getCategories);
-
-/**
- * @route   POST /admin/categories
- * @desc    Add a new category with subcategories
- * @access  Admin
- */
 router.post('/categories', saveCategory);
-
-/**
- * @route   PUT /admin/categories/:id
- * @desc    Edit an existing category and its subcategories
- * @access  Admin
- */
 router.put('/categories/:id', saveCategory);
-
-/**
- * @route   DELETE /admin/categories/:id
- * @desc    Delete a category and its subcategories
- * @access  Admin
- */
 router.patch('/categories/block/:id', deleteCategory);
+
+//Course Management
+router.patch('/course-status/:id',courseStatus);
 
 export default router;

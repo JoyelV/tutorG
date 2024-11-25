@@ -5,8 +5,11 @@ import DashboardHeader from "../../components/instructor/DashboardHeader";
 
 const CreateCourse: React.FC = () => {
   return (
-    <div className="flex">
-      <Sidebar />
+    <div className="flex min-h-screen bg-gray-100">
+    {/* Sidebar */}
+    <aside className="w-64 bg-gray-800 text-white flex flex-col">
+        <Sidebar />
+    </aside>
       <div className="flex-1 p-6 bg-gray-100 min-h-screen">
         <DashboardHeader />
         <section>

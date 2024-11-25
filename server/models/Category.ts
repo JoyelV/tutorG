@@ -1,4 +1,3 @@
-// models/Category.ts
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface SubCategory {
@@ -8,8 +7,8 @@ export interface SubCategory {
 export interface CategoryDocument extends Document {
   categoryName: string;
   subCategories: SubCategory[];
-  createdByAdmin: boolean;
-  status: 'active' | 'blocked';
+  createdByAdmin: Boolean;
+  status: Boolean;
 }
 
 const SubCategorySchema = new Schema<SubCategory>({
@@ -20,7 +19,7 @@ const CategorySchema = new Schema<CategoryDocument>({
   categoryName: { type: String, required: true },
   subCategories: { type: [SubCategorySchema], default: [] },
   createdByAdmin: { type: Boolean, default: true },
-  status: { type: String, enum: ['active', 'blocked'], default: 'active' }, 
+  status: { type: Boolean, default: true  }, 
 });
 
 export default mongoose.model<CategoryDocument>('Category', CategorySchema);

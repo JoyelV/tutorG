@@ -8,6 +8,7 @@ import VerifyOtp from '../pages/admin/VerifyOtp';
 import { PasswordReset } from '../pages/admin/PasswordReset';
 import AddForm from '../pages/admin/AddTutor';
 import CategoryPage from '../pages/admin/CategoryPage';
+import CoursesList from '../pages/admin/coursesList';
 
 const AdminRoutes = () => {
     
@@ -32,6 +33,10 @@ const AdminRoutes = () => {
             <Route
                 path="/category"
                 element={isAdmin ? <CategoryPage />
+                    : <Navigate to="/admin" />}/>
+            <Route
+                path="/courses"
+                element={isAdmin ? <CoursesList />
                     : <Navigate to="/admin" />}/>
             <Route
                 path="/users"

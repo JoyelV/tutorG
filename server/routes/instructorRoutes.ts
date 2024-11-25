@@ -14,7 +14,7 @@ import {
     uploadImage} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { createCourse } from '../controllers/courseController';
+import { createCourse, getIndividualCourses, getTutorCourses, getViewCourses } from '../controllers/courseController';
 
 const router = Router();
 
@@ -36,5 +36,7 @@ router.put('/upload-image/:userId',upload.single('image'),uploadImage);
 
 //COURSE MANAGEMENT
 router.post("/addCourse", createCourse);
+router.get('/courses/:instructorId',getTutorCourses);
+router.get('/course-view/:id',getViewCourses);
 
 export default router;

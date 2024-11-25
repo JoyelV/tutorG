@@ -5,11 +5,11 @@ import api from '../../../infrastructure/api/api';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-type CourseImageProps = {
-  courseId: string | undefined;  
+type CourseVideoProps = {
+  id: string | undefined;  
 };
 
-const CourseImage = ({ courseId }: CourseImageProps) => {
+const CourseVideo = ({ id }: CourseVideoProps) => {
   const [videourl, setVideourl] = useState('http://res.cloudinary.com/dazdngh4i/video/upload/v1732434714/hxkeqoh7gqdmaeitxjfj.mp4');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -18,16 +18,16 @@ const CourseImage = ({ courseId }: CourseImageProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  console.log(typeof(courseId),"id type in user video view")
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        if (!courseId) {
+        if (!id) {
           showError('Invalid course ID.');
           return;
         }
-        const response = await api.get(`/user/courses/${courseId}`);
+        const response = await api.get(`/instructor/course-view/${id}`);
+        console.log(response.data,"video data in instructor ")
         if (response.status === 200) {
           const data = response.data;
           setVideourl(data.trailer);
@@ -40,7 +40,7 @@ const CourseImage = ({ courseId }: CourseImageProps) => {
     };
 
     fetchCourses();
-  }, [courseId]);
+  }, [id]);
 
   const showError = (message: string) => {
     Swal.fire({
@@ -51,7 +51,7 @@ const CourseImage = ({ courseId }: CourseImageProps) => {
       confirmButtonText: 'Go to Listing page',
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate('/course-listing');
+        navigate('/instructor/my-courses');
       }
     });
   };
@@ -196,4 +196,4 @@ const CourseImage = ({ courseId }: CourseImageProps) => {
   );
 };
 
-export default CourseImage;
+export default CourseVideo;
