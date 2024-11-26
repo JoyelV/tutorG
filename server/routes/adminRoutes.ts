@@ -16,7 +16,7 @@ import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { toggleTutorStatus } from '../controllers/instructorController';
 import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
-import { courseStatus, getCourses } from '../controllers/courseController';
+import { courseStatus, getCourses, getViewChapters, getViewCourses } from '../controllers/courseController';
 
 const router = Router();
 
@@ -33,18 +33,20 @@ router.put('/update-password/:userId', editPassword);
 router.put('/upload-image/:userId', upload.single('image'), uploadImage);
 
 //Student & Tutor Management
-router.get('/users', getAllUsers);
-router.get('/instructors', getAllInstructors);
+router.get('/users',getAllUsers);
+router.get('/instructors',getAllInstructors);
 router.patch('/users/:userId', toggleUserStatus);
-router.patch('/instructors/:tutorId', toggleTutorStatus);
+router.patch('/instructors/:tutorId',toggleTutorStatus);
 
 //Category Management
 router.get('/categories', getCategories);
-router.post('/categories', saveCategory);
-router.put('/categories/:id', saveCategory);
+router.post('/categories',saveCategory);
+router.put('/categories/:id',saveCategory);
 router.patch('/categories/block/:id', deleteCategory);
 
 //Course Management
 router.patch('/course-status/:id',courseStatus);
+router.get('/courseData',getCourses);
+router.get('/courseDetailview/:id',getViewCourses);
 
 export default router;

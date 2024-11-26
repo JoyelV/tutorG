@@ -14,7 +14,8 @@ import {
     uploadImage} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { addLesson, createCourse, getIndividualCourses, getTutorCourses, getViewChapters, getViewCourses } from '../controllers/courseController';
+import { addLesson, createCourse, deleteCourse, editCourse, getTutorCourses, getViewChapters, getViewCourses } from '../controllers/courseController';
+import { tutorAuth } from '../utils/authMiddleware';
 
 const router = Router();
 
@@ -29,13 +30,15 @@ router.post('/verify-otp', verifyPasswordOtp);
 router.post('/reset-password', resetPassword);
 
 //PROFILE MANAGEMENT
-router.get('/profile/:userId', fetchUserProfile);
-router.put('/update/:userId', editUserProfile);
+router.get('/profile/:userId',fetchUserProfile);
+router.put('/update/:userId',editUserProfile);
 router.put('/update-password/:userId',editPassword);
 router.put('/upload-image/:userId',upload.single('image'),uploadImage);
 
 //COURSE MANAGEMENT
-router.post("/addCourse", createCourse);
+router.post("/addCourse",createCourse);
+router.put("/course/:courseId",editCourse);
+router.delete("/delete-course/:courseId",deleteCourse);
 router.get('/courses/:instructorId',getTutorCourses);
 router.get('/course-view/:id',getViewCourses);
 router.post('/addLesson',addLesson);

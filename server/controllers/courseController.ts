@@ -1,4 +1,5 @@
 import { Request, Response,NextFunction } from "express";
+import mongoose from "mongoose";
 import Course from "../models/Course";
 import Category from "../models/Category";
 import Lesson from "../models/Lesson";
@@ -159,3 +160,101 @@ export const getViewChapters = async (req: Request, res: Response, next: NextFun
     next({ status: 500, message: 'Error fetching categories', error });
   }
 };
+
+export const editCourse = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { courseId } = req.params;
+    console.log(courseId,"id");
+    const {
+      title,
+      subtitle,
+      category, 
+      language,
+      level,
+      duration,
+      courseFee,
+      description,
+      requirements,
+      learningPoints,
+      targetAudience,
+      thumbnail,
+      trailer,
+    } = req.body;
+
+      const categoryData = await Category.findOne({ categoryName: category });
+      if (!categoryData) {
+        res.status(404).json({ message: `Category '${category}' not found` });
+        return;
+      }
+      let subCategory = categoryData.subCategories[0]?.name;
+
+    // Update course
+    const updatedCourse = await Course.findByIdAndUpdate(
+      courseId,
+      {
+        title,
+        subtitle,
+        category: category, 
+        subCategory:subCategory,
+        language,
+        level,
+        duration,
+        courseFee,
+        description,
+        requirements,
+        learningPoints,
+        targetAudience,
+        ...(thumbnail && { thumbnail }),
+        ...(trailer && { trailer }),
+      },
+      { new: true } 
+    );
+     await updatedCourse?.save();
+     console.log(updatedCourse,"updatecourse")
+    if (!updatedCourse) {
+      res.status(404).json({ message: "Course not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Course updated successfully",
+      course: updatedCourse,
+    });
+  } catch (error) {
+    console.error("Error updating course:", error);
+    res.status(500).json({ message: "Failed to update course" });
+  }
+};
+
+export const deleteCourse = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { courseId } = req.params;
+    if (!mongoose.isValidObjectId(courseId)) {
+      res.status(400).json({ message: 'Invalid course ID' });
+      return;
+    }
+
+    const deletedCourse = await Course.findByIdAndDelete(courseId);
+    const lessons = await Lesson.find({ courseId });
+    console.log(lessons, "lessons");
+
+    if (lessons.length > 0) {
+      await Lesson.deleteMany({ courseId });
+      console.log(`Deleted ${lessons.length} lessons associated with the course`);
+    }
+    
+    if (!deletedCourse) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Course deleted successfully',
+      course: deletedCourse,
+    });
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    res.status(500).json({ message: 'Failed to delete course' });
+  }
+};
+

@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/adminService';
 import { userRepository } from '../repositories/userRepository';
 import { instructorRepository } from '../repositories/instructorRepository';
+import Instructor from '../models/Instructor';
 dotenv.config();
 
 /**

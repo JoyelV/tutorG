@@ -40,6 +40,10 @@ export const loginService = async (
       throw new Error('User not found');
   }
 
+  if(user?.isBlocked){
+    throw new Error('User Blocked');
+  }
+
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
       throw new Error('Invalid credentials');
