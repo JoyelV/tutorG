@@ -14,15 +14,15 @@ import {
     uploadImage} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { createCourse, getIndividualCourses, getTutorCourses, getViewCourses } from '../controllers/courseController';
+import { addLesson, createCourse, getIndividualCourses, getTutorCourses, getViewChapters, getViewCourses } from '../controllers/courseController';
 
 const router = Router();
 
 // AUTHENTICATION
 router.post('/login', login); 
 router.post('/register', register); 
-router.post('/verify-registerotp',verifyRegisterOTP)
-router.post('/refresh-token',refreshAccessToken)
+router.post('/verify-registerotp',verifyRegisterOTP);
+router.post('/refresh-token',refreshAccessToken);
 router.post('/send-otp', sendOtp);
 router.post('/resend-otp',resendOtp );
 router.post('/verify-otp', verifyPasswordOtp);
@@ -38,5 +38,7 @@ router.put('/upload-image/:userId',upload.single('image'),uploadImage);
 router.post("/addCourse", createCourse);
 router.get('/courses/:instructorId',getTutorCourses);
 router.get('/course-view/:id',getViewCourses);
+router.post('/addLesson',addLesson);
+router.get('/view-lessons/:courseId',getViewChapters);
 
 export default router;

@@ -1,27 +1,23 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-interface LessonDocument extends Document {
-  course: mongoose.Schema.Types.ObjectId; // Reference to Course
-  chapterName: string; // Chapter this lesson belongs to
-  lessonTitle: string; // Title of the lesson
-  videoUrl?: string; // Path to the uploaded video
-  pdfAssignment?: string; // Path to the uploaded PDF assignment
-  duration?: number; // Duration of the video in seconds
-  isPublished: boolean; // Whether the lesson is published
+export interface Lesson {
+  lessonTitle : string;
+  lessonDescription : string;
+  lessonVideo : string;
+  lessonPdf:string;
+  courseId : string;
+  createdAt:Date;
 }
 
-const lessonSchema = new Schema<LessonDocument>(
-  {
-    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
-    chapterName: { type: String, required: true }, // Links to the chapter in the course
-    lessonTitle: { type: String, required: true },
-    videoUrl: { type: String }, // File path for the uploaded video
-    pdfAssignment: { type: String }, // File path for the PDF assignment
-    duration: { type: Number }, // Duration of the lesson video in seconds
-    isPublished: { type: Boolean, default: false }, // Publish status
-  },
-  { timestamps: true }
-);
+export interface LessonDocument extends Lesson, Document {}
 
-const Lesson = mongoose.model<LessonDocument>('Lesson', lessonSchema);
-export default Lesson;
+const LessonSchema: Schema = new Schema({
+  lessonTitle: { type: String, required: true },
+  lessonDescription: { type: String, required: true },
+  lessonVideo: { type: String },
+  lessonPdf:{ type: String },
+  courseId : {type:String , required :true},
+  createdAt:{type:Date,default:Date.now}
+});
+
+export default mongoose.model<LessonDocument>('Lesson', LessonSchema);

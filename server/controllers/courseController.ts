@@ -1,6 +1,7 @@
 import { Request, Response,NextFunction } from "express";
 import Course from "../models/Course";
 import Category from "../models/Category";
+import Lesson from "../models/Lesson";
 /**
  * Create a course with basic information.
  */
@@ -29,7 +30,11 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       instructorId: instructorId, 
     });
     await courseData.save();
-    res.status(201).json({ message: "Course created successfully!" });
+    res.status(201).json({
+      message: "Course created successfully",
+      courseId: courseData._id,
+      course: courseData,
+    });
   } catch (error) {
     console.error("Error creating course:", error);
     res.status(500).json({ message: "Failed to create course" });
@@ -107,6 +112,48 @@ export const getViewCourses = async (req: Request, res: Response, next: NextFunc
       res.status(400).json({message:"Not valid request"})
     }
     res.status(200).json(courses);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    next({ status: 500, message: 'Error fetching categories', error });
+  }
+};
+
+export const addLesson = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
+  try{
+    const { lessonTitle, lessonDescription, lessonVideo, lessonPdf, courseId } = req.body;
+    console.log(req.body,"hello addlesson data.....");
+
+  if (!lessonTitle || !lessonDescription || !courseId) {
+    res.status(400).json({ error: "All required fields must be filled." });
+    return ;
+  }
+    const newLesson = await Lesson.create({
+      lessonTitle: lessonTitle,
+      lessonDescription: lessonDescription,
+      lessonVideo: lessonVideo,
+      lessonPdf: lessonPdf,
+      courseId:courseId,
+    });
+    res.status(201).json({ message: "Lesson added successfully!", lesson: newLesson });
+  }catch (error) {
+    console.error(error); 
+    res.status(500).send({ message: "Error adding lesson" });
+  }
+}
+
+export const getViewChapters = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { courseId } = req.params;
+    console.log(courseId)
+
+    const lessons = await Lesson.find(
+      {courseId:courseId});
+      console.log(lessons,"lessons........");
+
+    if(!lessons){
+      res.status(400).json({message:"Not valid request"})
+    }
+    res.status(200).json(lessons);
   } catch (error) {
     console.error('Error fetching categories:', error);
     next({ status: 500, message: 'Error fetching categories', error });
