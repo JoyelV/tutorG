@@ -17,13 +17,29 @@ import {
   faGlobe,
 } from "@fortawesome/free-solid-svg-icons";
 
-const CourseSidebar: React.FC = () => {
+interface CourseSidebarProps {
+  courseFee: number;
+  duration: number;
+  level: string;
+  language: string;
+  students: [];
+  subtitleLanguage: string;
+}
+
+const CourseSidebar: React.FC<CourseSidebarProps> = ({
+  courseFee,
+  duration,
+  level,
+  language,
+  students,
+  subtitleLanguage,
+}) => {
   return (
     <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-      {/* Price Section */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-3xl font-bold text-red-600">₹1314.00</p>
+          <p className="text-3xl font-bold text-red-600">₹{courseFee}</p>
+          {/* Add discount and original price logic here */}
           <p className="text-sm text-gray-500 line-through">₹26.00</p>
         </div>
         <span className="bg-red-200 text-red-700 text-sm font-semibold px-2 py-1 rounded">56% OFF</span>
@@ -31,40 +47,37 @@ const CourseSidebar: React.FC = () => {
       <p className="text-sm text-red-600 mb-6">
         ⏰ 2 days left at this price!
       </p>
-
-      {/* Course Information Section */}
       <div className="space-y-3 mb-6">
         <div className="flex justify-between items-center text-sm">
           <p className="text-gray-700 flex items-center">
             <FontAwesomeIcon icon={faClock} className="mr-2" /> Course Duration
           </p>
-          <p className="text-gray-900">6 Months</p>
+          <p className="text-gray-900">{duration} Months</p>
         </div>
         <div className="flex justify-between items-center text-sm">
           <p className="text-gray-700 flex items-center">
             <FontAwesomeIcon icon={faSignal} className="mr-2" /> Course Level
           </p>
-          <p className="text-gray-900">Beginner and Intermediate</p>
+          <p className="text-gray-900">{level}</p>
         </div>
         <div className="flex justify-between items-center text-sm">
           <p className="text-gray-700 flex items-center">
             <FontAwesomeIcon icon={faUsers} className="mr-2" /> Students Enrolled
           </p>
-          <p className="text-gray-900">69,419,618</p>
+          <p className="text-gray-900">{students.length}</p>
         </div>
         <div className="flex justify-between items-center text-sm">
           <p className="text-gray-700 flex items-center">
             <FontAwesomeIcon icon={faLanguage} className="mr-2" /> Language
           </p>
-          <p className="text-gray-900">Mandarin</p>
+          <p className="text-gray-900">{language}</p>
         </div>
         <div className="flex justify-between items-center text-sm">
           <p className="text-gray-700 flex items-center">
             <FontAwesomeIcon icon={faClosedCaptioning} className="mr-2" /> Subtitle Language
           </p>
-          <p className="text-gray-900">English</p>
+          <p className="text-gray-900">{subtitleLanguage}</p>
         </div>
-      </div>
 
       {/* Buttons */}
       <div className="flex flex-col gap-3 mb-6">
@@ -142,7 +155,9 @@ const CourseSidebar: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    </div>
+
+  )
 };
 
 export default CourseSidebar;

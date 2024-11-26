@@ -9,9 +9,11 @@ import { PasswordReset } from '../pages/admin/PasswordReset';
 import AddForm from '../pages/admin/AddTutor';
 import CategoryPage from '../pages/admin/CategoryPage';
 import CoursesList from '../pages/admin/coursesList';
+import ErrorBoundary from '../../utils/ErrorBoundary';
+import CourseView from '../pages/instructor/CourseView';
+import CourseViewPage from '../pages/admin/ViewCourse';
 
 const AdminRoutes = () => {
-    
     const values = localStorage.getItem('role');
     console.log(values,"admin")
     const isAdmin = values === 'admin';
@@ -30,22 +32,30 @@ const AdminRoutes = () => {
                 path="/dashboard"
                 element={isAdmin ? <AdminDashboard />
                     : <Navigate to="/admin" />}/>
+
             <Route
                 path="/category"
                 element={isAdmin ? <CategoryPage />
                     : <Navigate to="/admin" />}/>
+
             <Route
                 path="/courses"
                 element={isAdmin ? <CoursesList />
                     : <Navigate to="/admin" />}/>
+
             <Route
                 path="/users"
                 element={isAdmin ? <UsersPage />
                     : <Navigate to="/admin" />}/>
+
+            <Route 
+            path="/viewCoursePage/:courseId" element={isAdmin ? < CourseViewPage/>: <Navigate to="/admin" />}/>
+
             <Route
                 path="/adminProfile"
                 element={isAdmin ? <AdminProfile/>
                     : <Navigate to="/admin" />}/>
+
             <Route
                 path="/add-tutor"
                 element={isAdmin ? <AddForm /> : <Navigate to="/admin" />}

@@ -48,15 +48,15 @@ const MyCourses: React.FC = () => {
     };
 
     const handleEdit = (courseId: string) => {
-        alert(`Edit course with ID: ${courseId}`);
+        navigate(`/instructor/course-edit/${courseId}`);
     };
 
     const handleDelete = async (courseId: string) => {
         try {
-            // await api.delete(`/instructor/courses/${courseId}`);
+            await api.delete(`/instructor/delete-course/${courseId}`);
             setCourses(courses.filter((course) => course._id !== courseId));
             setFilteredCourses(filteredCourses.filter((course) => course._id !== courseId));
-            alert(`Course with ID ${courseId} deleted successfully`);
+            navigate('/instructor/my-courses');
         } catch (error) {
             console.error("Error deleting course:", error);
         }

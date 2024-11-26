@@ -4,15 +4,15 @@ import CourseDescription from '../../components/courses/CourseDescription';
 import CourseRating from '../../components/courses/CourseRating';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import StudentFeedback from '../../components/courses/StudentFeedback';
-import CourseHeader from '../../components/courses/courseHeader';
 import api from '../../../infrastructure/api/api';
-import Sidebar from '../../components/instructor/Sidebar';
 import CourseVideo from '../../components/instructor/CourseVideo';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
+import Sidebar from '../../components/admin/Sidebar';
+import CourseHeader from '../../components/courses/courseHeader';
 
 type Section = 'Description' | 'Requirements' | 'Rating' | 'Feedback';
 
-const CourseView = () => {
+const CourseViewPage = () => {
   const [currentSection, setCurrentSection] = useState<Section>('Description');
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState<any>(null); 
@@ -27,7 +27,7 @@ const CourseView = () => {
         if (!courseId) {
           throw new Error('Invalid Course ID.');
         }
-        const response = await api.get(`/instructor/course-view/${courseId}`);
+        const response = await api.get(`/admin/courseDetailview/${courseId}`);
         if (response.status === 200) {
           setCourseData(response.data);
         } else {
@@ -47,10 +47,6 @@ const CourseView = () => {
     setCurrentSection(section);
   };
 
-  // Handle navigation to addLesson
-  const handleAddLessonClick = () => {
-    navigate(`/instructor/add-lesson/${courseId}`); 
-  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -118,12 +114,6 @@ const CourseView = () => {
 
           {/* Right Content - Curriculum */}
           <div className="w-1/3 bg-white shadow-lg p-2">
-          <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
-              onClick={handleAddLessonClick}
-            >
-              Add More Chapters
-            </button>
             <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
             <CurriculumPage />
             {/* Add Lesson Button */}
@@ -135,4 +125,4 @@ const CourseView = () => {
   );
 };
 
-export default CourseView;
+export default CourseViewPage;

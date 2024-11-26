@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
+import Swal from 'sweetalert2';
 
 type User = {
   _id: string;
@@ -49,6 +50,17 @@ const UserTable: React.FC = () => {
 
   const toggleBlockStatus = async (userId: string) => {
     try {
+
+      const result = await Swal.fire({
+        title: 'Block/Unblock Category?',
+        text: 'Are you sure you want to block/unblock this category?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Proceed!',
+        cancelButtonText: 'Cancel',
+      });
+  
+      if (result.isConfirmed) {
       const userToToggle = users.find((user) => user._id === userId);
       if (!userToToggle) {
         setError('User not found');
@@ -62,6 +74,7 @@ const UserTable: React.FC = () => {
       setUsers((prevUsers) =>
         prevUsers.map((user) => (user._id === userId ? response.data : user))
       );
+    }
     } catch (err) {
       console.error('Error updating block status:', err);
       setError('Failed to update block status');

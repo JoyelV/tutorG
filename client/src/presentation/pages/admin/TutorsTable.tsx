@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
+import Swal from 'sweetalert2';
 
 type Tutor = {
   _id: string;
@@ -58,6 +59,16 @@ const TutorsTable: React.FC = () => {
 
   const toggleBlockStatus = async (tutorId: string) => {
     try {
+      const result = await Swal.fire({
+        title: 'Block/Unblock Category?',
+        text: 'Are you sure you want to block/unblock this category?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Proceed!',
+        cancelButtonText: 'Cancel',
+      });
+  
+      if (result.isConfirmed) {
       const tutorToToggle = tutors.find((tutor) => tutor._id === tutorId);
       if (!tutorToToggle) {
         setError('Tutor not found');
@@ -74,6 +85,7 @@ const TutorsTable: React.FC = () => {
       setTutors((prevTutors) =>
         prevTutors.map((tutor) => (tutor._id === tutorId ? response.data : tutor))
       );
+    }
     } catch (err) {
       console.error('Error updating block status:', err);
       setError('Failed to update block status');

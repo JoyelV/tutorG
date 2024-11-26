@@ -11,7 +11,7 @@ import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import CourseHeader from '../../components/courses/courseHeader';
 import api from '../../../infrastructure/api/api';
-import CourseCurriculumBox from '../../components/courses/CourseCurriculumBox';
+import CurriculumPage from '../../components/courses/CourseCurriculums';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Rating' | 'Feedback';
 
@@ -98,7 +98,7 @@ const CoursePage = () => {
               <CourseRequirements requirements={courseData.requirements} />
             )}
             {currentSection === 'Curriculum' && (
-              <CourseCurriculumBox />
+              <CurriculumPage />
             )}
             {currentSection === 'Instructor' && (
               <InstructorInfo instructorId={courseData.instructorId} />
@@ -111,8 +111,15 @@ const CoursePage = () => {
         {/* Sidebar Section (Fixed) */}
         <div className="hidden md:block md:w-1/3 w-full p-6">
           <div className="sticky top-4">
-            <CourseSidebar />
-          </div>
+          <CourseSidebar 
+              courseFee={courseData.courseFee}
+              duration={courseData.duration}
+              level={courseData.level}
+              language={courseData.language}
+              students={courseData.students}
+              subtitleLanguage="English"
+            />          
+            </div>
         </div>
       </div>
 

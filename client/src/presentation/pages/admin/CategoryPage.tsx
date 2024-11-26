@@ -102,7 +102,7 @@ const CategoryPage: React.FC = () => {
         const updatedCategory = response.data;
   
         setCategories(categories.map((category) =>
-          category._id === id ? { ...category, status: updatedCategory.status } : category
+          category._id === id ? { ...category, status: !category.status } : category
         ));        
   
         Swal.fire('Success', updatedCategory.message, 'success');
@@ -112,6 +112,7 @@ const CategoryPage: React.FC = () => {
       Swal.fire('Error', 'Failed to block/unblock category. Please try again.', 'error');
     }
   };
+  
   
 
   const resetForm = () => {
@@ -210,12 +211,13 @@ const CategoryPage: React.FC = () => {
                       Edit
                     </Button>
                     <button
-                  onClick={() => handleToggleBlockCategory(category._id!)}
-                  className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
-                    } text-white`}
-                >
-                  {category.status ? 'Unblock' : 'Block'}
-                </button>
+  onClick={() => handleToggleBlockCategory(category._id!)}
+  className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
+    } text-white`}
+>
+  {category.status ? 'Unblock' : 'Block'}
+</button>
+
                   </td>
                 </tr>
               ))}

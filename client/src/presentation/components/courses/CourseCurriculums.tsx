@@ -54,6 +54,16 @@ const CurriculumPage: React.FC = () => {
     });
   };
 
+  const handlePdfDownload = (pdfUrl: string, pdfTitle: string) => {
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = pdfTitle;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -72,22 +82,19 @@ const CurriculumPage: React.FC = () => {
         name: `Watch video: ${lesson.lessonTitle}`,
         duration: '5m 20s', // Example duration
         link: lesson.lessonVideo,
+        type: 'video',
       },
       {
         name: `Download PDF: ${lesson.lessonTitle}`,
         duration: 'PDF',
         link: lesson.lessonPdf,
+        type: 'pdf',
       },
     ],
   }));
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <Sidebar />
-      </aside>
-
       {/* Main Content */}
       <div className="flex-1 p-6">
         <div className="py-4">
@@ -118,14 +125,25 @@ const CurriculumPage: React.FC = () => {
                   <ul className="mt-2 p-4 space-y-2 bg-white">
                     {section.topics.map((topic, i) => (
                       <li key={i} className="flex justify-between text-sm text-gray-600">
-                        <a
-                          href={topic.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
-                          {topic.name}
-                        </a>
+                        {topic.type === 'pdf' ? (
+                          <button
+                            onClick={() =>
+                              handlePdfDownload(topic.link, `${topic.name}.pdf`)
+                            }
+                            className="hover:underline text-blue-500"
+                          >
+                            {topic.name}
+                          </button>
+                        ) : (
+                          <a
+                            href={topic.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            {topic.name}
+                          </a>
+                        )}
                         <span>{topic.duration}</span>
                       </li>
                     ))}

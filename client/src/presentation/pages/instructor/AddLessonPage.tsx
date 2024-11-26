@@ -100,6 +100,7 @@ const AddLessonPage: React.FC = () => {
   };
 
   return (
+    <div className="p-6">
     <div className="p-6 max-w-4xl mx-auto bg-white rounded shadow">
       <h1 className="text-2xl font-bold mb-4">Add New Lesson</h1>
       <form onSubmit={handleSubmit}>
@@ -150,6 +151,7 @@ const AddLessonPage: React.FC = () => {
           </button>
         </div>
       </form>
+    </div>
     </div>
   );
 };
