@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import CourseSidebar from '../../components/common/CourseSideBar';
-import CourseCurriculum from '../../components/courses/CourseCurriculum';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseImage from '../../components/courses/CourseImage';
 import CourseRating from '../../components/courses/CourseRating';
@@ -12,6 +11,7 @@ import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import CourseHeader from '../../components/courses/courseHeader';
 import api from '../../../infrastructure/api/api';
+import CourseCurriculumBox from '../../components/courses/CourseCurriculumBox';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Rating' | 'Feedback';
 
@@ -98,7 +98,7 @@ const CoursePage = () => {
               <CourseRequirements requirements={courseData.requirements} />
             )}
             {currentSection === 'Curriculum' && (
-              <CourseCurriculum />
+              <CourseCurriculumBox />
             )}
             {currentSection === 'Instructor' && (
               <InstructorInfo instructorId={courseData.instructorId} />

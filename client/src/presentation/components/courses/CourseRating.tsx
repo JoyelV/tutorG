@@ -4,9 +4,9 @@ import React from 'react';
 const CourseRating: React.FC = () => {
   return (
     <div className="flex flex-col items-center p-8 bg-gray-50 rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Course Rating</h2>
+      <h2 className="text-md font-semibold text-gray-800 mb-4">Course Rating</h2>
       <div className="flex items-center space-x-2">
-        <span className="text-5xl font-bold text-gray-800">4.8</span>
+        <span className="text-md font-bold text-gray-800">4.8</span>
         <div className="flex items-center">
           {[...Array(4)].map((_, i) => (
             <svg key={i} className="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 24 24">

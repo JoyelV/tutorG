@@ -22,7 +22,7 @@ const sections = [
   { title: 'Advanced', lectures: 39, duration: '91m', topics: [] },
 ];
 
-const CourseCurriculum: React.FC = () => {
+const CourseCurriculumBox: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({});
 
   const toggleSection = (index: number) => {
@@ -71,4 +71,4 @@ const CourseCurriculum: React.FC = () => {
   );
 };
 
-export default CourseCurriculum;
+export default CourseCurriculumBox;

@@ -10,6 +10,7 @@ import CreateCourse from '../pages/instructor/CreateCourse';
 import MyCourses from '../pages/instructor/MyCourses';
 import ErrorBoundary from '../../utils/ErrorBoundary';
 import CourseView from '../pages/instructor/CourseView';
+import AddLesson from '../pages/instructor/AddLesson';
 
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
@@ -32,14 +33,17 @@ const InstructorRoutes = () => {
                 path="/instructor-createCourse"
                 element={isInstructor ? <CreateCourse /> : <Navigate to="/instructor" />}
             />
-             <Route
+            <Route
+                path="/add-lesson/:courseId"
+                element={isInstructor ? <AddLesson/> : <Navigate to="/instructor" />}
+            />        
+            <Route
                 path="/my-courses"
                 element={isInstructor ?  <ErrorBoundary>
                     <MyCourses />
                   </ErrorBoundary> : <Navigate to="/instructor" />}
-            />
+            />    
             <Route path="/course-view/:courseId" element={<CourseView />} />
-
             <Route
                 path="/instructor-Profile"
                 element={isInstructor ? <InstructorProfile /> : <Navigate to="/instructor" />}

@@ -126,7 +126,9 @@ function AddCourse() {
 
       const response = await api.post('/instructor/addCourse', courseData);
       toast.success("Course added successfully!");
-      navigate("/instructor/my-courses");
+      console.log(response.data,"response data after createing course")
+      const courseId = response.data.courseId;
+      navigate(`/instructor/add-lesson/${courseId}`);
     } catch (error:any) {
       toast.error("Error creating course: " + error.message);
     } finally {

@@ -159,7 +159,7 @@ const CourseVideo = ({ id }: CourseVideoProps) => {
           justifyContent="center"
           onClick={handlePlayPause}
         >
-          <PlayCircleOutline sx={{ fontSize: 64, color: 'white', opacity: isPlaying ? 0 : 1 }} />
+        <PlayCircleOutline sx={{ fontSize: 64, color: 'white', opacity: isPlaying ? 0 : 1 }} />
         </Box>
         <Box
           position="absolute"

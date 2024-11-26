@@ -1,0 +1,143 @@
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import api from '../../../infrastructure/api/api';
+import Sidebar from '../instructor/Sidebar';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+
+interface Lesson {
+  _id: string;
+  lessonTitle: string;
+  lessonDescription: string;
+  lessonVideo: string;
+  lessonPdf: string;
+  courseId: string;
+  createdAt: string;
+}
+
+const CurriculumPage: React.FC = () => {
+  const { courseId } = useParams<{ courseId: string }>();
+  const [curriculum, setCurriculum] = useState<Lesson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [expandedSections, setExpandedSections] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    const fetchCurriculum = async () => {
+      try {
+        setIsLoading(true);
+        if (!courseId) throw new Error('Invalid Course ID.');
+
+        const response = await api.get(`/instructor/view-lessons/${courseId}`);
+        console.log(response.data, 'Curriculum data');
+
+        if (response.status === 200) {
+          setCurriculum(response.data);
+          setExpandedSections(new Array(response.data.length).fill(false));
+        } else {
+          throw new Error('Curriculum not found.');
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch curriculum.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCurriculum();
+  }, [courseId]);
+
+  const toggleSection = (index: number) => {
+    setExpandedSections((prev) => {
+      const updated = [...prev];
+      updated[index] = !updated[index];
+      return updated;
+    });
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  const sections = curriculum.map((lesson, index) => ({
+    title: lesson.lessonTitle,
+    description: lesson.lessonDescription,
+    lectures: 1,
+    duration: '5m 20s', // Example duration; replace with actual video duration if available
+    topics: [
+      {
+        name: `Watch video: ${lesson.lessonTitle}`,
+        duration: '5m 20s', // Example duration
+        link: lesson.lessonVideo,
+      },
+      {
+        name: `Download PDF: ${lesson.lessonTitle}`,
+        duration: 'PDF',
+        link: lesson.lessonPdf,
+      },
+    ],
+  }));
+
+  return (
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+        <Sidebar />
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 p-6">
+        <div className="py-4">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Curriculum</h2>
+          <div className="flex justify-between text-sm text-gray-600 mb-6">
+            <span>{sections.length} Sections</span>
+            <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>
+            <span>~{sections.length * 5} mins</span> {/* Example duration */}
+          </div>
+          <ul className="space-y-4">
+            {sections.map((section, index) => (
+              <li key={index} className="border border-gray-200 rounded-lg">
+                <div
+                  className="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100"
+                  onClick={() => toggleSection(index)}
+                >
+                  <div>
+                    <h3 className="font-semibold text-gray-800 text-lg">{section.title}</h3>
+                    <div className="text-sm text-gray-500">
+                      {section.lectures} lectures • {section.duration}
+                    </div>
+                  </div>
+                  <button className="text-gray-500">
+                    {expandedSections[index] ? <FaChevronUp /> : <FaChevronDown />}
+                  </button>
+                </div>
+                {expandedSections[index] && section.topics.length > 0 && (
+                  <ul className="mt-2 p-4 space-y-2 bg-white">
+                    {section.topics.map((topic, i) => (
+                      <li key={i} className="flex justify-between text-sm text-gray-600">
+                        <a
+                          href={topic.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {topic.name}
+                        </a>
+                        <span>{topic.duration}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CurriculumPage;
