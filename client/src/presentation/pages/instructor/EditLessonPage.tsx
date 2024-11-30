@@ -6,11 +6,13 @@ import api from '../../../infrastructure/api/api';
 
 const EditLessonPage: React.FC = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
-  const [courseId,setCourseId] = useState<string>('');
+  const [courseId, setCourseId] = useState<string>('');
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<File | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
+  const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
+  const [existingPdfUrl, setExistingPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -19,10 +21,21 @@ const EditLessonPage: React.FC = () => {
     const fetchLesson = async () => {
       try {
         const response = await api.get(`/instructor/view-lesson/${lessonId}`);
-        const { lessonTitle, lessonDescription,courseId } = response.data;
+        const {
+          lessonTitle,
+          lessonDescription,
+          lessonVideo,
+          lessonPdf,
+          courseId,
+        } = response.data;
+
         setCourseId(courseId);
         setTitle(lessonTitle);
         setDescription(lessonDescription);
+        setVideoUrl(lessonVideo || null);
+        setPdf(lessonPdf || null);
+        setExistingVideoUrl(lessonVideo || null);
+        setExistingPdfUrl(lessonPdf || null);
       } catch (error) {
         Swal.fire('Error', 'Failed to fetch lesson details.', 'error');
       }
@@ -92,47 +105,48 @@ const EditLessonPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const regex =  /^[a-zA-Z]{9}[a-zA-Z0-9 ]*$/;
+    
+    const titleregex = /^[a-zA-Z ]{3}[a-zA-Z0-9 ?:]*$/;
+    const descriptionRegex = /^[a-zA-Z ]{3}[a-zA-Z0-9 ?:\n]*$/;
 
     if (!title || !description || !lessonId) {
-        Swal.fire('Validation Error', 'Title and Description are required!', 'warning');
-        return;
+      Swal.fire('Validation Error', 'Title and Description are required!', 'warning');
+      return;
     }
 
-    if (!regex.test(title) || !regex.test(description)) {
-        Swal.fire(
-            'Validation Error',
-            'Title and description must contain only letters(first nine characters) and numbers!',
-            'warning'
-        );
-        return;
+    if (!titleregex.test(title) || !descriptionRegex.test(description)) {
+      Swal.fire(
+        'Validation Error',
+        'Title and description must contain only letters (first nine characters) and numbers!',
+        'warning'
+      );
+      return;
     }
 
     setLoading(true);
 
     try {
-        Swal.fire('Uploading', 'Uploading files, please wait...', 'info');
-        const pdfUrl = pdf ? await uploadPdfToCloudinary() : null;
-        const videoFileUrl = videoUrl ? await submitvideoUrl() : null;
+      Swal.fire('Uploading', 'Uploading files, please wait...', 'info');
+      const pdfUrl = pdf ? await uploadPdfToCloudinary() : existingPdfUrl;
+      const videoFileUrl = videoUrl ? await submitvideoUrl() : existingVideoUrl;
 
-        const updatedLesson = {
-            lessonTitle: title.trim(),
-            lessonDescription: description.trim(),
-            lessonVideo: videoFileUrl,
-            lessonPdf: pdfUrl,
-        };
+      const updatedLesson = {
+        lessonTitle: title.trim(),
+        lessonDescription: description.trim(),
+        lessonVideo: videoFileUrl,
+        lessonPdf: pdfUrl,
+      };
 
-        await api.put(`/instructor/update-lesson/${lessonId}`, updatedLesson);
+      await api.put(`/instructor/update-lesson/${lessonId}`, updatedLesson);
 
-        Swal.fire('Success', 'Lesson updated successfully!', 'success');
-        navigate(`/instructor/course-view/${courseId}`);
+      Swal.fire('Success', 'Lesson updated successfully!', 'success');
+      navigate(`/instructor/course-view/${courseId}`);
     } catch (error: any) {
-        Swal.fire('Error', `Failed to update lesson: ${error.message}`, 'error');
+      Swal.fire('Error', `Failed to update lesson: ${error.message}`, 'error');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
-
+  };
 
   return (
     <div className="p-6">
@@ -161,7 +175,10 @@ const EditLessonPage: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="videoUrl" className="block font-medium">Video URL:</label>
+            <label htmlFor="videoUrl" className="block font-medium">Video:</label>
+            {existingVideoUrl && (
+              <video src={existingVideoUrl} controls className="mb-2 w-full rounded" />
+            )}
             <input
               type="file"
               accept="video/mp4"
@@ -172,6 +189,16 @@ const EditLessonPage: React.FC = () => {
           </div>
           <div className="mb-4">
             <label htmlFor="pdf" className="block font-medium">PDF:</label>
+            {existingPdfUrl && (
+              <a
+                href={existingPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-blue-600 underline mb-2"
+              >
+                View Existing PDF
+              </a>
+            )}
             <input
               type="file"
               accept="application/pdf"

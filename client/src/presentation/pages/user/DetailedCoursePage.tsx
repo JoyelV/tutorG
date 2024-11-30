@@ -11,7 +11,7 @@ import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import CourseHeader from '../../components/courses/courseHeader';
 import api from '../../../infrastructure/api/api';
-import CurriculumPage from '../../components/courses/CourseCurriculums';
+import CurriculumBox from '../../components/courses/CourseCurriculumBox';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Rating' | 'Feedback';
 
@@ -65,7 +65,7 @@ const CoursePage = () => {
         {/* Course Details Section */}
         <div className="md:w-2/3 w-full p-6">
           <CourseHeader courseTitle={courseData.title} courseSubtitle={courseData.subtitle} instructorId={courseData.instructorId} />
-          <CourseImage courseId={courseId} /> 
+          <CourseImage id={courseId} /> 
           
           {/* Section Navigation - Tabs */}
           <div className="flex border-b border-gray-200 mb-6">
@@ -98,7 +98,7 @@ const CoursePage = () => {
               <CourseRequirements requirements={courseData.requirements} />
             )}
             {currentSection === 'Curriculum' && (
-              <CurriculumPage />
+              <CurriculumBox />
             )}
             {currentSection === 'Instructor' && (
               <InstructorInfo instructorId={courseData.instructorId} />

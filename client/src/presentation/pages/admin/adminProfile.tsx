@@ -144,8 +144,8 @@ const AccountSettings = () => {
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
-        if (file && file.size <= 1 * 1024 * 1024) {  // Validate size < 1MB
-            setImage(URL.createObjectURL(file));  // Preview the selected image
+        if (file && file.size <= 1 * 1024 * 1024) {  
+            setImage(URL.createObjectURL(file));  
             uploadImage(file);
         } else {
             toast.error('Image size should be under 1MB');

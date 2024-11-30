@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, FormControlLabel, Checkbox } from '@mui/material';
 import 'tailwindcss/tailwind.css';
+import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/admin/Sidebar';
 
 interface FormData {
-    firstName: string;
-    lastName: string;
+    username: string;
     email: string;
     phone: string;
     password: string;
@@ -21,8 +21,7 @@ interface FormData {
 
 const AddForm: React.FC = () => {
     const [formData, setFormData] = useState<FormData>({
-        firstName: '',
-        lastName: '',
+        username: '',
         email: '',
         phone: '',
         password: '',
@@ -41,18 +40,16 @@ const AddForm: React.FC = () => {
 
     const validateFields = (): boolean => {
         const newErrors: { [key: string]: string } = {};
-        const nameRegex = /^[a-zA-Z]{6}[a-zA-Z0-9 ]*$/;
+        const nameRegex = /^[a-zA-Z]{3}[a-zA-Z0-9 ]*$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*$/;
         const phoneRegex = /^\d{10}$/;
 
-        if (!nameRegex.test(formData.firstName)) {
-            newErrors.firstName = 'First name must contain only letters and spaces.';
+        if (!nameRegex.test(formData.username)) {
+            newErrors.firstName = 'Username must contain only letters and spaces.';
         }
-        if (!nameRegex.test(formData.lastName)) {
-            newErrors.lastName = 'Last name must contain only letters and spaces.';
-        }
+
         if (!emailRegex.test(formData.email)) {
             newErrors.email = 'Invalid email address.';
         }
@@ -112,17 +109,62 @@ const AddForm: React.FC = () => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+    
         if (validateFields()) {
-            console.log(formData);
-            alert('Form submitted successfully!');
+            try {
+                const formDataToSend = new FormData();
+                formDataToSend.append('username', formData.username);
+                formDataToSend.append('email', formData.email);
+                formDataToSend.append('phone', formData.phone);
+                formDataToSend.append('password', formData.password);
+                formDataToSend.append('headline', formData.headline);
+                if (formData.image) {
+                    formDataToSend.append('image', formData.image);
+                }
+                formDataToSend.append('areasOfExpertise', formData.areasOfExpertise);
+                formDataToSend.append('bio', formData.bio);
+                formDataToSend.append('highestQualification', formData.highestQualification);
+                formDataToSend.append('websiteLink', formData.websiteLink);
+                formDataToSend.append('isBlocked', String(formData.isBlocked));
+                formDataToSend.append('tutorRequest', formData.tutorRequest || '');
+
+                // Send the data to the backend
+                const response = await api.post('/admin/add-tutor', formDataToSend);
+       
+                if (response.status === 201) {
+                    alert('Tutor added successfully!');
+                    // Optionally clear form
+                    setFormData({
+                        username: '',
+                        email: '',
+                        phone: '',
+                        password: '',
+                        headline: '',
+                        image: null,
+                        areasOfExpertise: '',
+                        bio: '',
+                        highestQualification: '',
+                        websiteLink: '',
+                        isBlocked: false,
+                        tutorRequest: null,
+                    });
+                    setImagePreview(null);
+                } else {
+                    alert(`Failed to add tutor: ${response.data.message || 'Unknown error'}`);
+                }
+            } catch (error:any) {
+                console.error('Error while submitting form:', error);
+                const errorMessage = error.response?.data?.message || 'An error occurred. Please try again.';
+                alert(errorMessage);
+            }
         } else {
             alert('Please fix the errors before submitting.');
         }
     };
-
+    
+    
     return (
         <div className="h-screen bg-gray-100 flex">
             {/* Sidebar */}
@@ -138,28 +180,15 @@ const AddForm: React.FC = () => {
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
-                                    label="First Name"
+                                    label="User Name"
                                     variant="outlined"
                                     fullWidth
                                     required
-                                    name="firstName"
-                                    value={formData.firstName}
+                                    name="username"
+                                    value={formData.username}
                                     onChange={handleChange}
-                                    error={!!errors.firstName}
-                                    helperText={errors.firstName}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="Last Name"
-                                    variant="outlined"
-                                    fullWidth
-                                    required
-                                    name="lastName"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    error={!!errors.lastName}
-                                    helperText={errors.lastName}
+                                    error={!!errors.username}
+                                    helperText={errors.username}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>

@@ -6,9 +6,9 @@ import CourseRequirements from '../../components/courses/CourseRequirements';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
 import CourseVideo from '../../components/instructor/CourseVideo';
-import CurriculumPage from '../../components/courses/CourseCurriculums';
 import Sidebar from '../../components/admin/Sidebar';
 import CourseHeader from '../../components/courses/courseHeader';
+import CurriculumBox from '../../components/courses/CourseCurriculumBox';
 
 type Section = 'Description' | 'Requirements' | 'Rating' | 'Feedback';
 
@@ -115,7 +115,7 @@ const CourseViewPage = () => {
           {/* Right Content - Curriculum */}
           <div className="w-1/3 bg-white shadow-lg p-2">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
-            <CurriculumPage />
+            <CurriculumBox/>
             {/* Add Lesson Button */}
             
           </div>
