@@ -144,7 +144,7 @@ const TutorsTable: React.FC = () => {
                   className={`px-4 py-2 rounded ${tutor.isBlocked ? 'bg-green-500' : 'bg-red-500'
                     } text-white`}
                 >
-                  {tutor.isBlocked ? 'Unblock' : 'Block'}
+                  {tutor.isBlocked ? 'Unblock' : 'Blocked'}
                 </button>
               </td>
             </tr>

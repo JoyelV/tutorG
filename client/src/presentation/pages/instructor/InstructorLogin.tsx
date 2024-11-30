@@ -100,7 +100,7 @@ const InstructorLogin: React.FC = () => {
                                 Forgot Password?
                             </Link>
                         </Box>
-                        <Grid container justifyContent="flex-end">
+                        {/* <Grid container justifyContent="flex-end">
                             <Grid item>
                                 <Typography variant="body2" sx={{ mt: 1 }}>
                                     Don't have an account?{' '}
@@ -109,7 +109,7 @@ const InstructorLogin: React.FC = () => {
                                     </Button>
                                 </Typography>
                             </Grid>
-                        </Grid>
+                        </Grid> */}
                     </Box>
                 </Box>
             </Paper>

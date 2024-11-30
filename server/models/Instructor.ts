@@ -18,12 +18,6 @@ const instructorSchema = new Schema<IInstructor>({
     headline: { type: String },
     areasOfExpertise: { type: String },
     highestQualification: { type: String },
-    socialLinks: {
-        website: { type: String },
-        linkedIn: { type: String },
-        youtube: { type: String },
-        facebook: { type: String },
-    },
     isBlocked: { type: Boolean, default: false },
 });
 

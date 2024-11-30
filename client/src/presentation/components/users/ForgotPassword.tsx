@@ -11,9 +11,12 @@ const ForgotPassword: React.FC = () => {
     e.preventDefault();
     try {
       const response = await api.post('/user/send-otp', { email });
-      console.log("request in forgotpassword", response);
-      setMessage('OTP sent to your email.');
-      navigate('/verify-otp', { state: { email } });
+      if(response.status===200){
+        setMessage('OTP sent to your email.');
+        navigate('/verify-otp', { state: { email } });
+      }else{
+        setMessage('Enter valid credentials.');
+      }
     } catch (error) {
       setMessage('Error sending OTP. Try again.');
     }

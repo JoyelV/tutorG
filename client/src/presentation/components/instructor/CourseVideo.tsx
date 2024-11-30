@@ -10,7 +10,7 @@ type CourseVideoProps = {
 };
 
 const CourseVideo = ({ id }: CourseVideoProps) => {
-  const [videourl, setVideourl] = useState('http://res.cloudinary.com/dazdngh4i/video/upload/v1732434714/hxkeqoh7gqdmaeitxjfj.mp4');
+  const [videourl, setVideourl] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [progress, setProgress] = useState(0);

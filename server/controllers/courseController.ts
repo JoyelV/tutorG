@@ -142,6 +142,31 @@ export const addLesson = async (req:Request,res:Response,next:NextFunction):Prom
   }
 }
 
+export const deleteLesson = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
+  try {
+    const { lessonId } = req.body;
+
+    if (!lessonId) {
+      res.status(400).json({ message: 'Lesson ID is required.' });
+      return ;
+    }
+
+    // Find and delete the lesson by ID
+    const deletedLesson = await Lesson.findByIdAndDelete(lessonId);
+
+    if (!deletedLesson) {
+      res.status(404).json({ message: 'Lesson not found.' });
+      return ;
+    }
+
+    res.status(200).json({ message: 'Lesson deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting lesson:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+}
+
+
 export const getViewChapters = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { courseId } = req.params;
@@ -158,6 +183,44 @@ export const getViewChapters = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     console.error('Error fetching categories:', error);
     next({ status: 500, message: 'Error fetching categories', error });
+  }
+};
+
+export const getViewChapter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { lessonId } = req.params;
+    const lesson = await Lesson.findById(lessonId);
+
+    if (!lesson) {
+      res.status(404).json({ message: 'Lesson not found.' });
+      return;
+    }
+
+    res.status(200).json(lesson);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch lesson details.' });
+  }
+};
+
+export const updateChapter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { lessonId } = req.params;
+    const { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
+
+    const updatedLesson = await Lesson.findByIdAndUpdate(
+      lessonId,
+      { lessonTitle, lessonDescription, lessonVideo, lessonPdf },
+      { new: true }
+    );
+
+    if (!updatedLesson) {
+      res.status(404).json({ message: 'Lesson not found.' });
+      return ;
+    }
+
+    res.status(200).json({ message: 'Lesson updated successfully.', updatedLesson });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update lesson.' });
   }
 };
 

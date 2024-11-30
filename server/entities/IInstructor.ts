@@ -5,13 +5,6 @@ export interface Address {
     line2: string;
 }
 
-export interface SocialLinks {
-    website?: string;
-    linkedIn?: string;
-    youtube?: string;
-    facebook?: string;
-}
-
 export interface IInstructor extends Document {
     _id: ObjectId; 
     username: string;
@@ -27,6 +20,5 @@ export interface IInstructor extends Document {
     headline?: string;
     areasOfExpertise?: string;
     highestQualification?: string;
-    socialLinks?: SocialLinks;
     isBlocked: boolean;
 }

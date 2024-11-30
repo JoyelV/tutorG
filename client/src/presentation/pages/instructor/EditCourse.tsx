@@ -27,6 +27,22 @@ function EditCourse() {
   const [image, setImage] = useState<File | null>(null);
   const [trailer, setTrailer] = useState<File | null>(null);
 
+  const [errors, setErrors] = useState({
+    courseName: "",
+    courseSubtitle: "",
+    selectCategory: "",
+    courseLanguage: "",
+    courseLevel: "",
+    courseDuration: "",
+    courseFee: "",
+    courseDescription: "",
+    courseLearningPoints: "",
+    courseTargetAudience:"",
+    courseRequirements:"",
+    image:"",
+    trailer:"",
+  });
+
   const fetchCategories = async () => {
     try {
       const response = await api.get("/admin/categories");
@@ -117,9 +133,48 @@ function EditCourse() {
       return "";
     }
   };
+  const validateForm = () => {
+    const newErrors: any = {};
+  
+    // Regex for letters and numbers only
+    const alphanumericRegex = /^[a-zA-Z]{3}[a-zA-Z0-9 ]*$/;
+  
+    if (!courseName.trim()) newErrors.courseName = "Course name cannot be empty.";
+    else if (!alphanumericRegex.test(courseName)) newErrors.courseName = "Course name can only contain letters and numbers with first 3 characters must be letters .";
+    
+    if (!courseSubtitle.trim()) newErrors.courseSubtitle = "Course subtitle cannot be empty.";
+    else if (!alphanumericRegex.test(courseSubtitle)) newErrors.courseSubtitle = "Course subtitle can only contain letters and numbers with first 3 characters must be letters .";
+    
+    if (!selectCategory) newErrors.selectCategory = "Please select a course category.";
+    if (!courseLanguage) newErrors.courseLanguage = "Please select a course language.";
+    if (!courseLevel) newErrors.courseLevel = "Please select a course level.";
+    
+    if (!courseDuration || isNaN(Number(courseDuration)) || Number(courseDuration) <= 0)
+      newErrors.courseDuration = "Please provide a valid course duration (number > 0).";
+    
+    if (!courseFee || isNaN(Number(courseFee)) || Number(courseFee) < 0)
+      newErrors.courseFee = "Please provide a valid course fee (non-negative number).";
+    
+    if (!alphanumericRegex.test(courseDescription)) newErrors.courseDescription = "Course description can only contain letters and numbers with first 3 characters must be letters .";
+    if (!alphanumericRegex.test(courseRequirements)) newErrors.courseRequirements = "Course requirements can only contain letters and numbers with first 3 characters must be letters .";
+    if (!alphanumericRegex.test(courseLearningPoints)) newErrors.courseLearningPoints = "Course learning points can only contain letters and numbers with first 3 characters must be letters .";
+    if (!alphanumericRegex.test(courseTargetAudience)) newErrors.courseTargetAudience = "Target audience can only contain letters and numbers with first 3 characters must be letters .";
+    
+    if (!image) newErrors.image = "Please upload a course thumbnail image.";
+    if (!trailer) newErrors.trailer = "Please upload a course trailer video.";
+  
+    setErrors(newErrors);
+  
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form.");
+      return;
+    }
 
     if (!courseName || !courseSubtitle || !selectCategory || !courseLanguage || !courseLevel || !courseDuration || !courseDescription || !courseLearningPoints || !courseTargetAudience) {
       toast.error("Please fill out all required fields.");
@@ -190,6 +245,7 @@ function EditCourse() {
             placeholder="Course Name"
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
+        {errors.courseName && <p className="text-red-500 text-sm">{errors.courseName}</p>}
         </div>
 
         {/* Course Subtitle */}
@@ -201,6 +257,8 @@ function EditCourse() {
             placeholder="Course Subtitle"
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
+         {errors.courseSubtitle && <p className="text-red-500 text-sm">{errors.courseSubtitle}</p>}
+         
         </div>
 
         {/* Course Category */}
@@ -253,13 +311,18 @@ function EditCourse() {
             placeholder="Course Duration"
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
+{errors.courseDuration && <p className="text-red-500 text-sm">{errors.courseDuration}</p>}
+
           <input
             type="number"
             value={courseFee}
             onChange={(e) => setCourseFee(e.target.value)}
             placeholder="Course Fee"
-            className="w-full p-3 border border-gray-300 rounded-lg"
+            className="w-full p-3 border border-gray-300 rounded-lg"           
           />
+
+{errors.courseFee && <p className="text-red-500 text-sm">{errors.courseFee}</p>}
+
         </div>
 
         {/* Description */}
@@ -270,6 +333,8 @@ function EditCourse() {
             placeholder="Course Description"
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
+                  {errors.courseDescription && <p className="text-red-500 text-sm">{errors.courseDescription}</p>}
+
         </div>
 
         <div className="mb-4">
@@ -280,7 +345,7 @@ function EditCourse() {
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
         </div>
-
+        {errors.courseRequirements && <p className="text-red-500 text-sm">{errors.courseRequirements}</p>}
         <div className="mb-4">
           <textarea
             value={courseTargetAudience}
@@ -289,6 +354,7 @@ function EditCourse() {
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
         </div>
+        {errors.courseTargetAudience && <p className="text-red-500 text-sm">{errors.courseTargetAudience}</p>}
 
         <div className="mb-4">
           <textarea
@@ -298,7 +364,7 @@ function EditCourse() {
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
         </div>
-
+        {errors.courseLearningPoints && <p className="text-red-500 text-sm">{errors.courseLearningPoints}</p>}
         {/* Image Upload */}
         <div className="mb-4">
           <input
@@ -308,7 +374,7 @@ function EditCourse() {
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
         </div>
-
+        {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
         {/* Trailer Upload */}
         <div className="mb-4">
           <input
@@ -318,7 +384,7 @@ function EditCourse() {
             className="w-full p-3 border border-gray-300 rounded-lg"
           />
         </div>
-
+        {errors.trailer && <p className="text-red-500 text-sm">{errors.trailer}</p>}
         <div className="text-center">
           <button
             onClick={handleSubmit}

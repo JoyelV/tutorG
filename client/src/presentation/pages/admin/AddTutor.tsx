@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, FormControlLabel, Checkbox } from '@mui/material';
-import 'tailwindcss/tailwind.css'; 
+import 'tailwindcss/tailwind.css';
 import Sidebar from '../../components/admin/Sidebar';
 
 interface FormData {
@@ -10,14 +10,11 @@ interface FormData {
     phone: string;
     password: string;
     headline: string;
-    image: string;
+    image: File | null;
     areasOfExpertise: string;
     bio: string;
     highestQualification: string;
     websiteLink: string;
-    linkedInLink: string;
-    youtubeLink: string;
-    facebookLink: string;
     isBlocked: boolean;
     tutorRequest: string | null;
 }
@@ -30,17 +27,61 @@ const AddForm: React.FC = () => {
         phone: '',
         password: '',
         headline: '',
-        image: '',
+        image: null,
         areasOfExpertise: '',
         bio: '',
         highestQualification: '',
         websiteLink: '',
-        linkedInLink: '',
-        youtubeLink: '',
-        facebookLink: '',
         isBlocked: false,
         tutorRequest: null,
     });
+
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const validateFields = (): boolean => {
+        const newErrors: { [key: string]: string } = {};
+        const nameRegex = /^[a-zA-Z]{6}[a-zA-Z0-9 ]*$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*$/;
+        const phoneRegex = /^\d{10}$/;
+
+        if (!nameRegex.test(formData.firstName)) {
+            newErrors.firstName = 'First name must contain only letters and spaces.';
+        }
+        if (!nameRegex.test(formData.lastName)) {
+            newErrors.lastName = 'Last name must contain only letters and spaces.';
+        }
+        if (!emailRegex.test(formData.email)) {
+            newErrors.email = 'Invalid email address.';
+        }
+        if (!phoneRegex.test(formData.phone)) {
+            newErrors.phone = 'Phone number must be exactly 10 digits.';
+        }
+        if (!passwordRegex.test(formData.password)) {
+            newErrors.password =
+                'Password must be at least 8 characters long, include at least one letter, one number, and one special character.';
+        }
+        if (!nameRegex.test(formData.headline)) {
+            newErrors.headline = 'Headline must contain only letters and spaces.';
+        }
+        if (!nameRegex.test(formData.areasOfExpertise)) {
+            newErrors.areasOfExpertise = 'Areas of expertise must contain only letters and spaces.';
+        }
+        if (!nameRegex.test(formData.bio)) {
+            newErrors.bio = 'First name must contain only letters and spaces.';
+        }
+        if (!nameRegex.test(formData.highestQualification)) {
+            newErrors.highestQualification = 'First name must contain only letters and spaces.';
+        }
+        if (formData.websiteLink && !urlRegex.test(formData.websiteLink)) {
+            newErrors.websiteLink = "Invalid website URL.";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | React.ChangeEvent<{ name?: string; value: unknown }>
@@ -54,9 +95,32 @@ const AddForm: React.FC = () => {
         });
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+
+        if (file) {
+            const validTypes = ['image/jpeg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a JPEG or PNG image.');
+                return;
+            }
+            setFormData({
+                ...formData,
+                image: file,
+            });
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(formData);
+
+        if (validateFields()) {
+            console.log(formData);
+            alert('Form submitted successfully!');
+        } else {
+            alert('Please fix the errors before submitting.');
+        }
     };
 
     return (
@@ -81,7 +145,8 @@ const AddForm: React.FC = () => {
                                     name="firstName"
                                     value={formData.firstName}
                                     onChange={handleChange}
-                                    className="mb-4"
+                                    error={!!errors.firstName}
+                                    helperText={errors.firstName}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -93,7 +158,8 @@ const AddForm: React.FC = () => {
                                     name="lastName"
                                     value={formData.lastName}
                                     onChange={handleChange}
-                                    className="mb-4"
+                                    error={!!errors.lastName}
+                                    helperText={errors.lastName}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -103,10 +169,10 @@ const AddForm: React.FC = () => {
                                     fullWidth
                                     required
                                     name="email"
-                                    type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="mb-4"
+                                    error={!!errors.email}
+                                    helperText={errors.email}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -114,10 +180,12 @@ const AddForm: React.FC = () => {
                                     label="Phone"
                                     variant="outlined"
                                     fullWidth
+                                    required
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
-                                    className="mb-4"
+                                    error={!!errors.phone}
+                                    helperText={errors.phone}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -127,12 +195,13 @@ const AddForm: React.FC = () => {
                                     fullWidth
                                     required
                                     name="password"
-                                    type="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="mb-4"
+                                    error={!!errors.password}
+                                    helperText={errors.password}
                                 />
                             </Grid>
+                            {/* Other fields */}
                             <Grid item xs={12}>
                                 <TextField
                                     label="Headline"
@@ -141,19 +210,24 @@ const AddForm: React.FC = () => {
                                     name="headline"
                                     value={formData.headline}
                                     onChange={handleChange}
+                                    error={!!errors.headline}
+                                    helperText={errors.headline}
                                     className="mb-4"
                                 />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField
-                                    label="Image URL"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="image"
-                                    value={formData.image}
-                                    onChange={handleChange}
+                                <label className="block mb-2 text-gray-700">Upload Image</label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg, image/png"
+                                    onChange={handleImageChange}
                                     className="mb-4"
                                 />
+                                {imagePreview && (
+                                    <div className="mb-4">
+                                        <img src={imagePreview} alt="Preview" className="h-32 w-32 object-cover rounded-md" />
+                                    </div>
+                                )}
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
@@ -163,6 +237,8 @@ const AddForm: React.FC = () => {
                                     name="areasOfExpertise"
                                     value={formData.areasOfExpertise}
                                     onChange={handleChange}
+                                    error={!!errors.areasOfExpertise}
+                                    helperText={errors.areasOfExpertise}
                                     className="mb-4"
                                 />
                             </Grid>
@@ -174,6 +250,8 @@ const AddForm: React.FC = () => {
                                     name="bio"
                                     value={formData.bio}
                                     onChange={handleChange}
+                                    error={!!errors.bio}
+                                    helperText={errors.bio}
                                     className="mb-4"
                                 />
                             </Grid>
@@ -185,6 +263,8 @@ const AddForm: React.FC = () => {
                                     name="highestQualification"
                                     value={formData.highestQualification}
                                     onChange={handleChange}
+                                    error={!!errors.highestQualification}
+                                    helperText={errors.highestQualification}
                                     className="mb-4"
                                 />
                             </Grid>
@@ -196,39 +276,8 @@ const AddForm: React.FC = () => {
                                     name="websiteLink"
                                     value={formData.websiteLink}
                                     onChange={handleChange}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="LinkedIn Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="linkedInLink"
-                                    value={formData.linkedInLink}
-                                    onChange={handleChange}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="YouTube Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="youtubeLink"
-                                    value={formData.youtubeLink}
-                                    onChange={handleChange}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Facebook Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="facebookLink"
-                                    value={formData.facebookLink}
-                                    onChange={handleChange}
+                                    error={!!errors.websiteLink}
+                                    helperText={errors.websiteLink}
                                     className="mb-4"
                                 />
                             </Grid>

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import api from '../../../infrastructure/api/api';
 
-const AddLessonPage: React.FC = () => {
-  const { courseId } = useParams<{ courseId: string }>();
+const EditLessonPage: React.FC = () => {
+  const { lessonId } = useParams<{ lessonId: string }>();
+  const [courseId,setCourseId] = useState<string>('');
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<File | null>(null);
@@ -13,10 +14,24 @@ const AddLessonPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const validateInput = (input: string): boolean => {
-    const regex = /^[a-zA-Z]{9}[a-zA-Z0-9 ]*$/;
-    return regex.test(input) && input.trim() !== ''; 
-  };  
+  // Fetch existing lesson data
+  useEffect(() => {
+    const fetchLesson = async () => {
+      try {
+        const response = await api.get(`/instructor/view-lesson/${lessonId}`);
+        const { lessonTitle, lessonDescription,courseId } = response.data;
+        setCourseId(courseId);
+        setTitle(lessonTitle);
+        setDescription(lessonDescription);
+      } catch (error) {
+        Swal.fire('Error', 'Failed to fetch lesson details.', 'error');
+      }
+    };
+
+    if (lessonId) {
+      fetchLesson();
+    }
+  }, [lessonId]);
 
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,59 +92,52 @@ const AddLessonPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title || !description || !videoUrl || !courseId) {
-      Swal.fire('Validation Error', 'All fields are required!', 'warning');
-      return;
+    const regex =  /^[a-zA-Z]{9}[a-zA-Z0-9 ]*$/;
+
+    if (!title || !description || !lessonId) {
+        Swal.fire('Validation Error', 'Title and Description are required!', 'warning');
+        return;
     }
 
-    if (!validateInput(title)) {
-      Swal.fire(
-        'Validation Error',
-        'Title contains invalid characters. Only letters, numbers, and spaces are allowed.',
-        'warning'
-      );
-      return;
-    }
-
-    if (!validateInput(description)) {
-      Swal.fire(
-        'Validation Error',
-        'Description contains invalid characters. Only letters, numbers, and spaces are allowed.',
-        'warning'
-      );
-      return;
+    if (!regex.test(title) || !regex.test(description)) {
+        Swal.fire(
+            'Validation Error',
+            'Title and description must contain only letters(first nine characters) and numbers!',
+            'warning'
+        );
+        return;
     }
 
     setLoading(true);
 
     try {
-      Swal.fire('Uploading', 'Uploading files, please wait...', 'info');
-      const pdfUrl = await uploadPdfToCloudinary();
-      const videoFileUrl = await submitvideoUrl();
+        Swal.fire('Uploading', 'Uploading files, please wait...', 'info');
+        const pdfUrl = pdf ? await uploadPdfToCloudinary() : null;
+        const videoFileUrl = videoUrl ? await submitvideoUrl() : null;
 
-      const newLesson = {
-        lessonTitle: title,
-        lessonDescription: description,
-        lessonVideo: videoFileUrl,
-        lessonPdf: pdfUrl,
-        courseId,
-      };
+        const updatedLesson = {
+            lessonTitle: title.trim(),
+            lessonDescription: description.trim(),
+            lessonVideo: videoFileUrl,
+            lessonPdf: pdfUrl,
+        };
 
-      await api.post('/instructor/addLesson', newLesson);
+        await api.put(`/instructor/update-lesson/${lessonId}`, updatedLesson);
 
-      Swal.fire('Success', 'Lesson added successfully!', 'success');
-      navigate('/instructor/my-courses');
+        Swal.fire('Success', 'Lesson updated successfully!', 'success');
+        navigate(`/instructor/course-view/${courseId}`);
     } catch (error: any) {
-      Swal.fire('Error', `Failed to add lesson: ${error.message}`, 'error');
+        Swal.fire('Error', `Failed to update lesson: ${error.message}`, 'error');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   return (
     <div className="p-6">
       <div className="p-6 max-w-4xl mx-auto bg-white rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Add New Lesson</h1>
+        <h1 className="text-2xl font-bold mb-4">Edit Lesson</h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="title" className="block font-medium">Title:</label>
@@ -137,8 +145,7 @@ const AddLessonPage: React.FC = () => {
               type="text"
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value.trimStart())} 
-              onBlur={(e) => setTitle(e.target.value.trim())} 
+              onChange={(e) => setTitle(e.target.value)}
               className="block w-full border p-2 rounded"
               disabled={loading}
             />
@@ -148,8 +155,7 @@ const AddLessonPage: React.FC = () => {
             <textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value.trimStart())} 
-              onBlur={(e) => setDescription(e.target.value.trim())}
+              onChange={(e) => setDescription(e.target.value)}
               className="block w-full border p-2 rounded"
               disabled={loading}
             />
@@ -179,7 +185,7 @@ const AddLessonPage: React.FC = () => {
             className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Uploading...' : 'Add Lesson'}
+            {loading ? 'Updating...' : 'Update Lesson'}
           </button>
         </form>
       </div>
@@ -187,4 +193,4 @@ const AddLessonPage: React.FC = () => {
   );
 };
 
-export default AddLessonPage;
+export default EditLessonPage;

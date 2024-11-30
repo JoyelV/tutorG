@@ -14,8 +14,9 @@ import {
     uploadImage} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { addLesson, createCourse, deleteCourse, editCourse, getTutorCourses, getViewChapters, getViewCourses } from '../controllers/courseController';
+import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, updateChapter } from '../controllers/courseController';
 import { tutorAuth } from '../utils/authMiddleware';
+import { getUnblockedCategories } from '../controllers/categoryController';
 
 const router = Router();
 
@@ -43,5 +44,10 @@ router.get('/courses/:instructorId',getTutorCourses);
 router.get('/course-view/:id',getViewCourses);
 router.post('/addLesson',addLesson);
 router.get('/view-lessons/:courseId',getViewChapters);
+router.get('/view-lesson/:lessonId',getViewChapter);
+router.put('/update-lesson/:lessonId',updateChapter);
+router.delete('/delete-lesson',deleteLesson);
+
+router.get('/categories', getUnblockedCategories);
 
 export default router;

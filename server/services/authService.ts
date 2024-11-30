@@ -10,7 +10,7 @@ export const verifyOTP = async (email: string, otp: string): Promise<string> => 
     throw new Error('OTP expired or not sent');
   }
 
-  const expirationTime = 2 * 60 * 1000;
+  const expirationTime = 1 * 60 * 1000;
   const currentTime = new Date().getTime();
   const otpCreatedTime = new Date(storedEntry.createdAt).getTime();
 

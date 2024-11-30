@@ -36,7 +36,7 @@ const CategoryPage: React.FC = () => {
 
   useEffect(() => {
     fetchCategories();
-  }, []);  
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -51,21 +51,58 @@ const CategoryPage: React.FC = () => {
   };
 
   const handleSaveCategory = async () => {
+    // Validate category name
     if (!categoryName.trim()) {
       return Swal.fire('Validation Error', 'Category name is required!', 'error');
     }
 
+    const invalidCategoryChars = /[*\d]/;
+    if (invalidCategoryChars.test(categoryName)) {
+      return Swal.fire(
+        'Validation Error',
+        'Category name contains invalid characters!',
+        'error'
+      );
+    }
+
+    // Validate subcategories
+    if (subCategories.length === 0) {
+      return Swal.fire('Validation Error', 'At least one subcategory is required!', 'error');
+    }
+
+    const invalidSubcategoryChars = /[*\d]/;
+    const uniqueSubCategories = new Set(subCategories);
+
+    for (const sub of uniqueSubCategories) {
+      if (!sub.trim()) {
+        return Swal.fire('Validation Error', 'Subcategory name cannot be empty!', 'error');
+      }
+      if (invalidSubcategoryChars.test(sub)) {
+        return Swal.fire(
+          'Validation Error',
+          `Subcategory "${sub}" contains invalid characters!`,
+          'error'
+        );
+      }
+      if (sub.length < 3) {
+        return Swal.fire(
+          'Validation Error',
+          `Subcategory "${sub}" must be at least 3 characters long!`,
+          'error'
+        );
+      }
+    }
+
     try {
-      const payload = { categoryName, subCategories };
+      const payload = { categoryName, subCategories: Array.from(uniqueSubCategories) };
       const response = editingCategory
         ? await api.put(`/admin/categories/${editingCategory._id}`, payload)
         : await api.post('/admin/categories', payload);
 
-      // Update categories based on whether it's a new category or an update
       const updatedCategories = editingCategory
         ? categories.map((category) =>
-            category._id === editingCategory._id ? response.data : category
-          )
+          category._id === editingCategory._id ? response.data : category
+        )
         : [...categories, response.data];
 
       setCategories(updatedCategories);
@@ -96,15 +133,15 @@ const CategoryPage: React.FC = () => {
         confirmButtonText: 'Yes, Proceed!',
         cancelButtonText: 'Cancel',
       });
-  
+
       if (result.isConfirmed) {
         const response = await api.patch(`/admin/categories/block/${id}`);
         const updatedCategory = response.data;
-  
+
         setCategories(categories.map((category) =>
           category._id === id ? { ...category, status: !category.status } : category
-        ));        
-  
+        ));
+
         Swal.fire('Success', updatedCategory.message, 'success');
       }
     } catch (error) {
@@ -112,8 +149,8 @@ const CategoryPage: React.FC = () => {
       Swal.fire('Error', 'Failed to block/unblock category. Please try again.', 'error');
     }
   };
-  
-  
+
+
 
   const resetForm = () => {
     setEditingCategory(null);
@@ -211,12 +248,12 @@ const CategoryPage: React.FC = () => {
                       Edit
                     </Button>
                     <button
-  onClick={() => handleToggleBlockCategory(category._id!)}
-  className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
-    } text-white`}
->
-  {category.status ? 'Unblock' : 'Block'}
-</button>
+                      onClick={() => handleToggleBlockCategory(category._id!)}
+                      className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
+                        } text-white`}
+                    >
+                      {category.status ? 'Unblock' : 'Blocked'}
+                    </button>
 
                   </td>
                 </tr>

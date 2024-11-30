@@ -9,6 +9,9 @@ const otpStorage: Record<string, OtpEntry> = {};
 
 export const otpRepository = {
   saveOtp(email: string, entry: OtpEntry): void {
+    if (otpStorage[email]) {
+      delete otpStorage[email];
+    }
     otpStorage[email] = { ...entry }; 
   },
 

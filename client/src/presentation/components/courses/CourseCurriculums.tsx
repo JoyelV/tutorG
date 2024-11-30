@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
-import Sidebar from '../instructor/Sidebar';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaEdit, FaTrash } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 interface Lesson {
   _id: string;
@@ -20,6 +20,8 @@ const CurriculumPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedSections, setExpandedSections] = useState<boolean[]>([]);
+  const [showFullDescription, setShowFullDescription] = useState<boolean[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCurriculum = async () => {
@@ -28,11 +30,10 @@ const CurriculumPage: React.FC = () => {
         if (!courseId) throw new Error('Invalid Course ID.');
 
         const response = await api.get(`/instructor/view-lessons/${courseId}`);
-        console.log(response.data, 'Curriculum data');
-
         if (response.status === 200) {
           setCurriculum(response.data);
           setExpandedSections(new Array(response.data.length).fill(false));
+          setShowFullDescription(new Array(response.data.length).fill(false));
         } else {
           throw new Error('Curriculum not found.');
         }
@@ -54,6 +55,14 @@ const CurriculumPage: React.FC = () => {
     });
   };
 
+  const toggleDescription = (index: number) => {
+    setShowFullDescription((prev) => {
+      const updated = [...prev];
+      updated[index] = !updated[index];
+      return updated;
+    });
+  };
+
   const handlePdfDownload = (pdfUrl: string, pdfTitle: string) => {
     const link = document.createElement('a');
     link.href = pdfUrl;
@@ -64,6 +73,36 @@ const CurriculumPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  const handleEditLesson = (lessonId: string) => {
+    navigate(`/instructor/edit-lesson/${lessonId}`);
+  };
+
+  const handleDeleteLesson = async (lessonId: string) => {
+    const confirm = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will delete the lesson permanently!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        const response = await api.delete(`/instructor/delete-lesson`, {
+          data: { lessonId },
+        });
+        if (response.status === 200) {
+          setCurriculum((prev) => prev.filter((lesson) => lesson._id !== lessonId));
+          Swal.fire('Deleted!', 'Lesson has been deleted.', 'success');
+        } else {
+          throw new Error(response.data.message || 'Failed to delete the lesson.');
+        }
+      } catch (error) {
+        Swal.fire('Error', 'Failed to delete the lesson.', 'error');
+      }
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -72,87 +111,83 @@ const CurriculumPage: React.FC = () => {
     return <div>Error: {error}</div>;
   }
 
-  const sections = curriculum.map((lesson, index) => ({
-    title: lesson.lessonTitle,
-    description: lesson.lessonDescription,
-    lectures: 1,
-    duration: '5m 20s', // Example duration; replace with actual video duration if available
-    topics: [
-      {
-        name: `Watch video: ${lesson.lessonTitle}`,
-        duration: '5m 20s', // Example duration
-        link: lesson.lessonVideo,
-        type: 'video',
-      },
-      {
-        name: `Download PDF: ${lesson.lessonTitle}`,
-        duration: 'PDF',
-        link: lesson.lessonPdf,
-        type: 'pdf',
-      },
-    ],
-  }));
-
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Main Content */}
       <div className="flex-1 p-6">
-        <div className="py-4">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Curriculum</h2>
-          <div className="flex justify-between text-sm text-gray-600 mb-6">
-            <span>{sections.length} Sections</span>
-            <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>
-            <span>~{sections.length * 5} mins</span> {/* Example duration */}
-          </div>
-          <ul className="space-y-4">
-            {sections.map((section, index) => (
-              <li key={index} className="border border-gray-200 rounded-lg">
-                <div
-                  className="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100"
-                  onClick={() => toggleSection(index)}
-                >
-                  <div>
-                    <h3 className="font-semibold text-gray-800 text-lg">{section.title}</h3>
-                    <div className="text-sm text-gray-500">
-                      {section.lectures} lectures • {section.duration}
-                    </div>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Curriculum</h2>
+        <ul className="space-y-4">
+          {curriculum.map((lesson, index) => (
+            <li key={lesson._id} className="border border-gray-200 rounded-lg">
+              <div
+                className="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100"
+                onClick={() => toggleSection(index)}
+              >
+                <div>
+                  <h3 className="font-semibold text-gray-800 text-lg">{lesson.lessonTitle}</h3>
+                  <div className="text-sm text-gray-500">
+                    {showFullDescription[index]
+                      ? lesson.lessonDescription
+                      : `${lesson.lessonDescription.slice(0, 10)}... `}
+                    <button
+                      className="text-blue-500 hover:underline ml-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDescription(index);
+                      }}
+                    >
+                      {showFullDescription[index] ? 'Less' : 'More'}
+                    </button>
                   </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditLesson(lesson._id);
+                    }}
+                    className="text-blue-500"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteLesson(lesson._id);
+                    }}
+                    className="text-red-500"
+                  >
+                    <FaTrash />
+                  </button>
                   <button className="text-gray-500">
                     {expandedSections[index] ? <FaChevronUp /> : <FaChevronDown />}
                   </button>
                 </div>
-                {expandedSections[index] && section.topics.length > 0 && (
-                  <ul className="mt-2 p-4 space-y-2 bg-white">
-                    {section.topics.map((topic, i) => (
-                      <li key={i} className="flex justify-between text-sm text-gray-600">
-                        {topic.type === 'pdf' ? (
-                          <button
-                            onClick={() =>
-                              handlePdfDownload(topic.link, `${topic.name}.pdf`)
-                            }
-                            className="hover:underline text-blue-500"
-                          >
-                            {topic.name}
-                          </button>
-                        ) : (
-                          <a
-                            href={topic.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline"
-                          >
-                            {topic.name}
-                          </a>
-                        )}
-                        <span>{topic.duration}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+              </div>
+              {expandedSections[index] && (
+                <ul className="mt-2 p-4 space-y-2 bg-white">
+                  <li>
+                    <a
+                      href={lesson.lessonVideo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline text-blue-500"
+                    >
+                      Watch Video
+                    </a>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => handlePdfDownload(lesson.lessonPdf, lesson.lessonTitle)}
+                      className="hover:underline text-blue-500"
+                    >
+                      Download PDF
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

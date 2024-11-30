@@ -47,7 +47,6 @@ const CourseView = () => {
     setCurrentSection(section);
   };
 
-  // Handle navigation to addLesson
   const handleAddLessonClick = () => {
     navigate(`/instructor/add-lesson/${courseId}`); 
   };

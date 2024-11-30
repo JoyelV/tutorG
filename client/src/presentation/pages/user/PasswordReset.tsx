@@ -26,12 +26,17 @@ export const PasswordReset: React.FC = () => {
         newPassword,
       });
 
+      if(response.status===400){
+        setError('Registered Email required');
+        return;
+      }
+
       const userRole = response.data.role;
       console.log(userRole, "userRole");
       navigate('/login');
 
     } catch (error) {
-      setError('Password reset failed');
+      setError('Password reset failed,Check email entered');
       console.error('Error:', error);
     }
   };

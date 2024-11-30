@@ -39,7 +39,7 @@ const ImageCard: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await api.get('/user/courses');  // Update this with your API endpoint
+        const response = await api.get('/user/courses');  
         const data = response.data;
 
         // Assuming data contains an array of courses and category info
@@ -51,7 +51,7 @@ const ImageCard: React.FC = () => {
           courseFee: course.courseFee,
           thumbnail: course.thumbnail,
           rating: course.rating,
-          students: course.students.length,  // Assuming students is an array of student objects
+          students: course.students.length,  
         }));
 
         setCourses(coursesData);

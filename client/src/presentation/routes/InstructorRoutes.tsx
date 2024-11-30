@@ -12,7 +12,7 @@ import ErrorBoundary from '../../utils/ErrorBoundary';
 import CourseView from '../pages/instructor/CourseView';
 import AddLesson from '../pages/instructor/AddLesson';
 import EditCourse from '../pages/instructor/EditCourse';
-
+import EditLesson from '../pages/instructor/EditLesson'
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
     console.log(value,"ins")
@@ -37,7 +37,11 @@ const InstructorRoutes = () => {
             <Route
                 path="/add-lesson/:courseId"
                 element={isInstructor ? <AddLesson/> : <Navigate to="/instructor" />}
-            />        
+            />     
+             <Route
+                path="/edit-lesson/:lessonId"
+                element={isInstructor ? <EditLesson/> : <Navigate to="/instructor" />}
+            />     
             <Route
                 path="/my-courses"
                 element={isInstructor ? <MyCourses /> : <Navigate to="/instructor" />}

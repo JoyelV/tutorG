@@ -118,7 +118,7 @@ const UserTable: React.FC = () => {
                   onClick={() => toggleBlockStatus(user._id)}
                   className={`px-4 py-2 rounded ${user.isBlocked ? 'bg-green-500' : 'bg-red-500'} text-white`}
                 >
-                  {user.isBlocked ? 'Unblock' : 'Block'}
+                  {user.isBlocked ? 'Unblock' : 'Blocked'}
                 </button>
               </td>
             </tr>

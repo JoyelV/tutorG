@@ -8,6 +8,7 @@ import { otpRepository } from '../repositories/otpRepository';
 import jwt from 'jsonwebtoken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
 import User from '../models/User'
+import { userRepository } from '../repositories/userRepository';
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -160,11 +161,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     const message = await resetPasswordService(token, newPassword);
     res.status(200).json({ message });
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(error.message);
-    } else {
-      throw new Error('An unexpected error occurred');
-    }
+    res.status(400).json({ message: 'Registered Email is required' });
+    return;
   }
 }
 

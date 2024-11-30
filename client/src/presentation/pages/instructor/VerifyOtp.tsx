@@ -51,7 +51,7 @@ const VerifyOtp: React.FC = () => {
         </form>
 
         <p className="text-sm text-center text-gray-600 mt-4">
-          <span>Didn't receive the OTP?</span> <a href='/api/resendOtp' className="text-blue-500 hover:underline">Resend OTP</a>
+          <span>Didn't receive the OTP?</span> <a href='/instructor/resend-otp' className="text-blue-500 hover:underline">Resend OTP</a>
         </p>
       </div>
     </div>

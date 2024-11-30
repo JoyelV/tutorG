@@ -139,7 +139,7 @@ const CourseTable: React.FC = () => {
                           : "bg-green-500 hover:bg-green-700"
                       } text-white`}
                     >
-                      {course.isApproved ? "Block" : "Unblock"}
+                      {course.isApproved ? "Blocked" : "Unblock"}
                     </button>
                     {/* View Button */}
                     <button

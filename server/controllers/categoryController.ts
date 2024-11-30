@@ -57,6 +57,20 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
 };
 
 /**
+ * Fetch all Unblocked categories
+ */
+export const getUnblockedCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const categories = await Category.find({ status: false });
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    next({ status: 500, message: 'Error fetching categories', error });
+  }
+};
+
+
+/**
  * Delete a category
  */
 export const deleteCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
