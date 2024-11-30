@@ -6,6 +6,7 @@ import { verifyOTP, loginService, resetPasswordService } from '../services/instr
 import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/instructorService';
 import Instructor from '../models/Instructor';
 
@@ -266,4 +267,61 @@ console.log(updatedUser);
     console.error('Error updating user status:', error);
     res.status(500).json({ message: 'Failed to update user status', error: error });
   }
+};
+
+
+export const addTutors = async (req: Request, res: Response): Promise<void> => {
+  console.log("hi in addtutors controller function",req.body);
+  try {
+    const {
+        username,
+        email,
+        phone,
+        password,
+        headline,
+        areasOfExpertise,
+        bio,
+        highestQualification,
+        websiteLink,
+        isBlocked,
+        tutorRequest,
+    } = req.body;
+
+    if (!req.file) {
+      res.status(400).json({ success: false, message: 'No file uploaded' });
+      return;
+    }
+
+    const image = req.file ? req.file.path : "";
+
+    // Validation checks (can also be implemented using middleware)
+    if (!username || !email || !phone || !password) {
+        res.status(400).json({ message: 'Required fields are missing.' });
+        return;
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Save to the database
+    const newTutor = new Instructor({
+        username,
+        email,
+        phone,
+        password:hashedPassword, 
+        headline,
+        image,
+        areasOfExpertise,
+        bio,
+        highestQualification,
+        websiteLink,
+        isBlocked,
+        tutorRequest,
+    });
+
+    await newTutor.save();
+
+    res.status(201).json({ message: 'Tutor added successfully!', tutor: newTutor });
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+}
 };

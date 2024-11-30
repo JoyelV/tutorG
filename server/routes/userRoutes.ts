@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, refreshAccessToken } from '../controllers/userController';
 import upload from '../config/multerConfig';
-import { getCourses, getIndividualCourses } from '../controllers/courseController';
+import { getCourses, getIndividualCourses, getViewChapters } from '../controllers/courseController';
 import { studentAuth } from '../utils/authMiddleware';
 
 const router = Router();
@@ -25,5 +25,6 @@ router.put('/upload-image/:userId', upload.single('image'),uploadImage);
 //COURSE MANAGEMENT
 router.get('/courses',getCourses);
 router.get('/courses/:courseId',getIndividualCourses);
+router.get('/view-lessons/:courseId',getViewChapters);
 
 export default router;
