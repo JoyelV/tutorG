@@ -10,6 +10,9 @@ import DetailedCoursePage from '../pages/user/DetailedCoursePage';
 import ForgotPassword from '../components/users/ForgotPassword';
 import VerifyOtp from '../pages/user/VerifyOtp';
 import { PasswordReset } from '../pages/user/PasswordReset';
+import WishlistPage from '../pages/user/WishlistPage';
+import CartPage from '../pages/user/CartPage';
+import PaymentSuccessPage from '../pages/user/PaymentSuccessPage';
 
 const isLoggedIn = Boolean(localStorage.getItem('token'));
 
@@ -29,7 +32,10 @@ const UserRoutes = () => {
                 element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" />}
             />
             <Route path="/course-listing" element={<ViewCoursesListing />} />
-            <Route path="/course/details/:courseId" element={<DetailedCoursePage />} />
+            <Route path="/course/details/:courseId" element={isLoggedIn ?<DetailedCoursePage />: <Navigate to="/login" />}/>
+            <Route path="/wishlist" element={<WishlistPage />}/>
+            <Route path="/cart" element={<CartPage/>} />
+            <Route path="/paymentsuccess" element={<PaymentSuccessPage/>} />
         </Routes>
         <Footer />
         </>

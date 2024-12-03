@@ -112,6 +112,7 @@ const CoursePage = () => {
         <div className="hidden md:block md:w-1/3 w-full p-6">
           <div className="sticky top-4">
           <CourseSidebar 
+              course_Id ={courseData.courseId}
               courseFee={courseData.courseFee}
               duration={courseData.duration}
               level={courseData.level}

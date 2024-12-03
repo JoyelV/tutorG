@@ -6,6 +6,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import { assets } from '../../../assets/assets_user/assets';
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -28,9 +29,9 @@ const Navbar: React.FC = () => {
                         alt="Logo"
                         sx={{ width: 36, height: 36, borderRadius: 1 }}
                     />
-                    <Typography 
-                        variant="h5" 
-                        color="#F29D38" 
+                    <Typography
+                        variant="h5"
+                        color="#F29D38"
                         sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}
                     >
                         Tutor
@@ -62,19 +63,30 @@ const Navbar: React.FC = () => {
 
                 {/* Icons */}
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <IconButton color="default">
-                        <Badge badgeContent={4} color="secondary">
-                            <NotificationsIcon />
-                        </Badge>
-                    </IconButton>
-                    <IconButton color="default">
-                        <FavoriteBorderIcon />
-                    </IconButton>
-                    <IconButton color="default">
-                        <Badge badgeContent={3} color="secondary">
-                            <ShoppingCartIcon />
-                        </Badge>
-                    </IconButton>
+                    {/* Notifications Icon with Link */}
+                    <Link to="/notifications">
+                        <IconButton color="default">
+                            <Badge badgeContent={4} color="secondary">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
+                    </Link>
+
+                    {/* Wishlist Icon with Link */}
+                    <Link to="/user-profile">
+                        <IconButton color="default">
+                            <FavoriteBorderIcon />
+                        </IconButton>
+                    </Link>
+
+                    {/* Shopping Cart Icon with Link */}
+                    <Link to="/cart">
+                        <IconButton color="default">
+                            <Badge badgeContent={3} color="secondary">
+                                <ShoppingCartIcon />
+                            </Badge>
+                        </IconButton>
+                    </Link>
                 </Box>
 
                 {/* Auth Buttons */}

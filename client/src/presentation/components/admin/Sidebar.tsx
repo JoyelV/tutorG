@@ -71,7 +71,7 @@ const Sidebar: React.FC = () => {
                     </li>
                     <li>
                         <NavLink 
-                            to="#qa"
+                            to="/admin/qa"
                             className={`${baseLinkClasses} hover:bg-gray-700`}
                         >
                             <QuestionAnswer fontSize="small" className="mr-3" />

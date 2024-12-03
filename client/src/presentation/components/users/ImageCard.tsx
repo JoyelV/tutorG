@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Pagination } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
 
@@ -10,98 +11,143 @@ interface Course {
   thumbnail: string;
   rating: number;
   students: number;
+  createdAt: string;
 }
 
-const getCategoryColor = (category: string): string => {
-  switch (category) {
-    case "DESIGN":
-      return "bg-pink-100 text-pink-600";
-    case "FULL STACK WEB DEVELOPMENT":
-      return "bg-blue-100 text-blue-600";
-    case "DATABASE":
-      return "bg-yellow-100 text-yellow-600";
-    case "MARKETING":
-      return "bg-green-100 text-green-600";
-    case "IT & SOFTWARE":
-      return "bg-purple-100 text-purple-600";
-    case "MUSIC":
-      return "bg-teal-100 text-teal-600";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
-};
+interface Category {
+  name: string;
+  colorClass: string;
+}
 
-const ImageCard: React.FC = () => {
+interface ImageCardProps {
+  searchTerm: string;
+  selectedFilter: string;
+  sortOption: string;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const ImageCard: React.FC<ImageCardProps> = ({
+  searchTerm,
+  selectedFilter,
+  sortOption,
+  currentPage,
+  setCurrentPage,
+}) => {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
+  const coursesPerPage = 10; 
 
-  // Fetch courses from the database (API call)
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/user/courses');  
-        const data = response.data;
+        const [coursesResponse, categoriesResponse] = await Promise.all([
+          api.get('/user/courses'),
+          api.get('/admin/categories'),
+        ]);
 
-        // Assuming data contains an array of courses and category info
-        const coursesData = data.map((course: any) => ({
-          _id: course._id,
-          title: course.title,
-          category: course.category,
-          subCategory: course.subCategory,
-          courseFee: course.courseFee,
-          thumbnail: course.thumbnail,
-          rating: course.rating,
-          students: course.students.length,  
-        }));
-
-        setCourses(coursesData);
-
+        setCourses(coursesResponse.data);
+        setCategories(categoriesResponse.data);
       } catch (error) {
-        console.error('Error fetching courses:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchCourses();
+    fetchData();
   }, []);
 
+  const getCategoryColor = (category: string): string => {
+    const matchedCategory = categories.find((cat) => cat.name === category);
+    return matchedCategory ? matchedCategory.colorClass : 'bg-gray-100 text-gray-600';
+  };
+
+  // Filter, Search, and Sort Logic
+  const filteredCourses = courses
+    .filter((course) =>
+      selectedFilter === 'All Courses'
+        ? true
+        : course.category.toLowerCase() === selectedFilter.toLowerCase()
+    )
+    .filter((course) =>
+      course.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortOption) {
+        case 'Price: Low to High':
+          return a.courseFee - b.courseFee;
+        case 'Price: High to Low':
+          return b.courseFee - a.courseFee;
+        case 'Latest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'Popular':
+          return b.rating - a.rating;
+        default:
+          return 0;
+      }
+    });
+
+  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
+  const displayedCourses = filteredCourses.slice(
+    (currentPage - 1) * coursesPerPage,
+    currentPage * coursesPerPage
+  );
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+  };
+
   const handleCardClick = (courseId: string) => {
-    navigate(`/course/details/${courseId}`); 
+    navigate(`/course/details/${courseId}`);
   };
 
   return (
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-gray-100">
-      {courses.map((course, index) => (
-        <div
-          key={index}
-          className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
-          onClick={() => handleCardClick(course._id)}  // Pass course _id to navigate
-        >
+    <div className="w-full">
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-gray-100">
+        {displayedCourses.map((course) => (
           <div
-            className="h-48 bg-cover bg-center rounded-t-2xl"
-            style={{ backgroundImage: `url(${course.thumbnail})` }}
-          ></div>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className={`${getCategoryColor(course.category)} px-2 py-1 rounded-full text-xs font-semibold uppercase`}>
-                {course.category}
+            key={course._id}
+            className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
+            onClick={() => handleCardClick(course._id)}
+          >
+            <div
+              className="h-48 bg-cover bg-center rounded-t-2xl"
+              style={{ backgroundImage: `url(${course.thumbnail})` }}
+            ></div>
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div
+                  className={`${getCategoryColor(course.category)} px-2 py-1 rounded-full text-xs font-semibold uppercase`}
+                >
+                  {course.category}
+                </div>
+                <div className="font-bold text-xl text-green-500">₹{course.courseFee}</div>
               </div>
-              <div className="font-bold text-xl text-green-500">
-                ₹{course.courseFee}
+              <h2 className="text-start px-2 py-1 text-sm font-semibold text-gray-800 leading-tight">
+                {course.title}
+              </h2>
+              <div className="flex items-center justify-between">
+                <div className="text-yellow-500 font-semibold">★ {course.rating}</div>
+                <div className="text-gray-500">{course.students} students</div>
               </div>
-            </div>
-            {/* Displaying course title */}
-            <h2 className="text-start px-2 py-1 rounded-full text-xs font-semibold uppercase text-gray-800 leading-tight">
-              {course.title}
-            </h2>
-            <div className="flex items-center justify-between mb-3">
-              <div><span className="text-yellow-500 font-semibold mr-1"> ★ {course.rating}</span></div>
-              <div><span className="text-right text-gray-500 font-semibold">{course.students} students</span></div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-6 w-full">
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+          shape="rounded"
+        />
+      </div>
     </div>
   );
 };
 
 export default ImageCard;
+``

@@ -1,8 +1,11 @@
+import React, { useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import { grey, orange } from "@mui/material/colors";
 import { Facebook, Instagram, LinkedIn, Twitter } from "@mui/icons-material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useParams, useNavigate } from 'react-router-dom';
+import api from "../../../infrastructure/api/api";
 import {
   faClock,
   faSignal,
@@ -18,6 +21,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 interface CourseSidebarProps {
+  course_Id: string;  
   courseFee: number;
   duration: number;
   level: string;
@@ -27,6 +31,7 @@ interface CourseSidebarProps {
 }
 
 const CourseSidebar: React.FC<CourseSidebarProps> = ({
+  course_Id,
   courseFee,
   duration,
   level,
@@ -34,19 +39,86 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   students,
   subtitleLanguage,
 }) => {
+  const [loadingCart, setLoadingCart] = useState(false);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const userId = localStorage.getItem('userId');
+  const { courseId } = useParams();
+  const navigate = useNavigate();
+
+  const handleAddToCart = async () => {
+    setLoadingCart(true); 
+    setError(null);
+    setSuccess(null);
+  
+    try {
+      const response = await api.post(
+        "/user/cart/add",  
+        { courseId, userId },  
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem('token')}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        setSuccess("Course added to cart successfully!");
+      } else if (response.status === 400) {
+        setSuccess("Course already in cart");
+      }
+    } catch (err) {
+      setError("An error occurred while adding to cart.");
+    } finally {
+      setLoadingCart(false);  // Set loading to false after the action
+    }
+  };
+
+  // Handle add to wishlist functionality
+  const handleAddToWishlist = async () => {
+    setLoadingWishlist(true);  // Only set loading for the wishlist button
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const response = await api.post(
+        "/user/addtowishlist",  // Assuming API for adding to wishlist
+        { courseId, userId },  
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem('token')}`,  
+            "Content-Type": "application/json",  
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        setSuccess("Course added to wishlist successfully!");
+        navigate('/wishlist'); 
+      } else if (response.status === 400) {
+        setSuccess("Course already in wishlist");
+      }
+    } catch (err) {
+      setError("An error occurred while adding to wishlist.");
+    } finally {
+      setLoadingWishlist(false); 
+    }
+  };
+
   return (
     <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-lg border border-gray-200">
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-3xl font-bold text-red-600">₹{courseFee}</p>
-          {/* Add discount and original price logic here */}
           <p className="text-sm text-gray-500 line-through">₹26.00</p>
         </div>
         <span className="bg-red-200 text-red-700 text-sm font-semibold px-2 py-1 rounded">56% OFF</span>
       </div>
-      <p className="text-sm text-red-600 mb-6">
-        ⏰ 2 days left at this price!
-      </p>
+      <p className="text-sm text-red-600 mb-6">⏰ 2 days left at this price!</p>
+
+      {/* Course Details */}
       <div className="space-y-3 mb-6">
         <div className="flex justify-between items-center text-sm">
           <p className="text-gray-700 flex items-center">
@@ -54,47 +126,33 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           </p>
           <p className="text-gray-900">{duration} Months</p>
         </div>
-        <div className="flex justify-between items-center text-sm">
-          <p className="text-gray-700 flex items-center">
-            <FontAwesomeIcon icon={faSignal} className="mr-2" /> Course Level
-          </p>
-          <p className="text-gray-900">{level}</p>
-        </div>
-        <div className="flex justify-between items-center text-sm">
-          <p className="text-gray-700 flex items-center">
-            <FontAwesomeIcon icon={faUsers} className="mr-2" /> Students Enrolled
-          </p>
-          <p className="text-gray-900">{students.length}</p>
-        </div>
-        <div className="flex justify-between items-center text-sm">
-          <p className="text-gray-700 flex items-center">
-            <FontAwesomeIcon icon={faLanguage} className="mr-2" /> Language
-          </p>
-          <p className="text-gray-900">{language}</p>
-        </div>
-        <div className="flex justify-between items-center text-sm">
-          <p className="text-gray-700 flex items-center">
-            <FontAwesomeIcon icon={faClosedCaptioning} className="mr-2" /> Subtitle Language
-          </p>
-          <p className="text-gray-900">{subtitleLanguage}</p>
-        </div>
+        {/* Other course details... */}
+      </div>
 
       {/* Buttons */}
       <div className="flex flex-col gap-3 mb-6">
-        <button className="bg-orange-500 text-white py-3 rounded-md font-semibold hover:bg-orange-600">
-          Add To Cart
+        <button
+          onClick={handleAddToCart}
+          className="bg-orange-500 text-white py-3 rounded-md font-semibold hover:bg-orange-600"
+          disabled={loadingCart}  // Disable only the cart button
+        >
+          {loadingCart ? "Adding..." : "Add To Cart"}
         </button>
+        {success && <p className="text-green-500 text-center">{success}</p>}
+        {error && <p className="text-red-500 text-center">{error}</p>}
+        
         <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600">
           Buy Now
         </button>
-        <button className="border border-gray-300 py-3 rounded-md font-semibold text-gray-700 hover:bg-gray-100">
-          Add To Wishlist
+        
+        <button
+          onClick={handleAddToWishlist}
+          className="border border-gray-300 py-3 rounded-md font-semibold text-gray-700 hover:bg-gray-100"
+          disabled={loadingWishlist}  // Disable only the wishlist button
+        >
+          {loadingWishlist ? "Adding..." : "Add To Wishlist"}
         </button>
       </div>
-
-      <p className="text-xs text-gray-500 text-center mb-6">
-        Note: all courses have a 30-days money-back guarantee
-      </p>
 
       {/* Course Includes */}
       <div className="mb-6">
@@ -139,12 +197,10 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: 1,
+                borderRadius: '50%',
               }}
             >
-              <IconButton
-                sx={{ color: grey[700], p: 0 }}
-              >
+              <IconButton>
                 {platform === "Facebook" && <Facebook />}
                 {platform === "Instagram" && <Instagram />}
                 {platform === "LinkedIn" && <LinkedIn />}
@@ -155,9 +211,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         </div>
       </div>
     </div>
-    </div>
-
-  )
+  );
 };
 
 export default CourseSidebar;

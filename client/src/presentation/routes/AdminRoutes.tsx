@@ -10,8 +10,10 @@ import AddForm from '../pages/admin/AddTutor';
 import CategoryPage from '../pages/admin/CategoryPage';
 import CoursesList from '../pages/admin/coursesList';
 import ErrorBoundary from '../../utils/ErrorBoundary';
-import CourseView from '../pages/instructor/CourseView';
 import CourseViewPage from '../pages/admin/ViewCourse';
+import QATeam from '../pages/admin/QATable';
+import AddQALeadForm from '../pages/admin/AddQALead';
+import AddQASpecialistForm from '../pages/admin/AddQASpecialist';
 
 const AdminRoutes = () => {
     const values = localStorage.getItem('role');
@@ -47,7 +49,18 @@ const AdminRoutes = () => {
                 path="/users"
                 element={isAdmin ? <UsersPage />
                     : <Navigate to="/admin" />}/>
-
+            <Route
+                path="/qa"
+                element={isAdmin ? <QATeam />
+                    : <Navigate to="/admin" />}/>
+            <Route
+                path="/add-qaLead"
+                element={isAdmin ? <AddQALeadForm />
+                    : <Navigate to="/admin" />}/>
+            <Route
+                path="/add-qaSpecialist"
+                element={isAdmin ? <AddQASpecialistForm />
+                    : <Navigate to="/admin" />}/>
             <Route 
             path="/viewCoursePage/:courseId" element={isAdmin ? < CourseViewPage/>: <Navigate to="/admin" />}/>
 

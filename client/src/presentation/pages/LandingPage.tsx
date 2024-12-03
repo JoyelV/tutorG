@@ -1,6 +1,6 @@
 import HeroSection from '../components/common/HeroSection';
 import Topics from '../components/common/Topics';
-import ImageCard from '../components/users/ImageCard';
+import ImageCard from '../components/common/ImageCards'
 import RecentlyAddedCourses from '../components/common/RecentlyAddedCourses';
 import BecomeInstructor from '../components/common/BecomeInstructor';
 import TopInstructors from '../components/common/TopInstructors';

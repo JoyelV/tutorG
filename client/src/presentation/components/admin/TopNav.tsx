@@ -5,7 +5,7 @@ import { assets } from '../../../assets/assets_user/assets';
 const TopNav: React.FC = () => {
   return (
     <header className="flex justify-between items-center bg-white p-4 shadow">
-      <input type="text" placeholder="Search" className="border p-2 rounded" />
+      <b></b>
       <div className="flex items-center">
         <img
           src={assets.Instructor3} 
