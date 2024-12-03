@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
 import adminRoutes from './routes/adminRoutes';
 import instructorRoutes from './routes/instructorRoutes';
+import qaRoutes from './routes/qaRoutes'
 import connectCloudinary from '../server/config/cloudinary'
 import path from 'path';
 dotenv.config();
@@ -27,6 +28,7 @@ connectCloudinary();
 app.use('/api/user', userRoutes); 
 app.use('/api/admin', adminRoutes); 
 app.use('/api/instructor', instructorRoutes); 
+app.use('/api/qa', qaRoutes); 
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

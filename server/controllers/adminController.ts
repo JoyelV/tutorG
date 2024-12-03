@@ -10,6 +10,7 @@ import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileServi
 import { userRepository } from '../repositories/userRepository';
 import { instructorRepository } from '../repositories/instructorRepository';
 import Instructor from '../models/Instructor';
+import { qaRepository } from '../repositories/qaRepository';
 dotenv.config();
 
 /**
@@ -146,6 +147,16 @@ export const getAllInstructors = async (req: Request, res: Response): Promise<vo
   } catch (error) {
     console.error('Error fetching instructors:', error);
     res.status(500).json({ message: 'Failed to fetch instructors' });
+  }
+};
+
+export const getAllQA = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const qa = await qaRepository.getAllqa();
+    res.status(200).json(qa);
+  } catch (error) {
+    console.error("Error fetching QA data:", error);
+    res.status(500).json({ message: "Failed to fetch QA data" });
   }
 };
 

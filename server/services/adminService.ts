@@ -41,6 +41,7 @@ export const loginService = async (
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
+  console.log(isMatch,"isMatch at admin..........")
   if (!isMatch) {
       throw new Error('Invalid credentials');
   }

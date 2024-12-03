@@ -10,13 +10,15 @@ import {
     uploadImage,
     getAllUsers,
     getAllInstructors,
+    getAllQA,
   } 
 from '../controllers/adminController';
 import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { addTutors, toggleTutorStatus } from '../controllers/instructorController';
 import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
-import { courseStatus, getCourses, getViewChapters, getViewCourses } from '../controllers/courseController';
+import { courseStatus, getCourses, getViewCourses } from '../controllers/courseController';
+import { addQALead, addQASpecialist } from '../controllers/qaController';
 
 const router = Router();
 
@@ -35,9 +37,12 @@ router.put('/upload-image/:userId', upload.single('image'), uploadImage);
 //Student & Tutor Management
 router.get('/users',getAllUsers);
 router.get('/instructors',getAllInstructors);
+router.get('/qa', getAllQA);
 router.patch('/users/:userId', toggleUserStatus);
 router.patch('/instructors/:tutorId',toggleTutorStatus);
 router.post('/add-tutor', upload.single('image'), addTutors);
+router.post('/add-qaHead', upload.single('image'), addQALead);
+router.post('/add-qaEngineer', upload.single('image'), addQASpecialist);
 
 //Category Management
 router.get('/categories', getCategories);

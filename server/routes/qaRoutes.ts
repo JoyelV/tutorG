@@ -2,8 +2,6 @@ import { Router } from 'express';
 import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, refreshAccessToken } from '../controllers/userController';
 import upload from '../config/multerConfig';
 import { getCourses, getIndividualCourses, getViewChapters } from '../controllers/courseController';
-import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
-import { addToWishlist, getWishlistItems, removeWishlistItem } from '../controllers/wishlistController';
 
 const router = Router();
 
@@ -27,15 +25,5 @@ router.put('/upload-image/:userId', upload.single('image'),uploadImage);
 router.get('/courses',getCourses);
 router.get('/courses/:courseId',getIndividualCourses);
 router.get('/view-lessons/:courseId',getViewChapters);
-
-//CART MANAGEMENT
-router.post('/cart/add', addToCart);
-router.get('/getcart/:studentId', getCartItems);
-router.delete("/removecartitem/:cartItemId",removeCartItem);
-
-//WISHLIST MANAGEMENT
-router.post("/addtowishlist",addToWishlist);
-router.get("/wishlist/:studentId",getWishlistItems);
-router.delete("/removeitem/:wishlistItemId",removeWishlistItem);
 
 export default router;

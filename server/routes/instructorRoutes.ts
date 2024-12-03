@@ -15,7 +15,6 @@ import {
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
 import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, updateChapter } from '../controllers/courseController';
-import { tutorAuth } from '../utils/authMiddleware';
 import { getUnblockedCategories } from '../controllers/categoryController';
 
 const router = Router();
