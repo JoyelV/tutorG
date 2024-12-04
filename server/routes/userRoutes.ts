@@ -4,6 +4,7 @@ import upload from '../config/multerConfig';
 import { getCourses, getIndividualCourses, getViewChapters } from '../controllers/courseController';
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
 import { addToWishlist, getWishlistItems, removeWishlistItem } from '../controllers/wishlistController';
+import { stripePayment } from '../controllers/paymentController';
 
 const router = Router();
 
@@ -37,5 +38,8 @@ router.delete("/removecartitem/:cartItemId",removeCartItem);
 router.post("/addtowishlist",addToWishlist);
 router.get("/wishlist/:studentId",getWishlistItems);
 router.delete("/removeitem/:wishlistItemId",removeWishlistItem);
+
+//CHECKOUT
+router.post('/stripepayment',stripePayment)
 
 export default router;

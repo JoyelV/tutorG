@@ -8,7 +8,6 @@ import { otpRepository } from '../repositories/otpRepository';
 import jwt from 'jsonwebtoken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
 import User from '../models/User'
-import { userRepository } from '../repositories/userRepository';
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -263,4 +262,3 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: 'Failed to update user status', error: error });
   }
 };
-

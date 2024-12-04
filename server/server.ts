@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes';
 import adminRoutes from './routes/adminRoutes';
 import instructorRoutes from './routes/instructorRoutes';
 import qaRoutes from './routes/qaRoutes'
+import { handleStripeWebhook,  } from '../server/controllers/paymentController'
 import connectCloudinary from '../server/config/cloudinary'
 import path from 'path';
 dotenv.config();
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true })); 
 
 const MONGO_URI = process.env.MONGO_URI || '';
 mongoose.connect(MONGO_URI)
@@ -29,6 +31,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/instructor', instructorRoutes); 
 app.use('/api/qa', qaRoutes); 
+app.post('/stripe-webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
