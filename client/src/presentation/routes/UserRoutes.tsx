@@ -35,7 +35,7 @@ const UserRoutes = () => {
             <Route path="/course/details/:courseId" element={isLoggedIn ?<DetailedCoursePage />: <Navigate to="/login" />}/>
             <Route path="/wishlist" element={<WishlistPage />}/>
             <Route path="/cart" element={<CartPage/>} />
-            <Route path="/paymentsuccess" element={<PaymentSuccessPage/>} />
+            <Route path="/paymentSuccess" element={<PaymentSuccessPage/>} />
         </Routes>
         <Footer />
         </>

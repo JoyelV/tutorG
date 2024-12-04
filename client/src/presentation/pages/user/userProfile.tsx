@@ -21,7 +21,7 @@ const UserProfile = () => {
 
             <div className="mt-6">
                 {currentSection === 'Dashboard' && <Dashboard />}
-                {currentSection === 'Courses' &&  <div>Enrolled Courses Content</div>}
+                {currentSection === 'Courses' &&  <EnrolledCoursesPage />}
                 {currentSection === 'Teachers' && <div>Teachers Content</div>}
                 {currentSection === 'Message' && <div>Message Content</div>}
                 {currentSection === 'Wishlist' && <WishlistPage />}

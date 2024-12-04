@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { toast } from 'react-toastify';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
 
@@ -7,29 +9,14 @@ interface Course {
   title: string;
   subtitle: string;
   category: string;
-  subCategory: string;
-  language: string;
   level: string;
-  duration: number;
   courseFee: number;
   thumbnail: string;
-  trailer: string;
-  description: string;
-  learningPoints: string;
-  targetAudience: string;
-  requirements: string;
-  feedback: string;
-  instructorId: string;
-  status: string;
-  students: string[];
   rating: number;
-  isApproved: boolean;
-  createdAt: string;
 }
 
 interface CartItem {
   _id: string;
-  user: string;
   course: Course[];
 }
 
@@ -39,23 +26,22 @@ const CartPage = () => {
   const [error, setError] = useState('');
   const studentId = localStorage.getItem('userId');
 
-  // Fetch cart items on component mount
+  // Fetch cart items on mount
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
         const response = await api.get(`/user/getcart/${studentId}`);
         setCartItems(response.data);
-      } catch (err) {
-        setError('Error fetching cart items');
+      } catch {
+        setError('Failed to fetch cart items. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchCartItems();
-  }, []);
+  }, [studentId]);
 
-  // Remove item from cart
   const handleRemove = async (cartItemId: string) => {
     try {
       const result = await Swal.fire({
@@ -69,22 +55,45 @@ const CartPage = () => {
       });
 
       if (result.isConfirmed) {
-      await api.delete(`/user/removecartitem/${cartItemId}`);
-      setCartItems((prevItems) => prevItems.filter((item) => item._id !== cartItemId));
+        await api.delete(`/user/removecartitem/${cartItemId}`);
+        setCartItems((prevItems) => prevItems.filter((item) => item._id !== cartItemId));
+        Swal.fire('Deleted!', 'The item has been removed from your cart.', 'success');
       }
-    } catch (err) {
-      alert('Failed to remove item from cart');
+    } catch {
+      Swal.fire('Error', 'Failed to remove the item. Please try again.', 'error');
     }
   };
 
-  // Move item to wishlist
   const handleMoveToWishlist = async (cartItemId: string, courseId: string) => {
     try {
       await api.post(`/user/addtowishlist`, { userId: studentId, courseId });
       await api.delete(`/user/removecartitem/${cartItemId}`);
       setCartItems((prevItems) => prevItems.filter((item) => item._id !== cartItemId));
+      Swal.fire('Moved!', 'The item has been added to your wishlist.', 'success');
+    } catch {
+      Swal.fire('Error', 'Failed to move the item to wishlist. Please try again.', 'error');
+    }
+  };
+
+  const handlePaymentSelection = async () => {
+    try {
+      const paymentData = cartItems.map(item => ({
+        studentId:studentId,
+        courseId: item.course[0]._id,
+        courseFee: item.course[0].courseFee,
+        title: item.course[0].title,
+        thumbnail: item.course[0].thumbnail
+      }));
+      
+      const response = await api.post(`/user/stripepayment`, { cartItems: paymentData });
+      console.log(response.data.url,":url")
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        toast.error('Failed to initiate payment. Please try again.');
+      }
     } catch (err) {
-      alert('Failed to move item to wishlist');
+      toast.error('Payment processing failed. Please try again.');
     }
   };
 
@@ -150,7 +159,10 @@ const CartPage = () => {
             <div className="text-xl font-bold">
               Total: ₹{cartItems.reduce((total, item) => total + item.course[0].courseFee, 0)}
             </div>
-            <button className="px-6 py-3 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600">
+            <button
+              onClick={handlePaymentSelection}
+              className="px-6 py-3 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600"
+            >
               Checkout
             </button>
           </div>

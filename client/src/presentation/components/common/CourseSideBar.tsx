@@ -8,9 +8,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from "../../../infrastructure/api/api";
 import {
   faClock,
-  faSignal,
-  faUsers,
-  faLanguage,
   faClosedCaptioning,
   faInfinity,
   faUndo,
@@ -31,13 +28,8 @@ interface CourseSidebarProps {
 }
 
 const CourseSidebar: React.FC<CourseSidebarProps> = ({
-  course_Id,
   courseFee,
   duration,
-  level,
-  language,
-  students,
-  subtitleLanguage,
 }) => {
   const [loadingCart, setLoadingCart] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
@@ -134,21 +126,21 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         <button
           onClick={handleAddToCart}
           className="bg-orange-500 text-white py-3 rounded-md font-semibold hover:bg-orange-600"
-          disabled={loadingCart}  // Disable only the cart button
+          disabled={loadingCart}  
         >
           {loadingCart ? "Adding..." : "Add To Cart"}
         </button>
         {success && <p className="text-green-500 text-center">{success}</p>}
         {error && <p className="text-red-500 text-center">{error}</p>}
         
-        <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600">
+        {/* <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600">
           Buy Now
-        </button>
+        </button> */}
         
         <button
           onClick={handleAddToWishlist}
           className="border border-gray-300 py-3 rounded-md font-semibold text-gray-700 hover:bg-gray-100"
-          disabled={loadingWishlist}  // Disable only the wishlist button
+          disabled={loadingWishlist}  
         >
           {loadingWishlist ? "Adding..." : "Add To Wishlist"}
         </button>
