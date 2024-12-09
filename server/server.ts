@@ -5,17 +5,24 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
 import adminRoutes from './routes/adminRoutes';
 import instructorRoutes from './routes/instructorRoutes';
-import qaRoutes from './routes/qaRoutes'
-import { handleStripeWebhook,  } from '../server/controllers/paymentController'
-import connectCloudinary from '../server/config/cloudinary'
+import { handleStripeWebhook } from '../server/controllers/paymentController';
+import connectCloudinary from '../server/config/cloudinary';
 import path from 'path';
+import cookieParser from 'cookie-parser';
+
 dotenv.config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-app.use('/public', express.static(path.join(__dirname, 'public')));
+
+app.use(cors({
+  origin: 'http://localhost:3000', 
+  credentials: true, 
+}));
+
+app.use(cookieParser());  
+app.use(express.json());   
 app.use(express.urlencoded({ extended: true })); 
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = process.env.MONGO_URI || '';
 mongoose.connect(MONGO_URI)
@@ -24,16 +31,14 @@ mongoose.connect(MONGO_URI)
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
-  
+
 connectCloudinary();
 
-app.use('/api/user', userRoutes); 
-app.use('/api/admin', adminRoutes); 
-app.use('/api/instructor', instructorRoutes); 
-app.use('/api/qa', qaRoutes); 
-app.post('/stripe-webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/instructor', instructorRoutes);
+app.post('/stripe-webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
 
-// Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal server error' });

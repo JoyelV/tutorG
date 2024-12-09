@@ -9,6 +9,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/instructorService';
 import Instructor from '../models/Instructor';
+import orderModel from '../models/Orders';
+import { AuthenticatedRequest } from '../utils/VerifyToken';
 
 dotenv.config();
 
@@ -170,9 +172,15 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
   }
 }
 
-export const fetchUserProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
-  console.log("fetchUserProfile", req.params);
+export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
+  console.log("fetchUserProfile", userId);
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
+
   try {
     const user = await getUserProfileService(userId);
     console.log("user", user);
@@ -183,12 +191,17 @@ export const fetchUserProfile = async (req: Request, res: Response): Promise<voi
   }
 }
 
-export const editUserProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
-  const updates = req.body;
-  console.log("req.params", req.params);
+export const editUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
 
+  const updates = req.body;
+  console.log("userId", userId);
   console.log("updates", updates);
+
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     const updatedUser = await updateUserProfile(userId, updates);
@@ -200,10 +213,16 @@ export const editUserProfile = async (req: Request, res: Response): Promise<void
   }
 }
 
-export const editPassword = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const editPassword = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   const { currentPassword, newPassword } = req.body;
   console.log("req.params in editPassword", req.params);
+
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     await updatePassword(userId, currentPassword, newPassword);
@@ -213,14 +232,20 @@ export const editPassword = async (req: Request, res: Response): Promise<void> =
   }
 }
 
-export const uploadImage = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const uploadImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   if (!req.file) {
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
   console.log("req.file.path", req.file.path);
   const imageUrl = req.file ? req.file.path : "";
+
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     const updatedUser = await uploadUserImage(userId, imageUrl);
@@ -326,3 +351,25 @@ export const addTutors = async (req: Request, res: Response): Promise<void> => {
 }
 };
 
+export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const studentId = req.userId;
+
+  try {
+    const orders = await orderModel.find({ studentId })
+    .populate('tutorId', 'username image') 
+    .exec();
+    console.log(orders,"orders");
+
+  // Filter out duplicate tutorIds
+  const uniqueOrders = orders.filter((order, index, self) =>
+    index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString())
+  );
+    
+      console.log(uniqueOrders,"uniqueOrders");
+ 
+      res.status(200).json(uniqueOrders); 
+  } catch (error) {
+    console.error('Error fetching tutors:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}

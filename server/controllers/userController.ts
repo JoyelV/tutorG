@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { sendOTPEmail } from '../utils/emailService';
 import { generateOTP } from '../utils/otpGenerator';
-import { verifyOTP, loginService, resetPasswordService } from '../services/authService';
+import { verifyOTP, loginService, resetPasswordService, googleLoginService } from '../services/authService';
 import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
+import orderModel from '../models/Orders';
 import jwt from 'jsonwebtoken';
+import { AuthenticatedRequest } from '../utils/VerifyToken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
 import User from '../models/User'
 dotenv.config();
@@ -94,6 +96,37 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   }
 };
 
+export const googleSignIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { token: googleToken } = req.body;
+  console.log(req.body,"body in googledata")
+  if (!googleToken) {
+    res.status(400).json({ message: 'Google token is required' });
+    return;
+  }
+
+  try {
+    const { token, refreshToken, user } = await googleLoginService(googleToken);
+    console.log(token, refreshToken, user,"token, refreshToken, user")
+
+    res.status(200).json({
+      message: 'Google Sign-In successful',
+      token,
+      refreshToken,
+      user: {
+        id: user._id, 
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error:any) {
+    console.error('Google Sign-In error:', error.message || error);
+    res.status(500).json({
+      message: 'Google Sign-In failed. Please try again.',
+    });
+  }
+};
+
 export const refreshAccessToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { refreshToken } = req.body;
 
@@ -165,12 +198,24 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
   }
 }
 
-export const fetchUserProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
-  console.log("fetchUserProfile", req.params);
+export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+  
+  console.log(userId,"userId hi second");
+  
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
+
   try {
     const user = await getUserProfileService(userId);
-    console.log("user", user);
+    console.log(user,"user");
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
 
     res.status(200).json(user);
   } catch (error: unknown) {
@@ -178,12 +223,16 @@ export const fetchUserProfile = async (req: Request, res: Response): Promise<voi
   }
 }
 
-export const editUserProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const editUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
   const updates = req.body;
   console.log("req.params", req.params);
 
   console.log("updates", updates);
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     const updatedUser = await updateUserProfile(userId, updates);
@@ -195,10 +244,14 @@ export const editUserProfile = async (req: Request, res: Response): Promise<void
   }
 }
 
-export const editPassword = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const editPassword = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
   const { currentPassword, newPassword } = req.body;
   console.log("req.params in editPassword", req.params);
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     await updatePassword(userId, currentPassword, newPassword);
@@ -208,14 +261,20 @@ export const editPassword = async (req: Request, res: Response): Promise<void> =
   }
 }
 
-export const uploadImage = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const uploadImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   if (!req.file) {
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
   console.log("req.file.path", req.file.path);
   const imageUrl = req.file ? req.file.path : "";
+  
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     const updatedUser = await uploadUserImage(userId, imageUrl);
@@ -260,5 +319,29 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
   } catch (error) {
     console.error('Error updating user status:', error);
     res.status(500).json({ message: 'Failed to update user status', error: error });
+  }
+};
+
+export const getStudentsByInstructor = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const instructorId = req.userId;
+
+    const orders = await orderModel
+    .find({
+      tutorId: instructorId,
+      studentId: { $ne: null },  
+    })
+    .populate("studentId", "username email phone image gender")
+    .populate("courseId", "title level"); 
+
+    if (orders.length === 0) {
+      res.status(404).json({ message: "No students found for this instructor." });
+      return;
+    }
+    console.log(orders)
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching students by instructor:', error);
+    res.status(500).json({ message: 'Error fetching students' });
   }
 };

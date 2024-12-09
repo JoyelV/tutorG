@@ -1,6 +1,7 @@
 import { Request, Response,NextFunction } from 'express';
 import CartModel from '../models/Cart';
 import orderModel from '../models/Orders';
+import { AuthenticatedRequest } from '../utils/VerifyToken';
 
 export const addToCart = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
     try {
@@ -8,28 +9,29 @@ export const addToCart = async (req: Request, res: Response, next: NextFunction)
         
         const alreadyEnrolled = await orderModel.findOne({ courseId: courseId, studentId: userId });
         if (alreadyEnrolled) {
-             res.status(400).json({ message: "Student is already enrolled in this course" });
+             res.status(200).json({ message: "Student is already enrolled in this course" });
              return;
         }
         const cartItemExisted = await CartModel.findOne({ user: userId, course: courseId });
         if (cartItemExisted) {
-            res.status(400).json({ message: "Course already exists in the cart" });
+            res.status(200).json({ message: "Course already exists in the cart" });
             return ;
         } 
         const newCartItem = new CartModel({ user: userId, course: courseId });
         await newCartItem.save();
         
-        res.status(200).json({ message: "Course added to cart successfully" });
+        res.status(201).json({ message: "Course added to cart successfully" });
         return ;
         
     } catch (error) {
-        console.error("Error occurred while adding to cart", error);
+        // console.error("Error occurred while adding to cart", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-export const getCartItems = async (req: Request, res: Response) => {
-    const { studentId } = req.params;
+export const getCartItems = async (req: AuthenticatedRequest, res: Response) => {
+    const studentId = req.userId;
+
     console.log(studentId, "........................");
     
     try {

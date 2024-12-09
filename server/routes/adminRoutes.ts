@@ -10,15 +10,14 @@ import {
     uploadImage,
     getAllUsers,
     getAllInstructors,
-    getAllQA,
   } 
 from '../controllers/adminController';
 import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { addTutors, toggleTutorStatus } from '../controllers/instructorController';
 import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
-import { courseStatus, getCourses, getViewCourses } from '../controllers/courseController';
-import { addQALead, addQASpecialist } from '../controllers/qaController';
+import { courseStatus, getCourseDatas, getViewCourses, publishCourse } from '../controllers/courseController';
+import { addReview } from '../controllers/reviewController';
 
 const router = Router();
 
@@ -34,15 +33,12 @@ router.put('/update/:userId', editUserProfile);
 router.put('/update-password/:userId', editPassword);
 router.put('/upload-image/:userId', upload.single('image'), uploadImage);
 
-//Student & Tutor Management
+//Student,QA & Tutor Management
 router.get('/users',getAllUsers);
 router.get('/instructors',getAllInstructors);
-router.get('/qa', getAllQA);
 router.patch('/users/:userId', toggleUserStatus);
 router.patch('/instructors/:tutorId',toggleTutorStatus);
 router.post('/add-tutor', upload.single('image'), addTutors);
-router.post('/add-qaHead', upload.single('image'), addQALead);
-router.post('/add-qaEngineer', upload.single('image'), addQASpecialist);
 
 //Category Management
 router.get('/categories', getCategories);
@@ -52,7 +48,9 @@ router.patch('/categories/block/:id', deleteCategory);
 
 //Course Management
 router.patch('/course-status/:id',courseStatus);
-router.get('/courseData',getCourses);
+router.get('/courseData',getCourseDatas);
 router.get('/courseDetailview/:id',getViewCourses);
+router.put('/publish/:courseId',publishCourse);
+router.post('/courses/:courseId', addReview);
 
 export default router;

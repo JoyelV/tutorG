@@ -2,7 +2,9 @@ import bcrypt from 'bcrypt';
 import { otpRepository } from '../repositories/otpRepository';
 import { userRepository } from '../repositories/userRepository';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { IUser } from '../entities/IUser';
+import User from '../models/User';
 
 export const verifyOTP = async (email: string, otp: string): Promise<string> => {
   const storedEntry = otpRepository.getOtp(email);
@@ -56,7 +58,7 @@ export const loginService = async (
   const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' } 
+      { expiresIn: '30m' } 
   );
 
   const refreshToken = jwt.sign(
@@ -76,6 +78,61 @@ export const loginService = async (
       },
   };
 };
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleLoginService = async (googleToken: string) => {
+  const ticket = await googleClient.verifyIdToken({
+    idToken: googleToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  console.log(ticket,"ticket in googledata")
+
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email || !payload.name) {
+    throw new Error('Invalid Google token or payload');
+  }
+  console.log(payload,"payload in googledata")
+
+  const email = payload.email;
+  let user = await userRepository.findUserByEmail(email);
+
+  if (!user) {
+    const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+    console.log(generatedPassword,"gemerated password")
+    const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+      
+    user = await User.create({
+      email: payload.email,
+      username: payload.name,
+      password:hashedPassword,
+      role: 'user',
+    });
+  }
+  console.log(user,"user in googledata")
+
+  if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT secrets are not set in environment variables');
+  }
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '30m' }
+  );
+
+  const refreshToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { token, refreshToken, user };
+};
+
+
 
 export const resetPasswordService = async (token: string, newPassword: string): Promise<string> => {
   try {

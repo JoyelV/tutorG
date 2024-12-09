@@ -1,18 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import WishListModel from '../models/wishlist';
+import { AuthenticatedRequest } from '../utils/VerifyToken';
 
 export const addToWishlist = async(req:Request, res:Response,next: NextFunction):Promise<void> =>{
     try {
         const { userId, courseId } = req.body; 
         const itemExisted = await WishListModel.findOne({user:userId,course:courseId})
         if(itemExisted){
-             res.status(400).json({message:"Course already existed in Wishlist"})
+             res.status(200).json({message:"Course already existed in Wishlist"})
              return
         } 
         else{
             const newItem = new WishListModel({user:userId,course:courseId});
             await newItem.save();
-            res.status(200).json({message:"Course added to wishlist successfully"})
+            res.status(201).json({message:"Course added to wishlist successfully"})
             return 
         }
     } catch (error) {
@@ -21,8 +22,9 @@ export const addToWishlist = async(req:Request, res:Response,next: NextFunction)
     }
 }
 
-export const  getWishlistItems = async(req:Request, res:Response,next: NextFunction):Promise<void> =>{
-    const studentId = req.params.studentId;
+export const  getWishlistItems = async(req:AuthenticatedRequest, res:Response,next: NextFunction):Promise<void> =>{
+    const studentId = req.userId;
+
     console.log(studentId,"........................");
     
     try {
