@@ -30,12 +30,12 @@ interface WishlistItem {
 
 function WishList() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const studentId = localStorage.getItem('userId');
+  
   const userId = localStorage.getItem('userId');
 
   const fetchWishlistItems = useCallback(async () => {
     try {
-      const response = await api.get(`/user/wishlist/${studentId}`);
+      const response = await api.get(`/user/wishlist`);
       if (response.data) {
         setWishlistItems(response.data);
       } else {
@@ -45,11 +45,11 @@ function WishList() {
       console.error('Error fetching wishlist items:', error);
       toast.error('Failed to load wishlist items.');
     }
-  }, [studentId]);
+  }, [userId]);
 
   useEffect(() => {
-    if (studentId) fetchWishlistItems();
-  }, [studentId, fetchWishlistItems]);
+    if (userId) fetchWishlistItems();
+  }, [userId, fetchWishlistItems]);
 
   const handleRemove = useCallback(async (wishlistItemId: string) => {
     try {
@@ -83,8 +83,17 @@ function WishList() {
 
       try {
         const response = await api.post(`/user/cart/add`, { userId, courseId });
-        toast.success(response.data.message);
+        const { message } = response.data;
 
+      if (message === "Student is already enrolled in this course") {
+        toast.info(message); 
+        return;
+      }else if(message === "Course already exists in the cart"){
+        toast.info(message); 
+        return;
+      }else{
+        toast.success(message);        
+      }
         await api.delete(`/user/removeitem/${wishlistItemId}`);
         setWishlistItems((prev) => prev.filter((item) => item._id !== wishlistItemId));
         Swal.fire('Moved!', 'The item has been added to your cart.', 'success');
@@ -93,7 +102,7 @@ function WishList() {
         toast.error(error.response?.data?.message || 'Failed to add the item to the cart.');
       }
     },
-    [studentId]
+    [userId]
   );
 
   return (

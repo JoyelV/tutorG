@@ -71,15 +71,6 @@ const Sidebar: React.FC = () => {
                     </li>
                     <li>
                         <NavLink 
-                            to="/admin/qa"
-                            className={`${baseLinkClasses} hover:bg-gray-700`}
-                        >
-                            <QuestionAnswer fontSize="small" className="mr-3" />
-                            QA Team
-                        </NavLink>
-                    </li>
-                    <li>
-                        <NavLink 
                             to="/admin/adminProfile"
                             className={({ isActive }) =>
                                 `${baseLinkClasses} ${isActive ? activeLinkClasses : 'hover:bg-gray-700'}`

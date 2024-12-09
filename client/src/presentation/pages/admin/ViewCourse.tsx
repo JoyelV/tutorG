@@ -10,7 +10,7 @@ import Sidebar from '../../components/admin/Sidebar';
 import CourseHeader from '../../components/courses/courseHeader';
 import CurriculumBox from '../../components/courses/CourseCurriculumBox';
 
-type Section = 'Description' | 'Requirements' | 'Rating' | 'Feedback';
+type Section = 'Description' | 'Requirements' | 'Feedback';
 
 const CourseViewPage = () => {
   const [currentSection, setCurrentSection] = useState<Section>('Description');
@@ -107,7 +107,6 @@ const CourseViewPage = () => {
               {currentSection === 'Requirements' && (
                 <CourseRequirements requirements={courseData.requirements} />
               )}
-              {currentSection === 'Rating' && <CourseRating />}
               {currentSection === 'Feedback' && <StudentFeedback />}
             </div>
           </div>

@@ -17,7 +17,7 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
   const url = 'http://localhost:5000';
   useEffect(() => {
     const fetchInstructorData = async () => {
-      const response = await api.get(`/instructor/profile/${instructorId}`)
+      const response = await api.get(`/user/instructorData/${instructorId}`)
       setInstructorData(response.data);
     };
 

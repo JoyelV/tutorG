@@ -13,6 +13,10 @@ import CourseView from '../pages/instructor/CourseView';
 import AddLesson from '../pages/instructor/AddLesson';
 import EditCourse from '../pages/instructor/EditCourse';
 import EditLesson from '../pages/instructor/EditLesson'
+import AddQuizForm from '../pages/instructor/AddQuiz';
+import EditQuizForm from '../pages/instructor/EditQuizForm';
+import StudentsList from '../pages/instructor/MyStudentsList';
+import Pagenotfound from '../components/common/PageNotFound';
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
     console.log(value,"ins")
@@ -46,14 +50,22 @@ const InstructorRoutes = () => {
                 path="/my-courses"
                 element={isInstructor ? <MyCourses /> : <Navigate to="/instructor" />}
             />    
+            <Route
+                path="/my-students"
+                element={isInstructor ? <StudentsList /> : <Navigate to="/instructor" />}
+            />  
             <Route path="/course-view/:courseId" element={isInstructor ? <ErrorBoundary>< CourseView /></ErrorBoundary>: <Navigate to="/instructor" />}
             />
             <Route path="/course-edit/:courseId" element={isInstructor ? <EditCourse />: <Navigate to="/instructor" />} 
             />
+            
+            <Route path="/addQuiz/:courseId" element={isInstructor ?<AddQuizForm />: <Navigate to="/instructor" />}/>
+            <Route path="/quizzes/:courseId/edit/:quizId" element={isInstructor ?<EditQuizForm />: <Navigate to="/instructor" />}/>
             <Route
                 path="/instructor-Profile"
                 element={isInstructor ? <InstructorProfile /> : <Navigate to="/instructor" />}
             />
+            <Route path="*" element={<Pagenotfound />} />
         </Routes>
     );
 };

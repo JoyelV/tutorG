@@ -6,6 +6,7 @@ import api from "../../../infrastructure/api/api";
 import Sidebar from "../admin/Sidebar";
 import TopNav from "./TopNav";
 import Swal from 'sweetalert2';
+import Pagination from '@mui/material/Pagination';
 
 interface Course {
   _id: string;
@@ -24,6 +25,8 @@ const CourseTable: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [coursesPerPage] = useState<number>(5); 
 
   const navigate = useNavigate(); 
 
@@ -44,8 +47,8 @@ const CourseTable: React.FC = () => {
   const toggleBlockStatus = async (courseId: string, isCurrentlyApproved: boolean) => {
     try {
       const result = await Swal.fire({
-        title: 'Block/Unblock Category?',
-        text: 'Are you sure you want to block/unblock this category?',
+        title: 'Block/Unblock Course?',
+        text: 'Are you sure you want to block/unblock this course?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Proceed!',
@@ -53,21 +56,19 @@ const CourseTable: React.FC = () => {
       });
   
       if (result.isConfirmed) {
-      const response = await api.patch(`/admin/course-status/${courseId}`);
-      const updatedCourse = response.data;
-      setCourses((prevCourses) =>
-        prevCourses.map((course) =>
-          course._id === courseId
-            ? { ...course, isApproved: updatedCourse.isApproved }
-            : course
-        )
-      );
-      if (updatedCourse.isApproved) {
-        toast.success("Course has been Unblocked successfully!");
-      } else {
-        toast.error("Course has been Blocked successfully!");
+        const response = await api.patch(`/admin/course-status/${courseId}`);
+        const updatedCourse = response.data;
+        setCourses((prevCourses) =>
+          prevCourses.map((course) =>
+            course._id === courseId
+              ? { ...course, isApproved: updatedCourse.isApproved }
+              : course
+          )
+        );
+        toast.success(
+          updatedCourse.isApproved ? "Course has been Unblocked successfully!" : "Course has been Blocked successfully!"
+        );
       }
-    }
     } catch (err) {
       console.error("Error updating block status:", err);
       setError("Failed to update block status");
@@ -80,6 +81,11 @@ const CourseTable: React.FC = () => {
   const filteredCourses = courses.filter((course) =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const indexOfLastCourse = currentPage * coursesPerPage;
+  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+  const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
+  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -114,7 +120,7 @@ const CourseTable: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredCourses.map((course) => (
+              {currentCourses.map((course) => (
                 <tr key={course._id} className="border-t">
                   <td className="p-4">
                     <img
@@ -130,7 +136,6 @@ const CourseTable: React.FC = () => {
                     {new Date(course.createdAt).toLocaleDateString("en-US")}
                   </td>
                   <td className="p-4 flex space-x-2">
-                    {/* Block/Unblock Button */}
                     <button
                       onClick={() => toggleBlockStatus(course._id, course.isApproved)}
                       className={`px-4 py-2 rounded ${
@@ -141,7 +146,6 @@ const CourseTable: React.FC = () => {
                     >
                       {course.isApproved ? "Blocked" : "Unblock"}
                     </button>
-                    {/* View Button */}
                     <button
                       onClick={() => navigate(`/admin/viewCoursePage/${course._id}`)}
                       className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded"
@@ -153,6 +157,15 @@ const CourseTable: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+        {/* Pagination */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(_, page) => setCurrentPage(page)}
+            color="primary"
+          />
         </div>
       </main>
     </div>

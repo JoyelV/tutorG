@@ -14,9 +14,9 @@ const AddLessonPage: React.FC = () => {
   const navigate = useNavigate();
 
   const validateInput = (input: string): boolean => {
-    const regex = /^[a-zA-Z]{9}[a-zA-Z0-9 ]*$/;
-    return regex.test(input) && input.trim() !== ''; 
-  };  
+    const regex = /^[a-zA-Z]{4}[a-zA-Z0-9 ]*$/;
+    return regex.test(input) && input.trim() !== '';
+  };
 
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,6 +126,10 @@ const AddLessonPage: React.FC = () => {
     }
   };
 
+  const handleClose = () => {
+    navigate(`/instructor/course-view/${courseId}`);
+  };
+
   return (
     <div className="p-6">
       <div className="p-6 max-w-4xl mx-auto bg-white rounded shadow">
@@ -137,8 +141,8 @@ const AddLessonPage: React.FC = () => {
               type="text"
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value.trimStart())} 
-              onBlur={(e) => setTitle(e.target.value.trim())} 
+              onChange={(e) => setTitle(e.target.value.trimStart())}
+              onBlur={(e) => setTitle(e.target.value.trim())}
               className="block w-full border p-2 rounded"
               disabled={loading}
             />
@@ -148,7 +152,7 @@ const AddLessonPage: React.FC = () => {
             <textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value.trimStart())} 
+              onChange={(e) => setDescription(e.target.value.trimStart())}
               onBlur={(e) => setDescription(e.target.value.trim())}
               className="block w-full border p-2 rounded"
               disabled={loading}
@@ -174,13 +178,23 @@ const AddLessonPage: React.FC = () => {
               disabled={loading}
             />
           </div>
-          <button
-            type="submit"
-            className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={loading}
-          >
-            {loading ? 'Uploading...' : 'Add Lesson'}
-          </button>
+          <div className="flex space-x-4">
+            <button
+              type="submit"
+              className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading}
+            >
+              {loading ? 'Uploading...' : 'Add Lesson'}
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+
         </form>
       </div>
     </div>

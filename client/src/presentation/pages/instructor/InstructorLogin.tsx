@@ -29,10 +29,10 @@ const InstructorLogin: React.FC = () => {
             localStorage.setItem('role', userRole);
             localStorage.setItem('username',username);
 
-            if (userRole !== 'instructor') {
-                setError('Access denied. Only Instructors can log in.');
-                return;
-            }
+            // if (userRole !== 'instructor') {
+            //     setError('Access denied. Only Instructors can log in.');
+            //     return;
+            // }
             console.log("userRole in instructor",userRole);
             navigate('/instructor/instructor-dashboard');
         } catch (error) {

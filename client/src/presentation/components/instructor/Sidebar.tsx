@@ -62,6 +62,11 @@ const Sidebar: React.FC = () => {
               </a>
             </li>
             <li className="my-2">
+              <a href="/instructor/my-students" className="block py-2 px-4 hover:bg-gray-700">
+                My Students
+              </a>
+            </li>
+            <li className="my-2">
               <a href="#" className="block py-2 px-4 hover:bg-gray-700">
                 My Earnings
               </a>

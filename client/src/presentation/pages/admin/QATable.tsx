@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; 
 import api from "../../../infrastructure/api/api";
 import Sidebar from "../../components/admin/Sidebar";
 import TopNav from "../../components/admin/TopNav";
@@ -7,39 +9,90 @@ import TopNav from "../../components/admin/TopNav";
 const QATeamTable: React.FC = () => {
   const [activeTab, setActiveTab] = useState("QA Specialist");
   const [searchQuery, setSearchQuery] = useState("");
-  const [qaData, setQaData] = useState([]); 
-  const [loading, setLoading] = useState(true); 
+  const [qaData, setQaData] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-useEffect(() => {
-  api
-    .get('/admin/qa')
-    .then((response) => {
-      setQaData(response.data);
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error fetching QA data:", error);
-      setLoading(false);
-    });
-}, []);
+  useEffect(() => {
+    if (activeTab === "QA Specialist") {
+      fetchQAData();
+    } else if (activeTab === "Requests") {
+      fetchCourses();
+    }
+  }, [activeTab]);
 
-  const filteredData = qaData.filter((item: any) =>
-    Object.values(item).some((value) =>
-      String(value).toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );  
+  const fetchQAData = () => {
+    setLoading(true);
+    api
+      .get("/admin/qa")
+      .then((response) => {
+        setQaData(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching QA data:", error);
+        setLoading(false);
+      });
+  };
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/admin/courseData");
+      setCourses(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      setError("Failed to fetch courses");
+      setLoading(false);
+    }
+  };
+
+  const handleToggleDelete = (id: string, isDeleted: boolean) => {
+    const updatedStatus = !isDeleted;
+    api
+      .put(`/admin/qa/${id}`, { isDeleted: updatedStatus })
+      .then(() => {
+        toast.success(
+          `QA Specialist has been ${updatedStatus ? "blocked" : "unblocked"} successfully`
+        );
+        fetchQAData();
+      })
+      .catch((error) => {
+        toast.error("Error updating QA Specialist status");
+        console.error("Error updating QA Specialist status:", error);
+      });
+  };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
 
-  const handleAddClick = () => {
-    navigate("/admin/add-qaLead");
+  const handleAddQASpecialistClick = () => {
+    navigate("/admin/add-qa");
   };
 
-  const handleAddQASpecialistClick = () => {
-    navigate("/admin/add-qaSpecialist");
+  const handleUpdate = (id: string) => {
+    navigate(`/admin/update-qa/${id}`);
+  };
+
+  const filteredData = qaData.filter((item: any) =>
+    Object.values(item).some((value) =>
+      String(value).toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
+  const handlePublishCourse = async (courseId: string) => {
+    try {
+      await api.put(`/admin/publish/${courseId}`);
+      toast.success("Course published successfully!");
+      fetchCourses();
+    } catch (error) {
+      toast.error("Failed to publish course");
+      console.error("Error publishing course:", error);
+    }
   };
 
   return (
@@ -56,6 +109,9 @@ useEffect(() => {
 
         {/* Main Body Content */}
         <div className="pt-16 p-6 overflow-y-auto h-full">
+          {/* Toast Container */}
+          <ToastContainer />
+
           {/* Search Bar */}
           <div className="mb-4">
             <input
@@ -69,7 +125,7 @@ useEffect(() => {
 
           {/* Tabs */}
           <div className="flex space-x-4 mb-4">
-            {["QA Specialist", "QA Lead", "Requests"].map((tab) => (
+            {["QA Specialist", "Requests"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => handleTabChange(tab)}
@@ -90,7 +146,7 @@ useEffect(() => {
               {activeTab === "QA Specialist" && (
                 <div className="overflow-x-auto">
                   <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">QA Specialist</h1>
+                    <h1 className="text-2xl font-bold">QA Team</h1>
                     <button
                       className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
                       onClick={handleAddQASpecialistClick}
@@ -101,13 +157,10 @@ useEffect(() => {
                   <table className="table-auto w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-blue-100">
-                        <th className="border border-gray-300 px-4 py-2">Id</th>
                         <th className="border border-gray-300 px-4 py-2">Name</th>
                         <th className="border border-gray-300 px-4 py-2">Email</th>
                         <th className="border border-gray-300 px-4 py-2">Role</th>
-                        <th className="border border-gray-300 px-4 py-2">
-                          Qualification
-                        </th>
+                        <th className="border border-gray-300 px-4 py-2">Qualification</th>
                         <th className="border border-gray-300 px-4 py-2">Action</th>
                       </tr>
                     </thead>
@@ -121,9 +174,6 @@ useEffect(() => {
                             }`}
                           >
                             <td className="border border-gray-300 px-4 py-2">
-                              {item._id}
-                            </td>
-                            <td className="border border-gray-300 px-4 py-2">
                               {item.qaname}
                             </td>
                             <td className="border border-gray-300 px-4 py-2">
@@ -136,10 +186,20 @@ useEffect(() => {
                               {item.qualification}
                             </td>
                             <td className="border border-gray-300 px-4 py-2 flex gap-2">
-                              <button className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600">
-                                Delete
+                              <button
+                                className={`px-4 py-1 rounded-md ${
+                                  item.isDeleted
+                                    ? "bg-red-500 hover:bg-red-600 text-white"
+                                    : "bg-green-500 hover:bg-green-600 text-white"
+                                }`}
+                                onClick={() => handleToggleDelete(item._id, item.isDeleted)}
+                              >
+                                {item.isDeleted ? "Unblock" : "Blocked"}
                               </button>
-                              <button className="bg-orange-500 text-white px-4 py-1 rounded-md hover:bg-orange-600">
+                              <button
+                                className="bg-orange-500 text-white px-4 py-1 rounded-md hover:bg-orange-600"
+                                onClick={() => handleUpdate(item._id)}
+                              >
                                 Update
                               </button>
                             </td>
@@ -160,16 +220,71 @@ useEffect(() => {
                 </div>
               )}
 
-              {activeTab === "QA Lead" && (
-                <div>
-                  <p>QA Lead data goes here</p>
-                </div>
-              )}
-
               {activeTab === "Requests" && (
-                <div>
-                  <p>Requests data goes here</p>
-                </div>
+                 <div className="overflow-x-auto">
+                 {/* Courses Table */}
+                 <table className="table-auto w-full border-collapse border border-gray-300">
+                   <thead>
+                     <tr className="bg-blue-100">
+                       <th className="border border-gray-300 px-4 py-2">Thumbnail</th>
+                       <th className="border border-gray-300 px-4 py-2">Title</th>
+                       <th className="border border-gray-300 px-4 py-2">Category</th>
+                       <th className="border border-gray-300 px-4 py-2">Status</th>
+                       <th className="border border-gray-300 px-4 py-2">Submitted on</th>
+                       <th className="border border-gray-300 px-4 py-2">Action</th>
+                       <th className="border border-gray-300 px-4 py-2">View</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {courses.length > 0 ? (
+                       courses.map((course: any) => (
+                         <tr key={course._id} className="border-t">
+                           <td className="p-4">
+                             <img
+                               src={course.thumbnail}
+                               alt={course.title}
+                               className="w-16 h-16 rounded-full"
+                             />
+                           </td>
+                           <td className="p-4">{course.title}</td>
+                           <td className="p-4">{course.category}</td>
+                           <td className="p-4">{course.status}</td>
+                           <td className="p-4">
+                             {new Date(course.createdAt).toLocaleDateString()}
+                           </td>
+                           <td className="p-4">
+                              {course.status !== "Published" && (
+                                <button
+                                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                                  onClick={() => handlePublishCourse(course._id)}
+                                >
+                                  Publish
+                                </button>
+                              )}
+                              
+                            </td>
+                            <td className="p-4">
+
+                            {/* View Button */}
+                    <button
+                      onClick={() => navigate(`/admin/viewCoursePage/${course._id}`)}
+                      className="px-4 py-2 bg-green-500 hover:bg-blue-700 text-white rounded"
+                    >
+                      View
+                    </button>
+                    </td>
+                         </tr>
+                       ))
+                     ) : (
+                       <tr>
+                         <td colSpan={6} className="text-center py-4">
+                           No courses found
+                         </td>
+                       </tr>
+                     )}
+                   </tbody>
+                 </table>
+               </div>
               )}
             </div>
           )}

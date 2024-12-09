@@ -1,32 +1,73 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
   Grid,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import api from "../../../infrastructure/api/api";
 import Sidebar from "../../components/admin/Sidebar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const AddQALeadForm: React.FC = () => {
+const EditQASpecialistForm: React.FC = () => {
+  const { id } = useParams<{ id: string }>(); 
   const [formData, setFormData] = useState({
     qaname: "",
     email_id: "",
     phone_number: "",
     password: "",
     qualification: "",
-    experience: "",
+    experience: 0,
     date_of_join: "",
+    role: "Specialist",
     image: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Fetch current QA data
+    const fetchQAData = async () => {
+      try {
+        const response = await api.get(`/admin/get-qa/${id}`);
+        if (response.status === 200) {
+          const data = response.data;
+          setFormData({
+            qaname: data.qaname,
+            email_id: data.email_id,
+            phone_number: data.phone_number,
+            password: "", 
+            qualification: data.qualification,
+            experience: data.experience,
+            date_of_join: data.date_of_join,
+            role: data.role,
+            image: null,
+          });
+          if (data.image) {
+            setImagePreview(data.image); 
+          }
+        } else {
+          toast.error("Failed to fetch QA Specialist data");
+        }
+      } catch (error) {
+        toast.error("Error fetching QA Specialist data");
+      }
+    };
+
+    fetchQAData();
+  }, [id]);
+
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [name as string]: value });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,12 +75,17 @@ const AddQALeadForm: React.FC = () => {
     if (file) {
       const validTypes = ["image/jpeg", "image/png"];
       if (!validTypes.includes(file.type)) {
-        alert("Please upload a JPEG or PNG image.");
+        toast.error("Please upload a JPEG or PNG image.");
         return;
       }
       setFormData({ ...formData, image: file });
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name as string]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,24 +94,25 @@ const AddQALeadForm: React.FC = () => {
     formDataToSend.append("qaname", formData.qaname);
     formDataToSend.append("email_id", formData.email_id);
     formDataToSend.append("phone_number", formData.phone_number);
-    formDataToSend.append("password", formData.password);
+    if (formData.password) formDataToSend.append("password", formData.password); 
     formDataToSend.append("qualification", formData.qualification);
-    formDataToSend.append("experience", formData.experience);
+    formDataToSend.append("experience", formData.experience.toString());
     formDataToSend.append("date_of_join", formData.date_of_join);
-    formDataToSend.append("role", "Lead");
+    formDataToSend.append("role", formData.role);
     if (formData.image) {
       formDataToSend.append("image", formData.image);
     }
 
     try {
-      const response = await api.post("/admin/add-qaHead", formDataToSend);
-      if(response.status===201){
-         navigate('/admin/qa');
-      }else{
-        alert("Error adding QA Lead.");
+      const response = await api.put(`/admin/update-qaTeam/${id}`, formDataToSend);
+      if (response.status === 200) {
+        toast.success("QA Specialist updated successfully!");
+        navigate("/admin/qa");
+      } else {
+        toast.error("Error updating QA Specialist");
       }
     } catch (error) {
-      alert("Error adding QA Lead.");
+      toast.error("Error updating QA Specialist");
     }
   };
 
@@ -80,7 +127,7 @@ const AddQALeadForm: React.FC = () => {
             onSubmit={handleSubmit}
             className="bg-white p-6 rounded-lg shadow-lg"
           >
-            <h2 className="text-2xl font-bold mb-4">Add QA Lead</h2>
+            <h2 className="text-2xl font-bold mb-4">Edit QA Specialist</h2>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -120,10 +167,11 @@ const AddQALeadForm: React.FC = () => {
                   label="Password"
                   variant="outlined"
                   fullWidth
-                  required
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
+                  type="password"
+                  helperText="Leave blank to keep current password"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -162,6 +210,21 @@ const AddQALeadForm: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id="role-label">Role</InputLabel>
+                  <Select
+                    labelId="role-label"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleSelectChange}
+                    label="Role"
+                    required
+                  >
+                    <MenuItem value="Specialist">Specialist</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
                 <label className="block mb-2 text-gray-700">Upload Image</label>
                 <input
                   type="file"
@@ -186,7 +249,7 @@ const AddQALeadForm: React.FC = () => {
                   color="primary"
                   fullWidth
                 >
-                  Add QA Lead
+                  Update QA Specialist
                 </Button>
               </Grid>
             </Grid>
@@ -197,4 +260,4 @@ const AddQALeadForm: React.FC = () => {
   );
 };
 
-export default AddQALeadForm;
+export default EditQASpecialistForm;

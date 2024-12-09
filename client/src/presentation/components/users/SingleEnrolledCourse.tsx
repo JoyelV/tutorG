@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
-import CourseSidebar from '../../components/common/CourseSideBar';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseImage from '../../components/courses/CourseImage';
 import CourseRating from '../../components/courses/CourseRating';
@@ -11,15 +9,14 @@ import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
 import CurriculumBox from '../../components/courses/CourseCurriculumBox';
-import { ToastContainer } from 'react-toastify';
-import CourseHeader from '../../components/users/CourseHeader';
+import CourseHeader from './CourseHeader';
 
-type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Feedback';
+type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Rating' | 'Feedback';
 
 const CoursePage = () => {
-  const [currentSection, setCurrentSection] = useState<Section>('Description');
   const { courseId } = useParams();
-  const [courseData, setCourseData] = useState<any>(null); 
+  const [currentSection, setCurrentSection] = useState<Section>('Description');
+  const [courseData, setCourseData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -43,7 +40,9 @@ const CoursePage = () => {
       }
     };
 
-    fetchCourseData();
+    if (courseId) {
+      fetchCourseData();
+    }
   }, [courseId]);
 
   const handleSectionChange = (section: Section) => {
@@ -60,18 +59,20 @@ const CoursePage = () => {
 
   return (
     <div className="flex flex-col w-full min-h-screen p-4">
-    <ToastContainer/>
-      <Navbar />
       {/* Main Content Section */}
       <div className="flex flex-col md:flex-row w-full flex-grow bg-white shadow-lg rounded-lg overflow-hidden">
         {/* Course Details Section */}
         <div className="md:w-2/3 w-full p-6">
-          <CourseHeader courseTitle={courseData.title} courseSubtitle={courseData.subtitle} instructorId={courseData.instructorId} />
-          <CourseImage id={courseId} /> 
-          
+          <CourseHeader
+            courseTitle={courseData.title}
+            courseSubtitle={courseData.subtitle}
+            instructorId={courseData.instructorId}
+          />
+          <CourseImage id={courseId} /> {/* Passing courseId to CourseImage component */}
+
           {/* Section Navigation - Tabs */}
           <div className="flex border-b border-gray-200 mb-6">
-            {['Description', 'Requirements', 'Curriculum', 'Instructor', 'Feedback'].map((section) => (
+            {['Description', 'Requirements', 'Instructor', 'Rating', 'Feedback'].map((section) => (
               <button
                 key={section}
                 className={`text-lg py-2 px-4 transition-all duration-300 ${
@@ -89,44 +90,29 @@ const CoursePage = () => {
           {/* Dynamic Section Display */}
           <div className="transition-all duration-300 ease-in-out" style={{ minHeight: '300px' }}>
             {currentSection === 'Description' && (
-             <CourseDescription 
-             description={courseData.description} 
-             learningPoints={courseData.learningPoints} 
-             targetAudience={courseData.targetAudience} 
-           />
-           
+              <CourseDescription
+                description={courseData.description}
+                learningPoints={courseData.learningPoints}
+                targetAudience={courseData.targetAudience}
+              />
             )}
             {currentSection === 'Requirements' && (
               <CourseRequirements requirements={courseData.requirements} />
             )}
-            {currentSection === 'Curriculum' && (
-              <CurriculumBox />
-            )}
-            {currentSection === 'Instructor' && (
-              <InstructorInfo instructorId={courseData.instructorId} />
-            )}
+            {currentSection === 'Instructor' && <InstructorInfo instructorId={courseData.instructorId} />}
+            {currentSection === 'Rating' && <CourseRating courseId={courseId} />}
             {currentSection === 'Feedback' && <StudentFeedback />}
           </div>
         </div>
 
-        {/* Sidebar Section (Fixed) */}
-        <div className="hidden md:block md:w-1/3 w-full p-6">
-          <div className="sticky top-4">
-          <CourseSidebar 
-              course_Id ={courseData.courseId}
-              courseFee={courseData.courseFee}
-              duration={courseData.duration}
-              level={courseData.level}
-              language={courseData.language}
-              students={courseData.students}
-              subtitleLanguage="English"
-            />          
-            </div>
+        {/* Curriculum Box (Right Side) */}
+        <div className="md:w-1/3 w-full bg-gray-50 p-6 shadow-md md:block hidden">
+          <CurriculumBox />
         </div>
       </div>
 
       {/* Related Courses Section */}
-      <RelatedCourses/>
+      <RelatedCourses />
     </div>
   );
 };

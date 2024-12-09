@@ -124,7 +124,7 @@ const AccountSettings: React.FC = () => {
         toast.error('User not logged in');
         return;
       }
-      const response = await api.get<UserProfileData>(`/user/profile/${userId}`);
+      const response = await api.get<UserProfileData>(`/user/profile`);
       const data = response.data;
       console.log(data,"data");
 
@@ -164,7 +164,7 @@ const AccountSettings: React.FC = () => {
         return;
       }
 
-      const response = await api.put(`/user/upload-image/${userId}`, formData, {
+      const response = await api.put(`/user/upload-image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -203,7 +203,7 @@ const AccountSettings: React.FC = () => {
         toast.error('User not logged in');
         return;
       }
-      const response = await api.put(`/user/update/${userId}`, profileData, {
+      const response = await api.put(`/user/update`, profileData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -233,7 +233,7 @@ const AccountSettings: React.FC = () => {
         return;
       }
 
-      await api.put(`/user/update-password/${userId}`, passwordData, {
+      await api.put(`/user/update-password`, passwordData, {
         headers: {
           'Content-Type': 'application/json',
         },

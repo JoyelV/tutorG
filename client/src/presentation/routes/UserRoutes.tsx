@@ -13,6 +13,8 @@ import { PasswordReset } from '../pages/user/PasswordReset';
 import WishlistPage from '../pages/user/WishlistPage';
 import CartPage from '../pages/user/CartPage';
 import PaymentSuccessPage from '../pages/user/PaymentSuccessPage';
+import SingleEnrolledCoursePage from '../pages/user/SingleEnrolledCoursePage';
+import Pagenotfound from '../components/common/PageNotFound';
 
 const isLoggedIn = Boolean(localStorage.getItem('token'));
 
@@ -32,10 +34,12 @@ const UserRoutes = () => {
                 element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" />}
             />
             <Route path="/course-listing" element={<ViewCoursesListing />} />
-            <Route path="/course/details/:courseId" element={isLoggedIn ?<DetailedCoursePage />: <Navigate to="/login" />}/>
-            <Route path="/wishlist" element={<WishlistPage />}/>
-            <Route path="/cart" element={<CartPage/>} />
-            <Route path="/paymentSuccess" element={<PaymentSuccessPage/>} />
+            <Route path="/course/details/:courseId" element={<DetailedCoursePage />}/>
+            <Route path="/wishlist" element={isLoggedIn ?<WishlistPage />: <Navigate to="/login" />}/>
+            <Route path="/cart" element={isLoggedIn ?<CartPage/>: <Navigate to="/login" />} />
+            <Route path="/paymentSuccess" element={isLoggedIn ?<PaymentSuccessPage/>: <Navigate to="/login" />} />
+            <Route path="/enrolled-singlecourse/:courseId" element={<SingleEnrolledCoursePage/>} />
+            <Route path="*" element={<Pagenotfound />} />
         </Routes>
         <Footer />
         </>

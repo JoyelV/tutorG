@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Container, Typography, Paper, Box, Avatar, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin, googleLogout } from '@react-oauth/google';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import api from '../../../infrastructure/api/api';
@@ -116,6 +117,29 @@ const Register: React.FC = () => {
         }
     };
 
+    const handleGoogleSuccess = async (response: any) => {
+        try {
+            const res = await api.post('/user/google-login', { token: response.credential });
+            const { token, refreshToken, user } = res.data;
+
+            localStorage.setItem('token', token);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('userId', user.id);
+            localStorage.setItem('role', user.role);
+            localStorage.setItem('username', user.username);
+
+            toast.success('Google Sign-In successful!');
+            navigate('/');
+        } catch (error) {
+            toast.error('Google Sign-In failed. Please try again.');
+            console.error('Google Sign-In failed:', error);
+        }
+    };
+
+    const handleGoogleFailure = () => {
+        toast.error('Google Sign-In was unsuccessful. Try again later.');
+    };
+
     return (
         <Container component="main" maxWidth="xs" sx={{ mt: 8 }}>
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
@@ -223,6 +247,10 @@ const Register: React.FC = () => {
                             </>
                         )}
                     </Box>
+                    <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={handleGoogleFailure}
+                        />
                     <Grid container justifyContent="flex-end" sx={{ mt: 3 }}>
                         <Grid item>
                             <Typography variant="body2">

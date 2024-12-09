@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Pagination } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { Pagination } from '@mui/material';
 import api from '../../../infrastructure/api/api';
 
 interface Course {
@@ -10,7 +10,7 @@ interface Course {
   courseFee: number;
   thumbnail: string;
   rating: number;
-  students: number;
+  level: string;
   createdAt: string;
 }
 
@@ -23,21 +23,18 @@ interface ImageCardProps {
   searchTerm: string;
   selectedFilter: string;
   sortOption: string;
-  currentPage: number;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const ImageCard: React.FC<ImageCardProps> = ({
   searchTerm,
   selectedFilter,
   sortOption,
-  currentPage,
-  setCurrentPage,
 }) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
-  const coursesPerPage = 10; 
+  const coursesPerPage = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,6 +84,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
       }
     });
 
+  // Pagination Logic
   const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
   const displayedCourses = filteredCourses.slice(
     (currentPage - 1) * coursesPerPage,
@@ -128,7 +126,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
               </h2>
               <div className="flex items-center justify-between">
                 <div className="text-yellow-500 font-semibold">★ {course.rating}</div>
-                <div className="text-gray-500">{course.students} students</div>
+                <div className="text-gray-500">{course.level} Level</div>
               </div>
             </div>
           </div>
@@ -150,4 +148,3 @@ const ImageCard: React.FC<ImageCardProps> = ({
 };
 
 export default ImageCard;
-``

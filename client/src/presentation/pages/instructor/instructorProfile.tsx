@@ -118,8 +118,7 @@ const InstructorProfile = () => {
 
     const fetchUserData = async () => {
         try {
-            const userId = localStorage.getItem('userId');
-            const response = await api.get(`/instructor/profile/${userId}`);
+            const response = await api.get(`/instructor/profile`);
             const data = response.data;
             console.log(data, "data in fetch");
 
@@ -165,7 +164,7 @@ const InstructorProfile = () => {
             }
 
             const response = await api.put(
-                `/instructor/upload-image/${userId}`,
+                `/instructor/upload-image`,
                 formData,
                 {
                     headers: {
@@ -206,7 +205,7 @@ const InstructorProfile = () => {
 
         try {
             const userId = localStorage.getItem('userId');
-            await api.put(`/instructor/update/${userId}`, profileData, {
+            await api.put(`/instructor/update`, profileData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -238,7 +237,7 @@ const InstructorProfile = () => {
         try {
             const userId = localStorage.getItem('userId');
             console.log("userId password", userId)
-            await api.put(`/instructor/update-password/${userId}`, passwordData, {
+            await api.put(`/instructor/update-password`, passwordData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },

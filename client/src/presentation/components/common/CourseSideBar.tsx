@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
+import { toast } from 'react-toastify';
 import { grey, orange } from "@mui/material/colors";
-import { Facebook, Instagram, LinkedIn, Twitter } from "@mui/icons-material";
+import { Facebook, WhatsApp , Twitter } from "@mui/icons-material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import api from "../../../infrastructure/api/api";
 import {
   faClock,
@@ -15,6 +16,9 @@ import {
   faTrophy,
   faMobileAlt,
   faGlobe,
+  faLanguage,
+  faUsers,
+  faSignal
 } from "@fortawesome/free-solid-svg-icons";
 
 interface CourseSidebarProps {
@@ -30,19 +34,19 @@ interface CourseSidebarProps {
 const CourseSidebar: React.FC<CourseSidebarProps> = ({
   courseFee,
   duration,
+  level,
+  language,
+  students,
+  subtitleLanguage,
 }) => {
   const [loadingCart, setLoadingCart] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const userId = localStorage.getItem('userId');
   const { courseId } = useParams();
-  const navigate = useNavigate();
+  const url = window.location.href;
 
   const handleAddToCart = async () => {
     setLoadingCart(true); 
-    setError(null);
-    setSuccess(null);
   
     try {
       const response = await api.post(
@@ -56,27 +60,31 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         }
       );
   
-      if (response.status === 201) {
-        setSuccess("Course added to cart successfully!");
-      } else if (response.status === 400) {
-        setSuccess("Course already in cart");
+      const { message } = response.data;
+
+      if (message === "Student is already enrolled in this course") {
+        console.log("Toast info: ", message);
+        toast.info(message);
+        return;
+      }else if(message === "Course already exists in the cart"){
+        toast.info(message); 
+        return;
+      }else{
+        toast.success(message);   
       }
     } catch (err) {
-      setError("An error occurred while adding to cart.");
+      toast.error("An error occurred while adding to cart.");
     } finally {
-      setLoadingCart(false);  // Set loading to false after the action
+      setLoadingCart(false); 
     }
   };
 
-  // Handle add to wishlist functionality
   const handleAddToWishlist = async () => {
-    setLoadingWishlist(true);  // Only set loading for the wishlist button
-    setError(null);
-    setSuccess(null);
+    setLoadingWishlist(true);  
     
     try {
       const response = await api.post(
-        "/user/addtowishlist",  // Assuming API for adding to wishlist
+        "/user/addtowishlist",  
         { courseId, userId },  
         {
           headers: {
@@ -85,15 +93,20 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           },
         }
       );
-  
-      if (response.status === 201) {
-        setSuccess("Course added to wishlist successfully!");
-        navigate('/wishlist'); 
-      } else if (response.status === 400) {
-        setSuccess("Course already in wishlist");
+
+      const { message } = response.data;
+
+      if (message === "Course already existed in Wishlist") {
+        toast.info(message); 
+        return;
+      }else if(message === "Course added to wishlist successfully"){
+        toast.info(message); 
+        return;
+      }else{
+        toast.success(message);   
       }
     } catch (err) {
-      setError("An error occurred while adding to wishlist.");
+      toast.error("An error occurred while adding to wishlist.");
     } finally {
       setLoadingWishlist(false); 
     }
@@ -104,7 +117,6 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-3xl font-bold text-red-600">₹{courseFee}</p>
-          <p className="text-sm text-gray-500 line-through">₹26.00</p>
         </div>
         <span className="bg-red-200 text-red-700 text-sm font-semibold px-2 py-1 rounded">56% OFF</span>
       </div>
@@ -118,7 +130,30 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           </p>
           <p className="text-gray-900">{duration} Months</p>
         </div>
-        {/* Other course details... */}
+        <div className="flex justify-between items-center text-sm">
+          <p className="text-gray-700 flex items-center">
+            <FontAwesomeIcon icon={faSignal} className="mr-2" /> Course Level
+          </p>
+          <p className="text-gray-900">{level}</p>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <p className="text-gray-700 flex items-center">
+            <FontAwesomeIcon icon={faUsers} className="mr-2" /> Students Enrolled
+          </p>
+          <p className="text-gray-900">{students.length}</p>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <p className="text-gray-700 flex items-center">
+            <FontAwesomeIcon icon={faLanguage} className="mr-2" /> Language
+          </p>
+          <p className="text-gray-900">{language}</p>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <p className="text-gray-700 flex items-center">
+            <FontAwesomeIcon icon={faClosedCaptioning} className="mr-2" /> Subtitle Language
+          </p>
+          <p className="text-gray-900">{subtitleLanguage}</p>
+        </div>
       </div>
 
       {/* Buttons */}
@@ -130,8 +165,6 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         >
           {loadingCart ? "Adding..." : "Add To Cart"}
         </button>
-        {success && <p className="text-green-500 text-center">{success}</p>}
-        {error && <p className="text-red-500 text-center">{error}</p>}
         
         {/* <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600">
           Buy Now
@@ -174,28 +207,38 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         </ul>
       </div>
 
-      {/* Share Section */}
-      <div className="text-center">
+       {/* Share Section */}
+       <div className="text-center">
         <h3 className="text-sm font-semibold mb-3">Share this course:</h3>
-        <div className="flex justify-center gap-4">
-          {["Facebook", "Instagram", "LinkedIn", "Twitter"].map((platform, index) => (
+        <div className="flex justify-center gap-4 mb-4">
+          {["Facebook", "WhatsApp", "Twitter"].map((platform, index) => (
             <Box
               key={index}
               sx={{
                 backgroundColor: grey[200],
-                '&:hover': { backgroundColor: orange[500] },
+                "&:hover": { backgroundColor: orange[500] },
                 width: 48,
                 height: 48,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '50%',
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
               }}
             >
-              <IconButton>
+              <IconButton
+                component="a"
+                href={
+                  platform === "Facebook"
+                    ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=please share this course`
+                    : platform === "WhatsApp"
+                    ? `https://wa.me/?text=Check out this course: ${encodeURIComponent(url)}`
+                    : `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=Enroll in this amazing course for only ₹${courseFee}!`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {platform === "Facebook" && <Facebook />}
-                {platform === "Instagram" && <Instagram />}
-                {platform === "LinkedIn" && <LinkedIn />}
+                {platform === "WhatsApp" && <WhatsApp  />}
                 {platform === "Twitter" && <Twitter />}
               </IconButton>
             </Box>

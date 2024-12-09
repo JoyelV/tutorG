@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert, Grid, Link } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import axios from 'axios';
+import { GoogleLogin, googleLogout } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import api from '../../../infrastructure/api/api'
+import api from '../../../infrastructure/api/api';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -25,7 +25,6 @@ const Login: React.FC = () => {
                 return;
             }
 
-            // Save tokens and user data securely
             localStorage.setItem('token', token);
             localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userId', user.id);
@@ -39,6 +38,30 @@ const Login: React.FC = () => {
             toast.error('Login failed. Please check your credentials and try again.');
             console.error('Login failed:', error);
         }
+    };
+
+    const handleGoogleSuccess = async (response: any) => {
+        try {
+            const res = await api.post('/user/google-login', { token: response.credential });
+            const { token, refreshToken, user } = res.data;
+
+            localStorage.setItem('token', token);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('userId', user.id);
+            localStorage.setItem('role', user.role);
+            localStorage.setItem('username', user.username);
+
+            toast.success('Google Sign-In successful!');
+            navigate('/');
+        } catch (error) {
+            setError('Google Sign-In failed. Please try again.');
+            toast.error('Google Sign-In failed. Please try again.');
+            console.error('Google Sign-In failed:', error);
+        }
+    };
+
+    const handleGoogleFailure = () => {
+        toast.error('Google Sign-In was unsuccessful. Try again later.');
     };
 
     return (
@@ -99,6 +122,10 @@ const Login: React.FC = () => {
                         >
                             Login
                         </Button>
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={handleGoogleFailure}
+                        />
                         <Grid container justifyContent="flex-end">
                             <Grid item>
                                 <Typography variant="body2" sx={{ mt: 1 }}>

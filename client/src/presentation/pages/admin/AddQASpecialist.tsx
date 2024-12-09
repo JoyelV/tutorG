@@ -3,10 +3,17 @@ import {
   TextField,
   Button,
   Grid,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import api from "../../../infrastructure/api/api";
 import Sidebar from "../../components/admin/Sidebar";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // Import toast from react-toastify
+import "react-toastify/dist/ReactToastify.css"; // Import CSS for react-toastify
 
 const AddQASpecialistForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -15,19 +22,19 @@ const AddQASpecialistForm: React.FC = () => {
     phone_number: "",
     password: "",
     qualification: "",
-    experience: "",
+    experience: 0,
     date_of_join: "",
-    lead_uid: "",
+    role: "Specialist", 
     image: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [name as string]: value });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,12 +42,17 @@ const AddQASpecialistForm: React.FC = () => {
     if (file) {
       const validTypes = ["image/jpeg", "image/png"];
       if (!validTypes.includes(file.type)) {
-        alert("Please upload a JPEG or PNG image.");
+        toast.error("Please upload a JPEG or PNG image."); // Toast error for invalid image type
         return;
       }
       setFormData({ ...formData, image: file });
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name as string]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,23 +63,23 @@ const AddQASpecialistForm: React.FC = () => {
     formDataToSend.append("phone_number", formData.phone_number);
     formDataToSend.append("password", formData.password);
     formDataToSend.append("qualification", formData.qualification);
-    formDataToSend.append("experience", formData.experience);
+    formDataToSend.append("experience", formData.experience.toString());
     formDataToSend.append("date_of_join", formData.date_of_join);
-    formDataToSend.append("role", "Specialist");
+    formDataToSend.append("role", formData.role);
     if (formData.image) {
       formDataToSend.append("image", formData.image);
     }
-    formDataToSend.append("lead_uid", formData.lead_uid);
 
     try {
-      const response = await api.post("/admin/add-qaEngineer", formDataToSend);
-      if(response.status===201){
-        navigate('/admin/qa');
-     }else{
-       alert("Error adding QA Specialist");
-     }
+      const response = await api.post("/admin/add-qaTeam", formDataToSend);
+      if (response.status === 201) {
+        toast.success("QA Specialist added successfully!"); 
+        navigate("/admin/qa");
+      } else {
+        toast.error("Error adding QA Specialist"); 
+      }
     } catch (error) {
-      alert("Error adding QA Lead.");
+      toast.error("Error adding QA Specialist"); 
     }
   };
 
@@ -164,15 +176,21 @@ const AddQASpecialistForm: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  label="Lead UID"
-                  variant="outlined"
-                  fullWidth
-                  name="lead_uid"
-                  value={formData.lead_uid}
-                  onChange={handleChange}
-                />
+                <FormControl fullWidth>
+                  <InputLabel id="role-label">Role</InputLabel>
+                  <Select
+                    labelId="role-label"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleSelectChange} 
+                    label="Role"
+                    required
+                  >
+                    <MenuItem value="Specialist">Specialist</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
+
               <Grid item xs={12}>
                 <label className="block mb-2 text-gray-700">Upload Image</label>
                 <input

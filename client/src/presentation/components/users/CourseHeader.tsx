@@ -14,13 +14,12 @@ interface Instructor {
 
 const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle, instructorId }) => {
   const [instructor, setInstructor] = useState<Instructor | null>(null);
-  const url = 'http://localhost:5000';
 
   useEffect(() => {
     // Simulate fetching instructor data
     const fetchInstructorData = async () => {
       // Replace this mock API call with a real one
-      const response = await api.get(`/instructor/profile`)
+      const response = await api.get(`/user/instructorData/${instructorId}`)
       setInstructor(response.data);
     };
 
@@ -43,11 +42,11 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle
       <div className="flex items-center">
         {/* Instructors */}
         <div className="flex items-center space-x-2">
-          <img
+          {/* <img
           src={`${url}/${instructor.image}`}
           alt={instructor.username}
             className="w-8 h-8 rounded-full border border-gray-200"
-          />
+          /> */}
           <p className="text-sm text-gray-700">
             Created by: <span className="font-medium">{instructor.username}</span> &bull;
           </p>

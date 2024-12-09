@@ -6,6 +6,7 @@ import Filters from "../../components/instructor/Filters";
 import CourseCard from "../../components/instructor/CourseCard";
 import api from "../../../infrastructure/api/api";
 import { useNavigate } from "react-router-dom";
+import DashboardHeader from "../../components/instructor/DashboardHeader";
 
 interface Course {
     _id: string;
@@ -21,12 +22,11 @@ const MyCourses: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);  
     const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);  []
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const instructorId = localStorage.getItem('userId');
     const navigate = useNavigate();
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await api.get(`/instructor/courses/${instructorId}`);
+                const response = await api.get(`/instructor/courses`);
                 console.log(response, "response in inst courses")
 
                 setCourses(response.data);
@@ -72,8 +72,9 @@ const MyCourses: React.FC = () => {
             <aside className="w-64 bg-gray-800 text-white flex flex-col">
                 <Sidebar />
             </aside>
-            <div className="flex-1 p-6 bg-gray-50">
-                <h2 className="text-2xl font-semibold mb-4">My Courses</h2>
+            <div className="flex-1 p-6 bg-gray-100 min-h-screen">
+            <DashboardHeader/>
+            <h2 className="text-2xl font-semibold mb-4">My Courses</h2>
                 <div className="flex items-center justify-between mb-6">
                     <SearchBar onSearch={handleSearch} />
                     <div className="flex items-center gap-4">

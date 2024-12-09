@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; 
+import { useParams, useNavigate } from 'react-router-dom';
 import CourseDescription from '../../components/courses/CourseDescription';
-import CourseRating from '../../components/courses/CourseRating';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import CourseHeader from '../../components/courses/courseHeader';
@@ -9,13 +8,14 @@ import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/instructor/Sidebar';
 import CourseVideo from '../../components/instructor/CourseVideo';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
+import EditQuizForm from './QuizListSection';
 
-type Section = 'Description' | 'Requirements' | 'Rating' | 'Feedback';
+type Section = 'Description' | 'Requirements'|'Quiz' | 'Feedback';
 
 const CourseView = () => {
   const [currentSection, setCurrentSection] = useState<Section>('Description');
   const { courseId } = useParams();
-  const [courseData, setCourseData] = useState<any>(null); 
+  const [courseData, setCourseData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -48,7 +48,11 @@ const CourseView = () => {
   };
 
   const handleAddLessonClick = () => {
-    navigate(`/instructor/add-lesson/${courseId}`); 
+    navigate(`/instructor/add-lesson/${courseId}`);
+  };
+
+  const handleAddQuiz = () => {
+    navigate(`/instructor/addQuiz/${courseId}`);
   };
 
   if (isLoading) {
@@ -83,14 +87,13 @@ const CourseView = () => {
 
             {/* Section Navigation */}
             <div className="flex border-b border-gray-200 mt-6 mb-6">
-              {['Description', 'Requirements', 'Rating', 'Feedback'].map((section) => (
+              {['Description', 'Requirements', 'Quiz','Feedback'].map((section) => (
                 <button
                   key={section}
-                  className={`text-lg py-2 px-4 transition-all duration-300 ${
-                    currentSection === section
+                  className={`text-lg py-2 px-4 transition-all duration-300 ${currentSection === section
                       ? 'font-bold border-b-4 border-blue-500 text-blue-500'
                       : 'text-gray-600 hover:text-blue-500'
-                  }`}
+                    }`}
                   onClick={() => handleSectionChange(section as Section)}
                 >
                   {section}
@@ -110,23 +113,32 @@ const CourseView = () => {
               {currentSection === 'Requirements' && (
                 <CourseRequirements requirements={courseData.requirements} />
               )}
-              {currentSection === 'Rating' && <CourseRating />}
               {currentSection === 'Feedback' && <StudentFeedback />}
+              {currentSection === 'Quiz' && <EditQuizForm />}
             </div>
           </div>
 
           {/* Right Content - Curriculum */}
           <div className="w-1/3 bg-white shadow-lg p-2">
-          <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
-              onClick={handleAddLessonClick}
-            >
-              Add More Chapters
-            </button>
+            <div className="flex space-x-4 mt-4">
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
+                onClick={handleAddLessonClick}
+              >
+                Add Chapter
+              </button>
+              <button
+                onClick={handleAddQuiz}
+                className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded"
+              >
+                Add Quiz
+              </button>
+            </div>
+
             <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
             <CurriculumPage />
             {/* Add Lesson Button */}
-            
+
           </div>
         </div>
       </div>

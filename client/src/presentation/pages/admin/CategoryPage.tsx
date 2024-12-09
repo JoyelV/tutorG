@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Pagination,
 } from '@mui/material';
 import Swal from 'sweetalert2';
 import Sidebar from '../../components/admin/Sidebar';
@@ -33,6 +34,8 @@ const CategoryPage: React.FC = () => {
   const [categoryName, setCategoryName] = useState<string>('');
   const [subCategories, setSubCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 5; // Adjust items per page as needed
 
   useEffect(() => {
     fetchCategories();
@@ -51,7 +54,6 @@ const CategoryPage: React.FC = () => {
   };
 
   const handleSaveCategory = async () => {
-    // Validate category name
     if (!categoryName.trim()) {
       return Swal.fire('Validation Error', 'Category name is required!', 'error');
     }
@@ -65,7 +67,6 @@ const CategoryPage: React.FC = () => {
       );
     }
 
-    // Validate subcategories
     if (subCategories.length === 0) {
       return Swal.fire('Validation Error', 'At least one subcategory is required!', 'error');
     }
@@ -123,6 +124,27 @@ const CategoryPage: React.FC = () => {
     setModalOpen(true);
   };
 
+  const resetForm = () => {
+    setEditingCategory(null);
+    setCategoryName('');
+    setSubCategories([]);
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    setCurrentPage(1); // Reset to the first page on new search
+  };
+
+  const filteredCategories = categories.filter((category) =>
+    category.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+  const paginatedCategories = filteredCategories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleToggleBlockCategory = async (id: string) => {
     try {
       const result = await Swal.fire({
@@ -149,22 +171,6 @@ const CategoryPage: React.FC = () => {
       Swal.fire('Error', 'Failed to block/unblock category. Please try again.', 'error');
     }
   };
-
-
-
-  const resetForm = () => {
-    setEditingCategory(null);
-    setCategoryName('');
-    setSubCategories([]);
-  };
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const filteredCategories = categories.filter((category) =>
-    category.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -223,43 +229,54 @@ const CategoryPage: React.FC = () => {
           <div className="flex justify-center">
             <CircularProgress />
           </div>
-        ) : filteredCategories.length > 0 ? (
-          <table className="w-full border-collapse mt-4">
-            <thead>
-              <tr className="bg-gray-200 text-left">
-                <th className="p-3">Category</th>
-                <th className="p-3">Subcategories</th>
-                <th className="p-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCategories.map((category) => (
-                <tr key={category._id} className="border-t">
-                  <td className="p-3">{category.categoryName}</td>
-                  <td className="p-3">
-                    {category.subCategories.map((sub) => sub.name).join(', ')}
-                  </td>
-                  <td className="p-3 space-x-2">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleEditCategory(category)}
-                    >
-                      Edit
-                    </Button>
-                    <button
-                      onClick={() => handleToggleBlockCategory(category._id!)}
-                      className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
-                        } text-white`}
-                    >
-                      {category.status ? 'Unblock' : 'Blocked'}
-                    </button>
-
-                  </td>
+        ) : paginatedCategories.length > 0 ? (
+          <>
+            <table className="w-full border-collapse mt-4">
+              <thead>
+                <tr className="bg-gray-200 text-left">
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Subcategories</th>
+                  <th className="p-3">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedCategories.map((category) => (
+                  <tr key={category._id} className="border-t">
+                    <td className="p-3">{category.categoryName}</td>
+                    <td className="p-3">
+                      {category.subCategories.map((sub) => sub.name).join(', ')}
+                    </td>
+                    <td className="p-3 space-x-2">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleEditCategory(category)}
+                      >
+                        Edit
+                      </Button>
+                      <button
+                        onClick={() => handleToggleBlockCategory(category._id!)}
+                        className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
+                          } text-white`}
+                      >
+                        {category.status ? 'Unblock' : 'Blocked'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(_, page) => setCurrentPage(page)}
+                color="primary"
+              />
+            </div>
+
+          </>
         ) : (
           <p>No categories available.</p>
         )}

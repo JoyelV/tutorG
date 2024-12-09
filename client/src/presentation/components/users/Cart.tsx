@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
 import { toast } from 'react-toastify';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
@@ -30,7 +29,7 @@ const CartPage = () => {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await api.get(`/user/getcart/${studentId}`);
+        const response = await api.get(`/user/getcart`);
         setCartItems(response.data);
       } catch {
         setError('Failed to fetch cart items. Please try again later.');

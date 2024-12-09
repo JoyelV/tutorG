@@ -3,14 +3,12 @@ import ImageCard from '../../components/users/ImageCard';
 import api from '../../../infrastructure/api/api';
 
 const ViewCoursesListing: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<string>('All Courses');
   const [sortOption, setSortOption] = useState<string>('Trending');
   const [filterOptions, setFilterOptions] = useState<string[]>(['All Courses']);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
-  // Fetch categories on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -99,8 +97,6 @@ const ViewCoursesListing: React.FC = () => {
           searchTerm={searchTerm}
           selectedFilter={selectedFilter}
           sortOption={sortOption}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
         />
       </div>
     </div>
