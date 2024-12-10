@@ -1,5 +1,4 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
-import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminLogin from '../pages/admin/adminLogin';
 import UsersPage from '../components/admin/UsersPage';
 import AdminProfile from '../pages/admin/adminProfile'
@@ -13,6 +12,9 @@ import ErrorBoundary from '../../utils/ErrorBoundary';
 import CourseViewPage from '../pages/admin/ViewCourse';
 import AddReviewForm from '../pages/admin/AddReview';
 import Pagenotfound from '../components/common/PageNotFound';
+import OrdersTable from '../pages/admin/OrderTableList';
+import OrderView from '../pages/admin/OrderDetailPage';
+import AdminDashboard from '../pages/admin/AdminDashboard';
 
 const AdminRoutes = () => {
     const values = localStorage.getItem('role');
@@ -41,7 +43,14 @@ const AdminRoutes = () => {
                 path="/courses"
                 element={isAdmin ? <CoursesList />
                     : <Navigate to="/admin" />} />
-
+             <Route
+                path="/orders"
+                element={isAdmin ? <OrdersTable />
+                    : <Navigate to="/admin" />} />
+            <Route
+                path="/orderDetail/:orderId"
+                element={isAdmin ? <OrderView />
+                    : <Navigate to="/admin" />} />
             <Route
                 path="/users"
                 element={isAdmin ? <UsersPage />

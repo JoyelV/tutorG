@@ -1,13 +1,12 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Dashboard, School, Group, QuestionAnswer, AccountCircle, ExitToApp } from '@mui/icons-material';
+import { Dashboard, School, Group, AccountCircle, ExitToApp } from '@mui/icons-material';
 
 const Sidebar: React.FC = () => {
     const navigate = useNavigate();
     const baseLinkClasses = "flex items-center py-2 px-4 rounded transition-colors duration-300";
     const activeLinkClasses = "bg-orange-500";
 
-    // Logout handler function
     const handleLogout = async () => {
         try {
             localStorage.clear();
@@ -52,10 +51,23 @@ const Sidebar: React.FC = () => {
                     <li>
                         <NavLink 
                             to="/admin/courses"
-                            className={`${baseLinkClasses} hover:bg-gray-700`}
+                            className={({ isActive }) =>
+                                `${baseLinkClasses} ${isActive ? activeLinkClasses : 'hover:bg-gray-700'}`
+                            }
                         >
                             <School fontSize="small" className="mr-3" />
                             Courses
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink 
+                            to="/admin/orders"
+                            className={({ isActive }) =>
+                                `${baseLinkClasses} ${isActive ? activeLinkClasses : 'hover:bg-gray-700'}`
+                            }
+                        >
+                            <School fontSize="small" className="mr-3" />
+                            Orders
                         </NavLink>
                     </li>
                     <li>
