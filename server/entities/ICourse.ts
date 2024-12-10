@@ -17,7 +17,7 @@ export interface ICourse extends Document {
   targetAudience: string;
   requirements: string;
   instructorId: Types.ObjectId;
-  status: "draft" | "reviewed" | "published";
+  status: "draft" | "reviewed" | "published" | "rejected";
   createdAt: Date;
   students: Types.ObjectId[];
   ratingsAndFeedback: {

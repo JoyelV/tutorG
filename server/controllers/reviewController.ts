@@ -45,4 +45,12 @@ export const addReview = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-
+export const getReviews = async (req: Request, res: Response): Promise<void> => {
+const { courseId } = req.params;
+  try {
+    const reviews = await Review.find({ courseId }).sort({ createdAt: -1 });
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch reviews', error });
+  }
+}

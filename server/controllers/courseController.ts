@@ -193,9 +193,8 @@ export const getIndividualCourses = async (req: Request, res: Response, next: Ne
 
 export const courseStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
-
-    const course = await Course.findById(id);
+    const { courseId } = req.params;
+    const course = await Course.findById(courseId);
     if (!course) {
       res.status(404).json({ message: 'Course not found' });
       return;
@@ -448,7 +447,7 @@ export const publishCourse = async (req: Request, res: Response): Promise<void> 
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId);
-
+   console.log(courseId,"courseId in publish course")
     if (!course) {
       res.status(404).json({ message: 'Course not found' });
       return;
@@ -457,6 +456,25 @@ export const publishCourse = async (req: Request, res: Response): Promise<void> 
     await course.save();
 
     res.status(200).json({ message: 'Course published successfully', course });
+  } catch (error) {
+    console.error('Error publishing course:', error);
+    res.status(500).json({ message: 'Failed to publish course', error });
+  }
+};
+
+export const rejectCourse = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { courseId } = req.params;
+    const course = await Course.findById(courseId);
+   console.log(courseId,"courseId in rejected course")
+    if (!course) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
+    course.status = 'rejected';
+    await course.save();
+
+    res.status(200).json({ message: 'Course rejected successfully', course });
   } catch (error) {
     console.error('Error publishing course:', error);
     res.status(500).json({ message: 'Failed to publish course', error });

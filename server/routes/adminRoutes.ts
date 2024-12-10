@@ -16,8 +16,9 @@ import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { addTutors, toggleTutorStatus } from '../controllers/instructorController';
 import { deleteCategory, getCategories, saveCategory } from '../controllers/categoryController';
-import { courseStatus, getCourseDatas, getViewCourses, publishCourse } from '../controllers/courseController';
-import { addReview } from '../controllers/reviewController';
+import { courseStatus, getCourseDatas, getInstructorData, getViewCourses, publishCourse, rejectCourse } from '../controllers/courseController';
+import { addReview, getReviews } from '../controllers/reviewController';
+import { verifyToken } from '../utils/VerifyToken';
 
 const router = Router();
 
@@ -28,10 +29,10 @@ router.post('/verify-otp',verifyPasswordOtp );
 router.post('/reset-password', resetPassword);
 
 //PROFILE MANAGEMENT
-router.get('/profile/:userId',fetchUserProfile);
-router.put('/update/:userId', editUserProfile);
-router.put('/update-password/:userId', editPassword);
-router.put('/upload-image/:userId', upload.single('image'), uploadImage);
+router.get('/profile',verifyToken, fetchUserProfile);
+router.put('/update', verifyToken,editUserProfile);
+router.put('/update-password',verifyToken, editPassword);
+router.put('/upload-image', upload.single('image'), verifyToken,uploadImage);
 
 //Student,QA & Tutor Management
 router.get('/users',getAllUsers);
@@ -47,10 +48,13 @@ router.put('/categories/:id',saveCategory);
 router.patch('/categories/block/:id', deleteCategory);
 
 //Course Management
-router.patch('/course-status/:id',courseStatus);
+router.patch('/course-status/:courseId',courseStatus);
 router.get('/courseData',getCourseDatas);
-router.get('/courseDetailview/:id',getViewCourses);
+router.get('/courseDetailview/:courseId',getViewCourses);
 router.put('/publish/:courseId',publishCourse);
+router.put('/reject/:courseId',rejectCourse);
 router.post('/courses/:courseId', addReview);
+router.get('/reviews/:courseId',getReviews);
+router.get('/instructorProfile/:instructorId',getInstructorData);
 
 export default router;

@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/adminService';
 import { userRepository } from '../repositories/userRepository';
 import { instructorRepository } from '../repositories/instructorRepository';
+import { AuthenticatedRequest } from '../utils/VerifyToken';
 dotenv.config();
 
 /**
@@ -148,9 +149,14 @@ export const getAllInstructors = async (req: Request, res: Response): Promise<vo
   }
 };
 
-export const fetchUserProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   console.log("fetchUserProfile", req.params);
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
   try {
     const user = await getUserProfileService(userId);
     console.log("user", user);
@@ -161,12 +167,17 @@ export const fetchUserProfile = async (req: Request, res: Response): Promise<voi
   }
 }
 
-export const editUserProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const editUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   const updates = req.body;
   console.log("req.params", req.params);
-
   console.log("updates", updates);
+
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     const updatedUser = await updateUserProfile(userId, updates);
@@ -178,10 +189,16 @@ export const editUserProfile = async (req: Request, res: Response): Promise<void
   }
 }
 
-export const editPassword = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const editPassword = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   const { currentPassword, newPassword } = req.body;
   console.log("req.params in editPassword", req.params);
+
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     await updatePassword(userId, currentPassword, newPassword);
@@ -191,14 +208,20 @@ export const editPassword = async (req: Request, res: Response): Promise<void> =
   }
 }
 
-export const uploadImage = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+export const uploadImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;
+
   if (!req.file) {
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
   console.log("req.file.path", req.file.path);
   const imageUrl = req.file ? req.file.path : "";
+
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
 
   try {
     const updatedUser = await uploadUserImage(userId, imageUrl);

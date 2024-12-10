@@ -319,14 +319,12 @@ export const addTutors = async (req: Request, res: Response): Promise<void> => {
 
     const image = req.file ? req.file.path : "";
 
-    // Validation checks (can also be implemented using middleware)
     if (!username || !email || !phone || !password) {
         res.status(400).json({ message: 'Required fields are missing.' });
         return;
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save to the database
     const newTutor = new Instructor({
         username,
         email,

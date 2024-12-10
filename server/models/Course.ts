@@ -17,7 +17,7 @@ const CourseSchema = new Schema<ICourse>({
   targetAudience: { type: String, required: true },
   requirements: { type: String, required: true },
   instructorId: { type: mongoose.Schema.Types.ObjectId, ref: "Instructor", required: true },
-  status: { type: String, enum: ["draft", "reviewed", "published"], default: "draft" },
+  status: { type: String, enum: ["draft", "reviewed", "published","rejected"], default: "draft" },
   createdAt: { type: Date, default: Date.now },
   students: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   ratingsAndFeedback: [
