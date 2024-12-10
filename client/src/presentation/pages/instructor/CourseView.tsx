@@ -6,9 +6,9 @@ import StudentFeedback from '../../components/courses/StudentFeedback';
 import CourseHeader from '../../components/courses/courseHeader';
 import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/instructor/Sidebar';
-import CourseVideo from '../../components/instructor/CourseVideo';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
 import EditQuizForm from './QuizListSection';
+import CourseVideo from '../../components/instructor/CourseVideo';
 
 type Section = 'Description' | 'Requirements'|'Quiz' | 'Feedback';
 
@@ -18,6 +18,7 @@ const CourseView = () => {
   const [courseData, setCourseData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,7 +84,7 @@ const CourseView = () => {
         <div className="flex mt-6">
           {/* Left Content */}
           <div className="flex-1 pr-4">
-            <CourseVideo id={courseData._id} />
+          <CourseVideo videoUrl={selectedVideoUrl} id={courseId}/>
 
             {/* Section Navigation */}
             <div className="flex border-b border-gray-200 mt-6 mb-6">
@@ -136,7 +137,8 @@ const CourseView = () => {
             </div>
 
             <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
-            <CurriculumPage />
+            <CurriculumPage onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
+            />
             {/* Add Lesson Button */}
 
           </div>

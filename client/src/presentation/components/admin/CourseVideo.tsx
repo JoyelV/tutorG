@@ -6,7 +6,7 @@ import api from '../../../infrastructure/api/api';
 
 type CourseVideoProps = {
   videoUrl?: string; 
-  id: string | undefined;  
+  id?: string;       
 };
 
 const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
@@ -15,26 +15,28 @@ const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
 
   useEffect(() => {
     const fetchCourses = async () => {
+      if (videoUrl) return; 
+      
       try {
         if (!id) {
           showError('Invalid course ID.');
           return;
         }
         const response = await api.get(`/instructor/course-view/${id}`);
-        console.log(response.data, "video data in instructor");
+        console.log(response.data, 'Video data in instructor');
         if (response.status === 200) {
           const data = response.data;
-          setExistingVideoUrl(data.trailer);
+          setExistingVideoUrl(data.trailer || '');
         } else {
           showError('Unauthorized request.');
         }
       } catch (err) {
-        showError('Unauthorized request..');
+        showError('Unauthorized request.');
       }
     };
 
     fetchCourses();
-  }, [id,videoUrl]);
+  }, [id, videoUrl]);
 
   const showError = (message: string) => {
     Swal.fire({
@@ -45,17 +47,18 @@ const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
       confirmButtonText: 'Go to Listing page',
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate('/instructor/my-courses');
+        navigate('/admin/courses');
       }
     });
   };
+
   const videoSource = videoUrl || existingVideoUrl; 
 
   return (
     <Box>
       <div className="mb-4">
         {videoSource ? (
-          <video src={videoSource} controls className="mb-2 w-full rounded" autoPlay />
+          <video src={videoSource} controls className="mb-2 w-full rounded" autoPlay/>
         ) : (
           <div className="mb-2 text-gray-500">No video available</div>
         )}

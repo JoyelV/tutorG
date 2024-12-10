@@ -53,7 +53,7 @@ const CourseImage = ({ id }: CourseVideoProps) => {
     <Box>
       <div className="mb-4">
         {existingVideoUrl ? (
-          <video src={existingVideoUrl} controls className="mb-2 w-full rounded" />
+          <video src={existingVideoUrl} controls className="mb-2 w-full rounded" autoPlay />
         ) : (
           <div className="mb-2 text-gray-500">No video available</div>
         )}

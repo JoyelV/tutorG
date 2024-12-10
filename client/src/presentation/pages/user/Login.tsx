@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert, Grid, Link } from '@mui/material';
+import {
+    TextField,
+    Button,
+    Container,
+    Typography,
+    Paper,
+    Box,
+    Avatar,
+    Alert,
+    Grid,
+    Link,
+} from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { GoogleLogin, googleLogout } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { assets } from '../../../assets/assets_user/assets';
 import api from '../../../infrastructure/api/api';
 
 const Login: React.FC = () => {
@@ -65,82 +77,130 @@ const Login: React.FC = () => {
     };
 
     return (
-        <Container component="main" maxWidth="xs" sx={{ mt: 8 }}>
+        <Container component="main" maxWidth="md" sx={{ mt: 8 }}>
             <ToastContainer />
             <Paper elevation={6} sx={{ padding: 4, borderRadius: 3 }}>
-                <Box display="flex" flexDirection="column" alignItems="center">
-                    <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
-                        <LockOutlinedIcon />
-                    </Avatar>
-                    <Typography component="h1" variant="h5" gutterBottom>
-                        Sign In
-                    </Typography>
-                    {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-                    <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
-                        <TextField
-                            label="Email"
-                            fullWidth
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            margin="normal"
-                            variant="outlined"
-                        />
-                        <TextField
-                            label="Password"
-                            type="password"
-                            fullWidth
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            margin="normal"
-                            variant="outlined"
-                        />
-                        <Grid container justifyContent="flex-end" sx={{ mt: 1 }}>
-                            <Grid item>
-                                <Link
-                                    variant="body2"
-                                    color="secondary"
-                                    onClick={() => navigate('/forgot-password')}
-                                    sx={{ cursor: 'pointer', textDecoration: 'underline' }}
-                                >
-                                    Forgot password?
-                                </Link>
-                            </Grid>
-                        </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            sx={{
-                                mt: 3, mb: 2,
-                                py: 1.5,
-                                background: 'linear-gradient(to right, #6a11cb, #2575fc)',
-                                fontWeight: 'bold'
-                            }}
+                <Grid container spacing={2}>
+                    {/* Left Column: Image */}
+                    <Grid item xs={12} md={6}>
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            height="100%"
                         >
-                            Login
-                        </Button>
-                        <GoogleLogin
-                            onSuccess={handleGoogleSuccess}
-                            onError={handleGoogleFailure}
-                        />
-                        <Grid container justifyContent="flex-end">
-                            <Grid item>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                    Don't have an account?{' '}
-                                    <Button color="secondary" onClick={() => navigate('/register')}>
-                                        Sign Up
-                                    </Button>
+                            <img
+                                src={assets.appointment_img} 
+                                alt="Brand Illustration"
+                                style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }}
+                            />
+                        </Box>
+                    </Grid>
+    
+                    {/* Right Column: Brand Name and Login Form */}
+                    <Grid item xs={12} md={6}>
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            {/* Brand Section */}
+                            <Box textAlign="center" mb={3}>
+                                <Typography
+                                    variant="h3"
+                                    color="#F29D38"
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    Tutor
+                                    <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
                                 </Typography>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                </Box>
+                                <Typography variant="body2" color="textSecondary">
+                                    Welcome to Your Ultimate E-Learning Platform!
+                                </Typography>
+                            </Box>
+    
+                            {/* Login Form */}
+                            <Typography component="h1" variant="h5" gutterBottom>
+                                Sign In
+                            </Typography>
+                            {error && (
+                                <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+                                    {error}
+                                </Alert>
+                            )}
+                            <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
+                                <TextField
+                                    label="Email"
+                                    fullWidth
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    margin="normal"
+                                    variant="outlined"
+                                />
+                                <TextField
+                                    label="Password"
+                                    type="password"
+                                    fullWidth
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    margin="normal"
+                                    variant="outlined"
+                                />
+                                <Grid container justifyContent="flex-end" sx={{ mt: 1 }}>
+                                    <Grid item>
+                                        <Link
+                                            variant="body2"
+                                            color="secondary"
+                                            onClick={() => navigate('/forgot-password')}
+                                            sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                        >
+                                            Forgot password?
+                                        </Link>
+                                    </Grid>
+                                </Grid>
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    color="primary"
+                                    sx={{
+                                        mt: 3,
+                                        mb: 2,
+                                        py: 1.5,
+                                        background: 'linear-gradient(to right, #6a11cb, #2575fc)',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    Login
+                                </Button>
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={handleGoogleFailure}
+                                />
+                                <Grid container justifyContent="flex-end">
+                                    <Grid item>
+                                        <Typography variant="body2" sx={{ mt: 1 }}>
+                                            Don't have an account?{' '}
+                                            <Button
+                                                color="secondary"
+                                                onClick={() => navigate('/register')}
+                                            >
+                                                Sign Up
+                                            </Button>
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        </Box>
+                    </Grid>
+                </Grid>
             </Paper>
         </Container>
     );
+    
 };
 
 export default Login;

@@ -22,6 +22,7 @@ const CoursePage = () => {
   const [courseData, setCourseData] = useState<any>(null); 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -33,6 +34,7 @@ const CoursePage = () => {
         const response = await api.get(`/user/courses/${courseId}`);
         if (response.status === 200) {
           setCourseData(response.data);
+          setSelectedVideoUrl(response.data.trailer);
         } else {
           throw new Error('Course not found.');
         }
@@ -100,7 +102,9 @@ const CoursePage = () => {
               <CourseRequirements requirements={courseData.requirements} />
             )}
             {currentSection === 'Curriculum' && (
-              <CurriculumBox />
+              <CurriculumBox
+              onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
+            />
             )}
             {currentSection === 'Instructor' && (
               <InstructorInfo instructorId={courseData.instructorId} />

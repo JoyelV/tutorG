@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import { useParams } from 'react-router-dom';
 
-// Define the Feedback interface
 interface Feedback {
-  username: string; // The username directly from the response
-  email: string; // The email directly from the response
+  username: string; 
+  email: string; 
   feedback: string;
   rating: number;
 }
@@ -20,7 +19,7 @@ const StudentFeedback: React.FC = () => {
     const fetchFeedbacks = async () => {
       try {
         const response = await api.get(`/user/feedbacks/${courseId}`);
-        setFeedbacks(response.data.feedbacks); // Assuming 'feedbacks' is the key in the response
+        setFeedbacks(response.data.feedbacks); 
         setLoading(false);
       } catch (err) {
         console.error('Error fetching feedbacks:', err);
@@ -30,7 +29,7 @@ const StudentFeedback: React.FC = () => {
     };
 
     fetchFeedbacks();
-  }, [courseId]); // Adding courseId as a dependency to refetch when it changes
+  }, [courseId]); 
 
   if (loading) return <p>Loading feedbacks...</p>;
   if (error) return <p>{error}</p>;

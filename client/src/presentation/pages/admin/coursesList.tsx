@@ -3,7 +3,7 @@ import CourseTable from "../../components/admin/CourseTable";
 
 const CoursesList: React.FC = () => {
   return (
-          <CourseTable />
+    <CourseTable />
   );
 };
 

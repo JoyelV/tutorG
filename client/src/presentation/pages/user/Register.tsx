@@ -3,6 +3,7 @@ import { TextField, Button, Container, Typography, Paper, Box, Avatar, Grid } fr
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin, googleLogout } from '@react-oauth/google';
 import { ToastContainer, toast } from 'react-toastify';
+import { assets } from '../../../assets/assets_user/assets';
 import 'react-toastify/dist/ReactToastify.css';
 import api from '../../../infrastructure/api/api';
 
@@ -141,130 +142,179 @@ const Register: React.FC = () => {
     };
 
     return (
-        <Container component="main" maxWidth="xs" sx={{ mt: 8 }}>
+        <Container component="main" maxWidth="md" sx={{ mt: 8 }}>
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
             <Paper elevation={6} sx={{ padding: 4, borderRadius: 3 }}>
-                <Box display="flex" flexDirection="column" alignItems="center">
-                    <Avatar sx={{ m: 1, bgcolor: 'primary.main' }} />
-                    <Typography component="h1" variant="h5" gutterBottom>
-                        {otpSent ? 'Verify OTP' : 'Sign Up'}
-                    </Typography>
-                    <Box component="form" onSubmit={otpSent ? handleOtpVerification : handleRegister} sx={{ mt: 1 }}>
-                        {!otpSent ? (
-                            <>
-                                <TextField
-                                    label="Username"
-                                    fullWidth
-                                    required
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    margin="normal"
-                                    variant="outlined"
-                                />
-                                <TextField
-                                    label="Email"
-                                    fullWidth
-                                    required
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    margin="normal"
-                                    variant="outlined"
-                                />
-                                <TextField
-                                    label="Password"
-                                    type="password"
-                                    fullWidth
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    margin="normal"
-                                    variant="outlined"
-                                />
-                                <TextField
-                                    label="Confirm Password"
-                                    type="password"
-                                    fullWidth
-                                    required
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    margin="normal"
-                                    variant="outlined"
-                                />
-                                <Button
-                                    type="submit"
-                                    fullWidth
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={isSubmitting}
-                                    sx={{
-                                        mt: 3,
-                                        mb: 2,
-                                        py: 1.5,
-                                        background: 'linear-gradient(to right, #6a11cb, #2575fc)',
-                                        fontWeight: 'bold',
-                                    }}
-                                >
-                                    {isSubmitting ? 'Processing...' : 'Register'}
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                <TextField
-                                    label="Enter OTP"
-                                    fullWidth
-                                    required
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                    margin="normal"
-                                    variant="outlined"
-                                />
-                                <Button
-                                    type="submit"
-                                    fullWidth
-                                    variant="contained"
-                                    color="primary"
-                                    sx={{
-                                        mt: 3,
-                                        mb: 2,
-                                        py: 1.5,
-                                        background: 'linear-gradient(to right, #6a11cb, #2575fc)',
-                                        fontWeight: 'bold',
-                                    }}
-                                >
-                                    Verify OTP
-                                </Button>
-                                <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    color="secondary"
-                                    disabled={!canResend}
-                                    onClick={handleResendOtp}
-                                    sx={{ mt: 2 }}
-                                >
-                                    {canResend ? 'Resend OTP' : `Resend OTP in ${resendTimer}s`}
-                                </Button>
-                            </>
-                        )}
-                    </Box>
-                    <GoogleLogin
-                            onSuccess={handleGoogleSuccess}
-                            onError={handleGoogleFailure}
-                        />
-                    <Grid container justifyContent="flex-end" sx={{ mt: 3 }}>
-                        <Grid item>
-                            <Typography variant="body2">
-                                Already have an account?{' '}
-                                <Button color="secondary" onClick={() => navigate('/login')}>
-                                    Sign in
-                                </Button>
-                            </Typography>
-                        </Grid>
+                <Grid container spacing={2}>
+                    {/* Left Column: Image */}
+                    <Grid item xs={12} md={6}>
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            height="100%"
+                        >
+                            <img
+                                src={assets.InstuctorImage} 
+                                alt="Brand Illustration"
+                                style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                            />
+                        </Box>
                     </Grid>
-                </Box>
+    
+                    {/* Right Column: Form */}
+                    <Grid item xs={12} md={6}>
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            {/* Brand Section */}
+                            <Box textAlign="center" mb={3}>
+                                <Typography
+                                    variant="h3"
+                                    color="#F29D38"
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    Tutor
+                                    <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Welcome to Your Ultimate E-Learning Platform!
+                                </Typography>
+                            </Box>
+                            <Typography component="h1" variant="h5" gutterBottom>
+                                {otpSent ? 'Verify OTP' : 'Sign Up'}
+                            </Typography>
+                            <Box
+                                component="form"
+                                onSubmit={otpSent ? handleOtpVerification : handleRegister}
+                                sx={{ mt: 1 }}
+                            >
+                                {!otpSent ? (
+                                    <>
+                                        <TextField
+                                            label="Username"
+                                            fullWidth
+                                            required
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            margin="normal"
+                                            variant="outlined"
+                                        />
+                                        <TextField
+                                            label="Email"
+                                            fullWidth
+                                            required
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            margin="normal"
+                                            variant="outlined"
+                                        />
+                                        <TextField
+                                            label="Password"
+                                            type="password"
+                                            fullWidth
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            margin="normal"
+                                            variant="outlined"
+                                        />
+                                        <TextField
+                                            label="Confirm Password"
+                                            type="password"
+                                            fullWidth
+                                            required
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            margin="normal"
+                                            variant="outlined"
+                                        />
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            variant="contained"
+                                            color="primary"
+                                            disabled={isSubmitting}
+                                            sx={{
+                                                mt: 3,
+                                                mb: 2,
+                                                py: 1.5,
+                                                background: 'linear-gradient(to right, #6a11cb, #2575fc)',
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            {isSubmitting ? 'Processing...' : 'Register'}
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <TextField
+                                            label="Enter OTP"
+                                            fullWidth
+                                            required
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            margin="normal"
+                                            variant="outlined"
+                                        />
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            variant="contained"
+                                            color="primary"
+                                            sx={{
+                                                mt: 3,
+                                                mb: 2,
+                                                py: 1.5,
+                                                background: 'linear-gradient(to right, #6a11cb, #2575fc)',
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            Verify OTP
+                                        </Button>
+                                        <Button
+                                            fullWidth
+                                            variant="outlined"
+                                            color="secondary"
+                                            disabled={!canResend}
+                                            onClick={handleResendOtp}
+                                            sx={{ mt: 2 }}
+                                        >
+                                            {canResend
+                                                ? 'Resend OTP'
+                                                : `Resend OTP in ${resendTimer}s`}
+                                        </Button>
+                                    </>
+                                )}
+                            </Box>
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={handleGoogleFailure}
+                            />
+                            <Grid container justifyContent="flex-end" sx={{ mt: 3 }}>
+                                <Grid item>
+                                    <Typography variant="body2">
+                                        Already have an account?{' '}
+                                        <Button
+                                            color="secondary"
+                                            onClick={() => navigate('/login')}
+                                        >
+                                            Sign in
+                                        </Button>
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    </Grid>
+                </Grid>
             </Paper>
         </Container>
     );
+    
 };
 
 export default Register;

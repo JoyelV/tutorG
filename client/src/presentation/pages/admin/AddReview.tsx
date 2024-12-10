@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2'; 
 import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/admin/Sidebar';
 
@@ -58,7 +58,7 @@ const AddReviewForm: React.FC = () => {
     }
 
     try {
-      const response = await api.post(`/qa/courses/${courseId}`, formData, {
+      const response = await api.post(`/admin/courses/${courseId}`, formData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -71,7 +71,7 @@ const AddReviewForm: React.FC = () => {
       } else {
         Swal.fire('Success!', 'Review submitted successfully!', 'success');
         setFormData({ title: '', material: '', comment: '' });
-        navigate(`/qa/viewCoursePage/${courseId}`);
+        navigate(`/admin/viewCoursePage/${courseId}`);
       }
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -81,7 +81,7 @@ const AddReviewForm: React.FC = () => {
 
   const handleClose = () => {
     setFormData({ title: '', material: '', comment: '' });
-    navigate(`/qa/viewCoursePage/${courseId}`);
+    navigate(`/admin/viewCoursePage/${courseId}`);
   };
 
   return (

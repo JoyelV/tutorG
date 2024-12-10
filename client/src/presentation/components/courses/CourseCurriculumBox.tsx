@@ -13,7 +13,11 @@ interface Lesson {
   createdAt: string;
 }
 
-const CurriculumBox: React.FC = () => {
+interface CurriculumBoxProps {
+  onLessonSelect: (videoUrl: string) => void; 
+}
+
+const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) => {
   const { courseId } = useParams<{ courseId: string }>();
   const [curriculum, setCurriculum] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +67,12 @@ const CurriculumBox: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  const handleVideoSelect = (videoUrl: string) => {
+    if (onLessonSelect) {
+      onLessonSelect(videoUrl);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -101,7 +111,7 @@ const CurriculumBox: React.FC = () => {
           <div className="flex justify-between text-sm text-gray-600 mb-6">
             <span>{sections.length} Sections</span>
             <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>
-            <span>~{sections.length * 5} mins</span> {/* Example duration */}
+            <span>~{sections.length * 5} mins</span>
           </div>
           <ul className="space-y-4">
             {sections.map((section, index) => (
@@ -134,14 +144,12 @@ const CurriculumBox: React.FC = () => {
                             {topic.name}
                           </button>
                         ) : (
-                          <a
-                            href={topic.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline"
+                          <button
+                            onClick={() => handleVideoSelect(topic.link)}
+                            className="hover:underline text-blue-500"
                           >
                             {topic.name}
-                          </a>
+                          </button>
                         )}
                         <span>{topic.duration}</span>
                       </li>

@@ -49,9 +49,25 @@ const AdminLogin: React.FC = () => {
         <Container component="main" maxWidth="xs" sx={{ mt: 8 }}>
             <Paper elevation={6} sx={{ padding: 4, borderRadius: 3 }}>
                 <Box display="flex" flexDirection="column" alignItems="center">
-                    <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
-                        <LockOutlinedIcon />
-                    </Avatar>
+                    {/* Brand Section */}
+                    <Box textAlign="center" mb={3}>
+                                <Typography
+                                    variant="h3"
+                                    color="#F29D38"
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    Tutor
+                                    <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Welcome to Admin Platform!
+                                </Typography>
+                            </Box>
                     <Typography component="h1" variant="h5" gutterBottom>
                         Admin Sign In
                     </Typography>

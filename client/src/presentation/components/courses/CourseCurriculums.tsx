@@ -14,7 +14,11 @@ interface Lesson {
   createdAt: string;
 }
 
-const CurriculumPage: React.FC = () => {
+interface CurriculumBoxProps {
+  onLessonSelect: (videoUrl: string) => void;
+}
+
+const CurriculumPage: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) => {
   const { courseId } = useParams<{ courseId: string }>();
   const [curriculum, setCurriculum] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +75,12 @@ const CurriculumPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleVideoSelect = (videoUrl: string) => {
+    if (onLessonSelect) {
+      onLessonSelect(videoUrl); // Call parent callback with the video URL
+    }
   };
 
   const handleEditLesson = (lessonId: string) => {
@@ -166,14 +176,12 @@ const CurriculumPage: React.FC = () => {
               {expandedSections[index] && (
                 <ul className="mt-2 p-4 space-y-2 bg-white">
                   <li>
-                    <a
-                      href={lesson.lessonVideo}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleVideoSelect(lesson.lessonVideo)}
                       className="hover:underline text-blue-500"
                     >
                       Watch Video
-                    </a>
+                    </button>
                   </li>
                   <li>
                     <button

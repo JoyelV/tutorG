@@ -49,9 +49,25 @@ const InstructorLogin: React.FC = () => {
         <Container component="main" maxWidth="xs" sx={{ mt: 8 }}>
             <Paper elevation={6} sx={{ padding: 4, borderRadius: 3 }}>
                 <Box display="flex" flexDirection="column" alignItems="center">
-                    <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
-                        <LockOutlinedIcon />
-                    </Avatar>
+                    {/* Brand Section */}
+                    <Box textAlign="center" mb={3}>
+                                <Typography
+                                    variant="h3"
+                                    color="#F29D38"
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    Tutor
+                                    <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Welcome to Your Instructor's Platform!
+                                </Typography>
+                            </Box>
                     <Typography component="h1" variant="h5" gutterBottom>
                     Instructor Sign In
                     </Typography>
@@ -100,16 +116,6 @@ const InstructorLogin: React.FC = () => {
                                 Forgot Password?
                             </Link>
                         </Box>
-                        {/* <Grid container justifyContent="flex-end">
-                            <Grid item>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                    Don't have an account?{' '}
-                                    <Button color="secondary" onClick={() => navigate('/instructor/tutor-register')}>
-                                        Sign Up
-                                    </Button>
-                                </Typography>
-                            </Grid>
-                        </Grid> */}
                     </Box>
                 </Box>
             </Paper>

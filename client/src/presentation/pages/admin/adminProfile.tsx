@@ -119,7 +119,7 @@ const AccountSettings = () => {
     const fetchUserData = async () => {
         try {
             const userId = localStorage.getItem('userId');
-            const response = await api.get(`/admin/profile/${userId}`);
+            const response = await api.get(`/admin/profile`);
             const data = response.data;
             console.log(data, "data in fetch");
 
@@ -165,7 +165,7 @@ const AccountSettings = () => {
             }
 
             const response = await api.put(
-                `/admin/upload-image/${userId}`,
+                `/admin/upload-image`,
                 formData,
                 {
                     headers: {
@@ -206,7 +206,7 @@ const AccountSettings = () => {
 
         try {
             const userId = localStorage.getItem('userId');
-            await api.put(`/admin/update/${userId}`, profileData, {
+            await api.put(`/admin/update`, profileData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -238,7 +238,7 @@ const AccountSettings = () => {
         try {
             const userId = localStorage.getItem('userId');
             console.log("userId password", userId)
-            await api.put(`/admin/update-password/${userId}`, passwordData, {
+            await api.put(`/admin/update-password`, passwordData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },

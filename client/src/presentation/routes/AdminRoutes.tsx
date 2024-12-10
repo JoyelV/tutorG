@@ -16,9 +16,7 @@ import Pagenotfound from '../components/common/PageNotFound';
 
 const AdminRoutes = () => {
     const values = localStorage.getItem('role');
-    console.log(values, "admin")
     const isAdmin = values === 'admin';
-    console.log(isAdmin, "admin?");
 
     return (
         <Routes>

@@ -5,7 +5,6 @@ import InstructorProfile from '../pages/instructor/instructorProfile';
 import ForgotPassword from '../pages/instructor/ForgotPassword';
 import VerifyOtp from '../pages/instructor/VerifyOtp';
 import { PasswordReset } from '../pages/instructor/PasswordReset';
-import InstructorRegister from '../pages/instructor/instructorRegister';
 import CreateCourse from '../pages/instructor/CreateCourse';
 import MyCourses from '../pages/instructor/MyCourses';
 import ErrorBoundary from '../../utils/ErrorBoundary';
@@ -17,16 +16,14 @@ import AddQuizForm from '../pages/instructor/AddQuiz';
 import EditQuizForm from '../pages/instructor/EditQuizForm';
 import StudentsList from '../pages/instructor/MyStudentsList';
 import Pagenotfound from '../components/common/PageNotFound';
+
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
-    console.log(value,"ins")
     const isInstructor = value === 'instructor';
-    console.log("isinstr",isInstructor);
 
     return (
         <Routes>
             <Route path="/" element={<InstructorLogin />} />
-            <Route path="/tutor-register" element={<InstructorRegister />} />
             <Route path="/forgot-password" element={<ForgotPassword/>} />
             <Route path="/verify-otp" element={<VerifyOtp/>} />
             <Route path="/reset-password" element={<PasswordReset />} />

@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import CourseDescription from '../../components/courses/CourseDescription';
-import CourseImage from '../../components/courses/CourseImage';
 import CourseRating from '../../components/courses/CourseRating';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import InstructorInfo from '../../components/courses/InstructorInfo';
 import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
-import CurriculumBox from '../../components/courses/CourseCurriculumBox';
 import CourseHeader from './CourseHeader';
+import CurriculumBox from '../courses/CourseCurriculumBox';
+import CourseVideo from '../admin/CourseVideo';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Rating' | 'Feedback';
 
@@ -19,6 +19,7 @@ const CoursePage = () => {
   const [courseData, setCourseData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -30,6 +31,7 @@ const CoursePage = () => {
         const response = await api.get(`/user/courses/${courseId}`);
         if (response.status === 200) {
           setCourseData(response.data);
+          setSelectedVideoUrl(response.data.trailer);
         } else {
           throw new Error('Course not found.');
         }
@@ -68,7 +70,7 @@ const CoursePage = () => {
             courseSubtitle={courseData.subtitle}
             instructorId={courseData.instructorId}
           />
-          <CourseImage id={courseId} /> {/* Passing courseId to CourseImage component */}
+        <CourseVideo videoUrl={selectedVideoUrl} />
 
           {/* Section Navigation - Tabs */}
           <div className="flex border-b border-gray-200 mb-6">
@@ -107,7 +109,9 @@ const CoursePage = () => {
 
         {/* Curriculum Box (Right Side) */}
         <div className="md:w-1/3 w-full bg-gray-50 p-6 shadow-md md:block hidden">
-          <CurriculumBox />
+        <CurriculumBox
+              onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
+            />
         </div>
       </div>
 

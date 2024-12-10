@@ -15,7 +15,7 @@ interface Course {
   description: string;
   courseFee: number;
   salePrice?: number;
-  createdAt: string;
+  status: string;
   category: string;
   isApproved: boolean;
 }
@@ -115,7 +115,7 @@ const CourseTable: React.FC = () => {
                 <th className="p-4 text-left">Description</th>
                 <th className="p-4 text-left">Category</th>
                 <th className="p-4 text-left">Price</th>
-                <th className="p-4 text-left">Created Date</th>
+                <th className="p-4 text-left">Status</th>
                 <th className="p-4 text-left">Action</th>
               </tr>
             </thead>
@@ -132,9 +132,7 @@ const CourseTable: React.FC = () => {
                   <td className="p-4">{course.title}</td>
                   <td className="p-4">{course.category}</td>
                   <td className="p-4">{course.courseFee}</td>
-                  <td className="p-4">
-                    {new Date(course.createdAt).toLocaleDateString("en-US")}
-                  </td>
+                  <td className="p-4">{course.status}</td>
                   <td className="p-4 flex space-x-2">
                     <button
                       onClick={() => toggleBlockStatus(course._id, course.isApproved)}
