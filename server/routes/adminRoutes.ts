@@ -19,6 +19,7 @@ import { deleteCategory, getCategories, saveCategory } from '../controllers/cate
 import { courseStatus, getCourseDatas, getInstructorData, getViewCourses, publishCourse, rejectCourse } from '../controllers/courseController';
 import { addReview, getReviews } from '../controllers/reviewController';
 import { verifyToken } from '../utils/VerifyToken';
+import { getOrderDetail, getOrders } from '../controllers/orderController';
 
 const router = Router();
 
@@ -56,5 +57,9 @@ router.put('/reject/:courseId',rejectCourse);
 router.post('/courses/:courseId', addReview);
 router.get('/reviews/:courseId',getReviews);
 router.get('/instructorProfile/:instructorId',getInstructorData);
+
+//Order Management
+router.get("/orders", getOrders);
+router.get("/order-view/:orderId", getOrderDetail);
 
 export default router;
