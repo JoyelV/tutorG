@@ -121,10 +121,9 @@ const Register: React.FC = () => {
     const handleGoogleSuccess = async (response: any) => {
         try {
             const res = await api.post('/user/google-login', { token: response.credential });
-            const { token, refreshToken, user } = res.data;
+            const { token, user } = res.data;
 
             localStorage.setItem('token', token);
-            localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userId', user.id);
             localStorage.setItem('role', user.role);
             localStorage.setItem('username', user.username);

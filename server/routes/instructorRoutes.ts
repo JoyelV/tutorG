@@ -7,7 +7,6 @@ import {
     fetchUserProfile,
     verifyPasswordOtp,
     verifyRegisterOTP,
-    refreshAccessToken,
     resendOtp,
     editUserProfile,
     editPassword,
@@ -26,7 +25,6 @@ const router = Router();
 router.post('/login', login); 
 router.post('/register', register); 
 router.post('/verify-registerotp',verifyRegisterOTP);
-router.post('/refresh-token',refreshAccessToken);
 router.post('/send-otp', sendOtp);
 router.post('/resend-otp',resendOtp );
 router.post('/verify-otp', verifyPasswordOtp);

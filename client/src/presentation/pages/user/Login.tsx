@@ -28,8 +28,9 @@ const Login: React.FC = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await api.post('/user/login', { email, password });
-            const { token, refreshToken, user } = response.data;
+            const response = await api.post('/user/login', { email, password }, { withCredentials: true });
+
+            const { token, user } = response.data;
 
             if (user.role !== 'user') {
                 setError('Access denied. Enter valid credentials.');
@@ -38,7 +39,6 @@ const Login: React.FC = () => {
             }
 
             localStorage.setItem('token', token);
-            localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userId', user.id);
             localStorage.setItem('role', user.role);
             localStorage.setItem('username', user.username);
@@ -55,10 +55,9 @@ const Login: React.FC = () => {
     const handleGoogleSuccess = async (response: any) => {
         try {
             const res = await api.post('/user/google-login', { token: response.credential });
-            const { token, refreshToken, user } = res.data;
+            const { token, user } = res.data;
 
             localStorage.setItem('token', token);
-            localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userId', user.id);
             localStorage.setItem('role', user.role);
             localStorage.setItem('username', user.username);

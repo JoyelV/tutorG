@@ -38,10 +38,18 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   const { email, password } = req.body;
   try {
     const { token, refreshToken ,user } = await loginService(email, password);
+
+    // Send the refresh token as an HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true, // Prevent access via JavaScript
+      secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
+      sameSite: 'strict', // Prevent CSRF
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
     res.status(200).json({
       message: 'Login successful',
       token,
-      refreshToken, 
       user: {
         id: user._id,
         username: user.username,
@@ -52,31 +60,6 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'An unknown error occurred' });
-  }
-};
-
-export const refreshAccessToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-      res.status(401).json({ message: 'Refresh token is required' });
-      return ;
-  }
-
-  try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
-      
-      const newToken = jwt.sign(
-          { id: (decoded as any).id, role: (decoded as any).role },
-          process.env.JWT_SECRET!,
-          { expiresIn: '15m' } 
-      );
-      console.log("called refereshtoken",newToken);
-
-      res.status(200).json({ token: newToken });
-  } catch (error) {
-      console.error('Error refreshing token:', error);
-      res.status(403).json({ message: 'Invalid or expired refresh token' });
   }
 };
 

@@ -5,8 +5,34 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export interface AuthenticatedRequest extends Request {
   userId?: string; 
-  role?: string;   
 }
+
+export const refreshAccessToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const refreshToken = req.cookies?.refreshToken;
+  console.log("refreshToken in verifytoken file",refreshToken);
+
+  if (!refreshToken) {
+      res.status(401).json({ message: 'Refresh token is required' });
+      return ;
+  }
+
+  try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
+      console.log("decoded",decoded);
+
+      const newToken = jwt.sign(
+          { id: (decoded as any).id, role: (decoded as any).role },
+          process.env.JWT_SECRET!,
+          { expiresIn: '15m' } 
+      );
+      console.log("called refereshtoken",newToken);
+
+      res.status(200).json({ token: newToken });
+  } catch (error) {
+      console.error('Error refreshing token:', error);
+      res.status(403).json({ message: 'Invalid or expired refresh token' });
+  }
+};
 
 export const verifyToken = (
   req: AuthenticatedRequest,
@@ -28,7 +54,7 @@ export const verifyToken = (
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     console.log(decoded,"decoded hii first");
     
     if (!decoded || typeof decoded !== 'object' || !decoded.id) {
@@ -36,9 +62,7 @@ export const verifyToken = (
       return;
     }
     req.userId = decoded.id as string; 
-    req.role = decoded.role as string; 
     console.log(req.userId,"req.userId");
-    console.log(req.role,"req.role");
     next();
   } catch (error) {
     res.status(403).json({ message: 'Invalid or expired token' });

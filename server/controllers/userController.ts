@@ -79,10 +79,18 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   const { email, password } = req.body;
   try {
     const { token, refreshToken ,user } = await loginService(email, password);
+
+    // Send the refresh token as an HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true, // Prevent access via JavaScript
+      secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
+      sameSite: 'strict', // Prevent CSRF
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
     res.status(200).json({
       message: 'Login successful',
       token,
-      refreshToken, 
       user: {
         id: user.id,
         username: user.username,
@@ -108,10 +116,16 @@ export const googleSignIn = async (req: Request, res: Response, next: NextFuncti
     const { token, refreshToken, user } = await googleLoginService(googleToken);
     console.log(token, refreshToken, user,"token, refreshToken, user")
 
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'development', 
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+  });  
+
     res.status(200).json({
       message: 'Google Sign-In successful',
       token,
-      refreshToken,
       user: {
         id: user._id, 
         username: user.username,

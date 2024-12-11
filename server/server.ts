@@ -9,6 +9,7 @@ import { handleStripeWebhook } from '../server/controllers/paymentController';
 import connectCloudinary from '../server/config/cloudinary';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import { refreshAccessToken } from './utils/VerifyToken';
 
 dotenv.config();
 
@@ -19,6 +20,8 @@ app.use(cors({
   credentials: true, 
 }));
 
+
+// Middleware to parse cookies
 app.use(cookieParser());  
 app.use(express.json());   
 app.use(express.urlencoded({ extended: true })); 
@@ -38,6 +41,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/instructor', instructorRoutes);
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+app.post('/api/refresh-token',refreshAccessToken);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
@@ -46,3 +50,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+
+

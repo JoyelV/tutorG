@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Alert, Link } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { TextField, Button, Container, Typography, Paper, Box, Alert, Link } from '@mui/material';
 import api from '../../../infrastructure/api/api';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
@@ -16,15 +15,14 @@ const AdminLogin: React.FC = () => {
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await api.post('/admin/login', { email, password });
+            const response = await api.post('/admin/login', { email, password }, { withCredentials: true });
+
             const userId = response.data.user.id;
             const token = response.data.token;
-            const refreshToken = response.data.refreshToken;
             const userRole = response.data.user.role;
             const username = response.data.user.username;
             
             localStorage.setItem('token', token);
-            localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userId', userId);
             localStorage.setItem('role', userRole);
             localStorage.setItem('username',username);

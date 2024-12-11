@@ -2,15 +2,16 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: 'http://localhost:5000/api',
+    withCredentials: true, // Enables sending and receiving cookies
 });
 
 const refreshAccessToken = async () => {
     try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) throw new Error('No refresh token available');
+        console.log('Attempting to refresh token...');
 
-        const response = await api.post('/user/refresh-token', { refreshToken });
+        const response = await api.post('/refresh-token');
         const { token } = response.data;
+        console.log('New access token received:', token);
 
         localStorage.setItem('token', token);
 
@@ -24,9 +25,13 @@ const refreshAccessToken = async () => {
 api.interceptors.response.use(
     (response) => response, 
     async (error) => {
+        console.log('Interceptor caught an error:', error.response?.status);
+
         const originalRequest = error.config;
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status&& !originalRequest._retry) {
+            console.log('Refreshing token...');
+
             originalRequest._retry = true; 
             try {
                 const newToken = await refreshAccessToken();
