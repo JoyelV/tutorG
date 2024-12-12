@@ -3,7 +3,21 @@ import { useParams, Link } from "react-router-dom";
 import Sidebar from "../../components/admin/Sidebar";
 import TopNav from "../../components/admin/TopNav";
 import api from "../../../infrastructure/api/api";
-import { Card, CardContent, Typography, Button, Grid, LinearProgress, Avatar, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { 
+  Card, 
+  CardContent, 
+  Typography, 
+  Button, 
+  Avatar, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableRow, 
+  Grid, 
+  Box, 
+  CircularProgress 
+} from "@mui/material";
 
 interface OrderDetail {
   _id: string;
@@ -63,222 +77,198 @@ const OrderView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-lg">Loading order details...</p>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-red-500">{error}</p>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
     );
   }
 
   if (!order) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p>No order details found.</p>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography>No order details found.</Typography>
+      </Box>
     );
   }
 
   const progressColor = order.status === "Completed" ? "success" : "primary";
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      <Box sx={{ width: 250, bgcolor: 'background.paper' }}>
         <Sidebar />
-      </aside>
+      </Box>
+
       {/* Main Content */}
-      <main className="flex-1 p-6">
+      <Box sx={{ flex: 1, p: 3 }}>
         <TopNav />
-        <h1 className="text-3xl font-semibold text-gray-800 mb-4">Order Details</h1>
-        <div className="grid grid-cols-1 gap-6">
-          {/* Order Information and Student Information Tables */}
-          <div className="flex space-x-6">
-            <div className="w-1/2">
-              {/* Student Information Table */}
-              <Card className="shadow-lg p-4 bg-white">
-                <CardContent>
-                  <Typography variant="h6" className="mb-2 font-semibold text-gray-700">
-                    Student Information
-                  </Typography>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell><strong>Field</strong></TableCell>
-                        <TableCell><strong>Details</strong></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell><strong>Username</strong></TableCell>
-                        <TableCell>{order.studentId.username}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Email</strong></TableCell>
-                        <TableCell>{order.studentId.email}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Profile Image</strong></TableCell>
-                        <TableCell>
-                          <Avatar src={`http://localhost:5000/${order.studentId.image}`} alt={order.studentId.username} />
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="w-1/2">
-              {/* Tutor Information Table */}
-              <Card className="shadow-lg p-4 bg-white">
-                <CardContent>
-                  <Typography variant="h6" className="mb-2 font-semibold text-gray-700">
-                    Tutor Information
-                  </Typography>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell><strong>Field</strong></TableCell>
-                        <TableCell><strong>Details</strong></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell><strong>Username</strong></TableCell>
-                        <TableCell>{order.tutorId.username}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Email</strong></TableCell>
-                        <TableCell>{order.tutorId.email}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Profile Image</strong></TableCell>
-                        <TableCell>
-                          <Avatar src={`http://localhost:5000/${order.tutorId.image}`} alt={order.tutorId.username} />
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+        <Typography variant="h4" gutterBottom>
+          Order Details
+        </Typography>
 
-          {/* Course and Tutor Information Tables */}
-          <div className="flex space-x-6">
-            <div className="w-1/2">
-              {/* Course Information Table */}
-              <Card className="shadow-lg p-4 bg-white">
-                <CardContent>
-                  <Typography variant="h6" className="mb-2 font-semibold text-gray-700">
-                    Course Information
-                  </Typography>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell><strong>Field</strong></TableCell>
-                        <TableCell><strong>Details</strong></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell><strong>Title</strong></TableCell>
-                        <TableCell>{order.courseId.title}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Subtitle</strong></TableCell>
-                        <TableCell>{order.courseId.subtitle}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Category</strong></TableCell>
-                        <TableCell>{order.courseId.subCategory}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Language</strong></TableCell>
-                        <TableCell>{order.courseId.language}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Description</strong></TableCell>
-                        <TableCell>{order.courseId.description}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="w-1/2">
-              {/* Order Details Card */}
-              <Card className="shadow-lg p-4 bg-white">
-                <CardContent>
-                  <Typography variant="h6" className="mb-2 font-semibold text-gray-700">
-                    Order Information
-                  </Typography>
+        <Grid container spacing={3}>
+          {/* Student and Tutor Information */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Student Information</Typography>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Field</strong></TableCell>
+                      <TableCell><strong>Details</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell><strong>Username</strong></TableCell>
+                      <TableCell>{order.studentId.username}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Email</strong></TableCell>
+                      <TableCell>{order.studentId.email}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Profile Image</strong></TableCell>
+                      <TableCell>
+                        <Avatar src={`http://localhost:5000/${order.studentId.image}`} alt={order.studentId.username} />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </Grid>
 
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell><strong>Field</strong></TableCell>
-                        <TableCell><strong>Details</strong></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell><strong>Order ID</strong></TableCell>
-                        <TableCell>{order._id}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Status</strong></TableCell>
-                        <TableCell>{order.status}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Payment Method</strong></TableCell>
-                        <TableCell>{order.paymentMethod}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Amount</strong></TableCell>
-                        <TableCell>₹{order.amount}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Created At</strong></TableCell>
-                        <TableCell>{new Date(order.createdAt).toLocaleString()}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Updated At</strong></TableCell>
-                        <TableCell>{new Date(order.updatedAt).toLocaleString()}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell><strong>Progress</strong></TableCell>
-                        <TableCell>
-                          <LinearProgress
-                            variant="determinate"
-                            value={order.status === "Completed" ? 100 : 50}
-                            color={progressColor}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-          {/* Back Button */}
-          <div className="mt-6">
-            <Link to="/admin/orders">
-              <Button variant="contained" color="primary">
-                Back to Orders
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </main>
-    </div>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Tutor Information</Typography>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Field</strong></TableCell>
+                      <TableCell><strong>Details</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell><strong>Username</strong></TableCell>
+                      <TableCell>{order.tutorId.username}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Email</strong></TableCell>
+                      <TableCell>{order.tutorId.email}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Profile Image</strong></TableCell>
+                      <TableCell>
+                        <Avatar src={`http://localhost:5000/${order.tutorId.image}`} alt={order.tutorId.username} />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Course and Order Information */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Course Information</Typography>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Field</strong></TableCell>
+                      <TableCell><strong>Details</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell><strong>Title</strong></TableCell>
+                      <TableCell>{order.courseId.title}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Subtitle</strong></TableCell>
+                      <TableCell>{order.courseId.subtitle}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Category</strong></TableCell>
+                      <TableCell>{order.courseId.subCategory}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Language</strong></TableCell>
+                      <TableCell>{order.courseId.language}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Order Information</Typography>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Field</strong></TableCell>
+                      <TableCell><strong>Details</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell><strong>Order ID</strong></TableCell>
+                      <TableCell>{order._id}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Status</strong></TableCell>
+                      <TableCell>{order.status}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Payment Method</strong></TableCell>
+                      <TableCell>{order.paymentMethod}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Amount</strong></TableCell>
+                      <TableCell>₹{order.amount}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Created At</strong></TableCell>
+                      <TableCell>{new Date(order.createdAt).toLocaleString()}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><strong>Updated At</strong></TableCell>
+                      <TableCell>{new Date(order.updatedAt).toLocaleString()}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Back Button */}
+        <Box sx={{ mt: 3 }}>
+          <Link to="/admin/orders">
+            <Button variant="contained" color="primary">
+              Back to Orders
+            </Button>
+          </Link>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

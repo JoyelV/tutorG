@@ -8,6 +8,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Box,
+  Typography,
   Pagination,
 } from '@mui/material';
 import Swal from 'sweetalert2';
@@ -35,7 +37,7 @@ const CategoryPage: React.FC = () => {
   const [subCategories, setSubCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 5; // Adjust items per page as needed
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchCategories();
@@ -60,11 +62,7 @@ const CategoryPage: React.FC = () => {
 
     const invalidCategoryChars = /[*\d]/;
     if (invalidCategoryChars.test(categoryName)) {
-      return Swal.fire(
-        'Validation Error',
-        'Category name contains invalid characters!',
-        'error'
-      );
+      return Swal.fire('Validation Error', 'Category name contains invalid characters!', 'error');
     }
 
     if (subCategories.length === 0) {
@@ -132,7 +130,7 @@ const CategoryPage: React.FC = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
-    setCurrentPage(1); // Reset to the first page on new search
+    setCurrentPage(1);
   };
 
   const filteredCategories = categories.filter((category) =>
@@ -155,132 +153,182 @@ const CategoryPage: React.FC = () => {
         confirmButtonText: 'Yes, Proceed!',
         cancelButtonText: 'Cancel',
       });
-
+  
       if (result.isConfirmed) {
+        setCategories((prevCategories) =>
+          prevCategories.map((category) =>
+            category._id === id
+              ? { ...category, status: !category.status }  
+              : category
+          )
+        );
+  
         const response = await api.patch(`/admin/categories/block/${id}`);
-        const updatedCategory = response.data;
-
-        setCategories(categories.map((category) =>
-          category._id === id ? { ...category, status: !category.status } : category
-        ));
-
-        Swal.fire('Success', updatedCategory.message, 'success');
+  
+        if (response.status === 200) {
+          Swal.fire(
+            response.data.status
+              ? 'Category Unblocked'
+              : 'Category Blocked',
+            '',
+            'success'
+          );
+        }
       }
     } catch (error) {
-      console.error('Error blocking/unblocking category:', error);
-      Swal.fire('Error', 'Failed to block/unblock category. Please try again.', 'error');
+      console.error('Error updating category status:', error);
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category._id === id
+            ? { ...category, status: !category.status }  
+            : category
+        )
+      );
+      Swal.fire('Error', 'Failed to update category status', 'error');
     }
+  };
+  
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <Sidebar />
-      </aside>
-
-      <main className="flex-1 p-6">
+      {/* Sidebar */}
+      <Sidebar />
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col ml-64">
         <TopNav />
-        <h1 className="text-3xl font-semibold text-gray-800 mb-4">Category Management</h1>
+        <div className="pt-16 p-6 overflow-y-auto h-full">
+          {loading ? (
+            <Box
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              alignItems="center"
+              height="100vh"
+              bgcolor="#f9f9f9"
+            >
+              <CircularProgress color="primary" size={50} />
+              <Typography variant="h6" color="textSecondary" mt={2}>
+                Loading, please wait...
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {/* Search and Table */}
+              <div className="pt-10 p-2 overflow-y-auto h-full">
+                <div className="mb-4 flex justify-between items-center">
+                  <h1 className="text-2xl font-bold">CATEGORY MANAGEMENT</h1>
+                  <TextField
+                    variant="outlined"
+                    size="small"
+                    placeholder="Search Categories"
+                    value={searchQuery}
+                    onChange={handleSearch}
+                  />
+                </div>
+                <table className="w-full border-collapse border border-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category Name
+                      </th>
+                      <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Subcategories
+                      </th>
+                      <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedCategories.map((category) => (
+                      <tr key={category._id} className="border-t">
+                        <td className="px-6 py-3">{category.categoryName}</td>
+                        <td className="px-6 py-3">
+                          {category.subCategories.map((sub) => sub.name).join(', ')}
+                        </td>
+                        <td className="px-6 py-3">
+                          {category.status ? 'False' : 'True'}
+                        </td>
+                        <td className="px-6 py-3 flex space-x-2">
+                          <button
+                            onClick={() => handleToggleBlockCategory(category._id!)}
+                            className={`px-4 py-2 rounded ${category.status
+                              ? 'bg-red-500 hover:bg-red-700'
+                              : 'bg-green-500 hover:bg-green-700'
+                              } text-white`}
+                          >
+                            {category.status ? 'Blocked' : 'Unblock'}
+                          </button>
+                          <button
+                            onClick={() => handleEditCategory(category)}
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
 
-        <TextField
-          label="Search Categories"
-          value={searchQuery}
-          onChange={handleSearch}
-          fullWidth
-          margin="normal"
-          variant="outlined"
-        />
+                <div className="flex justify-between items-center mt-4">
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setModalOpen(true)}
+                  >
+                    Add Category
+                  </Button>
+                </div>
+              </div>
 
-        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
-          {editingCategory ? 'Edit Category' : 'Add Category'}
-        </Button>
-
-        <Dialog open={modalOpen} onClose={() => setModalOpen(false)} fullWidth>
-          <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Category Name"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="Subcategories (comma-separated)"
-              value={subCategories.join(', ')}
-              onChange={(e) =>
-                setSubCategories(e.target.value.split(',').map((sub) => sub.trim()))
-              }
-              fullWidth
-              margin="normal"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setModalOpen(false)} color="secondary">
-              Cancel
-            </Button>
-            <Button onClick={handleSaveCategory} color="primary">
-              Submit
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {loading ? (
-          <div className="flex justify-center">
-            <CircularProgress />
-          </div>
-        ) : paginatedCategories.length > 0 ? (
-          <>
-            <table className="w-full border-collapse mt-4">
-              <thead>
-                <tr className="bg-gray-200 text-left">
-                  <th className="p-3">Category</th>
-                  <th className="p-3">Subcategories</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedCategories.map((category) => (
-                  <tr key={category._id} className="border-t">
-                    <td className="p-3">{category.categoryName}</td>
-                    <td className="p-3">
-                      {category.subCategories.map((sub) => sub.name).join(', ')}
-                    </td>
-                    <td className="p-3 space-x-2">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleEditCategory(category)}
-                      >
-                        Edit
-                      </Button>
-                      <button
-                        onClick={() => handleToggleBlockCategory(category._id!)}
-                        className={`px-4 py-2 rounded ${category.status ? 'bg-green-500' : 'bg-red-500'
-                          } text-white`}
-                      >
-                        {category.status ? 'Unblock' : 'Blocked'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={(_, page) => setCurrentPage(page)}
-                color="primary"
-              />
-            </div>
-
-          </>
-        ) : (
-          <p>No categories available.</p>
-        )}
-      </main>
+              {/* Modal for Add/Edit Category */}
+              <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+                <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
+                <DialogContent>
+                  <div className="space-y-4">
+                    <TextField
+                      label="Category Name"
+                      variant="outlined"
+                      fullWidth
+                      value={categoryName}
+                      onChange={(e) => setCategoryName(e.target.value)}
+                    />
+                    <TextField
+                      label="Subcategories"
+                      variant="outlined"
+                      fullWidth
+                      value={subCategories.join(', ')}
+                      onChange={(e) => setSubCategories(e.target.value.split(','))}
+                    />
+                  </div>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setModalOpen(false)} color="primary">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveCategory} color="primary">
+                    Save
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

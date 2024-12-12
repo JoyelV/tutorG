@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
+import { CircularProgress, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button } from '@mui/material';
 
 type User = {
   _id: string;
@@ -19,27 +20,14 @@ const UserTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(5);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-  const filteredUsers = users.filter((user) =>
-    `${user.username} ${user.email} ${user.phone} ${user.gender} ${user.role}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  );
-
-  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-
-  const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(filteredUsers.length / itemsPerPage); i++) {
-    pageNumbers.push(i);
-  }
+  const [totalUsers, setTotalUsers] = useState<number>(0);
 
   useEffect(() => {
     api
       .get('/admin/users')
       .then((response) => {
         setUsers(response.data);
+        setTotalUsers(response.data.length);
         setLoading(false);
       })
       .catch(() => {
@@ -48,107 +36,118 @@ const UserTable: React.FC = () => {
       });
   }, []);
 
+  const filteredUsers = users.filter((user) =>
+    `${user.username} ${user.email} ${user.phone} ${user.gender} ${user.role}`
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
   const toggleBlockStatus = async (userId: string) => {
     try {
-
       const result = await Swal.fire({
-        title: 'Block/Unblock Category?',
-        text: 'Are you sure you want to block/unblock this category?',
+        title: 'Block/Unblock User?',
+        text: 'Are you sure you want to block/unblock this user?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, Proceed!',
         cancelButtonText: 'Cancel',
       });
-  
+
       if (result.isConfirmed) {
-      const userToToggle = users.find((user) => user._id === userId);
-      if (!userToToggle) {
-        setError('User not found');
-        return;
+        const userToToggle = users.find((user) => user._id === userId);
+        if (!userToToggle) {
+          setError('User not found');
+          return;
+        }
+
+        const updatedStatus = !userToToggle.isBlocked;
+        const response = await api.patch(`/admin/users/${userId}`, { isBlocked: updatedStatus });
+
+        setUsers((prevUsers) =>
+          prevUsers.map((user) => (user._id === userId ? response.data : user))
+        );
       }
-
-      const updatedStatus = !userToToggle.isBlocked;
-
-      const response = await api.patch(`/admin/users/${userId}`, { isBlocked: updatedStatus });
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) => (user._id === userId ? response.data : user))
-      );
-    }
     } catch (err) {
       console.error('Error updating block status:', err);
       setError('Failed to update block status');
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f9f9f9">
+      <CircularProgress color="primary" size={50} />
+      <Typography variant="h6" color="textSecondary" mt={2}>
+        Loading, please wait...
+      </Typography>
+    </Box>
+  );
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex justify-between items-center mb-4">
-        <input
-          type="text"
+    <div className="flex flex-col p-6">
+      <div className="mb-4 flex justify-between items-center">
+        <Typography variant="h6">User Management</Typography>
+        <TextField
+          variant="outlined"
+          size="small"
           placeholder="Search users..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 border rounded w-full max-w-sm"
+          onChange={handleSearch}
         />
       </div>
-      <table className="min-w-full bg-blue-200 rounded-lg">
-        <thead>
-          <tr>
-            {['Name', 'Email Id', 'Phone', 'Gender', 'Role', 'Status'].map((header) => (
-              <th key={header} className="p-4 border-b border-blue-300 text-left">
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {currentItems.map((user) => (
-            <tr key={user._id} className="bg-blue-100 even:bg-blue-200">
-              <td className="p-4 border-b border-blue-300">{user.username}</td>
-              <td className="p-4 border-b border-blue-300">{user.email}</td>
-              <td className="p-4 border-b border-blue-300">{user.phone}</td>
-              <td className="p-4 border-b border-blue-300">{user.gender}</td>
-              <td className="p-4 border-b border-blue-300">{user.role}</td>
-              <td className="p-4 border-b border-blue-300">
-                <button
-                  onClick={() => toggleBlockStatus(user._id)}
-                  className={`px-4 py-2 rounded ${user.isBlocked ? 'bg-green-500' : 'bg-red-500'} text-white`}
-                >
-                  {user.isBlocked ? 'Unblock' : 'Blocked'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* Pagination */}
-      <div className="flex justify-center mt-4 space-x-2">
-        <button
-          className="p-2 border rounded"
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-        >
-          &lt;
-        </button>
-        {pageNumbers.map((page) => (
-          <button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className={`p-2 border rounded ${currentPage === page ? 'bg-blue-500 text-white' : ''}`}
-          >
-            {page}
-          </button>
-        ))}
-        <button
-          className="p-2 border rounded"
-          onClick={() => setCurrentPage(Math.min(pageNumbers.length, currentPage + 1))}
-        >
-          &gt;
-        </button>
-      </div>
+
+      <TableContainer className="mb-4">
+        <Table>
+          <TableHead>
+            <TableRow>
+              {['Name', 'Email Id', 'Phone', 'Gender', 'Role', 'Status'].map((header) => (
+                <TableCell key={header} align="left" sx={{ fontWeight: 'bold' }}>
+                  {header}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredUsers
+              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+              .map((user) => (
+                <TableRow key={user._id}>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.phone}</TableCell>
+                  <TableCell>{user.gender}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => toggleBlockStatus(user._id)}
+                      variant="contained"
+                      color={user.isBlocked ? 'success' : 'error'}
+                    >
+                      {user.isBlocked ? 'Unblock' : 'Blocked'}
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Pagination
+        count={Math.ceil(filteredUsers.length / itemsPerPage)}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+      />
     </div>
   );
 };

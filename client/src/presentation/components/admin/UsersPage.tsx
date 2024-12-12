@@ -8,10 +8,11 @@ const UsersPage: React.FC = () => {
   const [isShowingStudents, setIsShowingStudents] = useState(true);
 
   return (
-    <div className="h-screen bg-gray-100 flex">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64">
-        <Sidebar />
+      <div className="flex min-h-screen bg-gray-100">
+    {/* Sidebar */}
+      <Sidebar />
       </div>
 
       {/* Main Content Area */}
@@ -20,7 +21,7 @@ const UsersPage: React.FC = () => {
         {/* Main Body Content */}
         <div className="pt-16 p-6 overflow-y-auto h-full">
           <div>
-            <h1 className="text-2xl font-bold mb-4">USERS</h1>
+            <h1 className="text-2xl font-bold mb-4">USERS & TUTORS MANAGEMENT</h1>
           </div>
           <div className="flex space-x-4 mb-4">
             <button

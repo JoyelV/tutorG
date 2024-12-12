@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ImageCard from '../../components/users/ImageCard';
 import api from '../../../infrastructure/api/api';
+import Navbar from '../../components/common/Navbar';
 
 const ViewCoursesListing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -43,6 +44,7 @@ const ViewCoursesListing: React.FC = () => {
     <div>
       {/* Top Action Bar */}
       <div className="flex items-center justify-between px-6 py-4 bg-white space-x-4 relative">
+      <Navbar />
         {/* Filter Dropdown */}
         <div className="relative">
           <button

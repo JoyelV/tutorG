@@ -42,7 +42,7 @@ try {
       .sort({ createdAt: -1 }); 
 
     if (orders.length === 0) {
-      res.status(404).json({ message: 'No purchase history found' });
+      res.status(204).json({ message: 'No purchase history found' });
       return ;
     }
 
@@ -59,30 +59,18 @@ try {
  */
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-
-    const pageNumber = parseInt(page as string, 10) || 1;
-    const limitNumber = parseInt(limit as string, 10) || 10;
-
     const orders = await orderModel
       .find()
-      .sort({ createdAt: -1 }) 
-      .skip((pageNumber - 1) * limitNumber)
-      .limit(limitNumber);
-    
-    console.log(orders,"orders......");
-
-    const totalOrders = await orderModel.countDocuments();
-    const totalPages = Math.ceil(totalOrders / limitNumber);
-    console.log(totalOrders,"totalOrders......");
+      .sort({ createdAt: -1 })
+      .populate("studentId", "username")
+      .populate("tutorId", "username")
+      .populate("courseId", "title category");
 
     res.status(200).json({
       success: true,
       orders,
-      totalPages,
-      currentPage: pageNumber,
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error fetching orders:", error);
     res.status(500).json({
       success: false,
@@ -112,5 +100,32 @@ export const getOrderDetail = async (req: Request, res: Response): Promise<void>
   } catch (error) {
     console.error("Error fetching order:", error);
     res.status(500).json({ message: "Server error. Please try again." });
+  }
+};
+
+export const getOrdersBySessionId = async (req: Request, res: Response): Promise<void> => {
+  const { session_id } = req.query;
+
+  if (!session_id) {
+    res.status(400).json({ message: "Session ID is required." });
+    return ;
+  }
+
+  try {
+    const orders = await orderModel
+    .find({ sessionId: session_id })
+    .populate("studentId", "username email image") 
+    .populate("courseId", "title subtitle subCategory language thumbnail description") 
+    .populate("tutorId", "username email image"); 
+
+    if (!orders.length) {
+      res.status(404).json({ message: "No orders found for the given session ID." });
+      return ;
+    }
+
+    res.status(200).json({ orders });
+  } catch (error:any) {
+    console.error("Error fetching orders:", error.message);
+    res.status(500).json({ message: "Internal server error." });
   }
 };

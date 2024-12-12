@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import api from '../../../infrastructure/api/api';
+import { toast, ToastContainer } from 'react-toastify';
 import Swal from 'sweetalert2';
+import 'react-toastify/dist/ReactToastify.css';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import api from '../../../infrastructure/api/api';
 
 interface Course {
   _id: string;
@@ -23,9 +25,10 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5); // Number of items per page
   const studentId = localStorage.getItem('userId');
 
-  // Fetch cart items on mount
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -37,7 +40,6 @@ const CartPage = () => {
         setLoading(false);
       }
     };
-
     fetchCartItems();
   }, [studentId]);
 
@@ -76,98 +78,138 @@ const CartPage = () => {
 
   const handlePaymentSelection = async () => {
     try {
-      const paymentData = cartItems.map(item => ({
-        studentId:studentId,
+      const paymentData = cartItems.map((item) => ({
+        studentId: studentId,
         courseId: item.course[0]._id,
         courseFee: item.course[0].courseFee,
         title: item.course[0].title,
-        thumbnail: item.course[0].thumbnail
+        thumbnail: item.course[0].thumbnail,
       }));
-      
+
       const response = await api.post(`/user/stripepayment`, { cartItems: paymentData });
-      console.log(response.data.url,":url")
       if (response.data.url) {
         window.location.href = response.data.url;
       } else {
         toast.error('Failed to initiate payment. Please try again.');
       }
-    } catch (err) {
+    } catch {
       toast.error('Payment processing failed. Please try again.');
     }
   };
 
-  if (loading) {
-    return <div className="text-center">Loading...</div>;
-  }
+  const calculateTotalAmount = () => {
+    return cartItems.reduce((total, item) => total + item.course[0].courseFee, 0);
+  };
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = cartItems.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  if (loading) return <div className="text-center">Loading...</div>;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-semibold">Shopping Cart</h1>
-        <p className="text-lg">{cartItems.length} Courses in Cart</p>
-      </div>
-      {cartItems.length === 0 ? (
-        <p className="text-center text-lg">Your cart is empty!</p>
-      ) : (
-        <>
-          <div className="space-y-6">
-            {cartItems.map((item) => (
-              <div key={item._id} className="flex justify-between items-start border-b pb-6">
-                <div className="w-32">
-                  <img
-                    src={item.course[0].thumbnail}
-                    alt={item.course[0].title}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
-                </div>
-                <div className="flex-1 pl-6">
-                  <h2 className="text-xl font-semibold">{item.course[0].title}</h2>
-                  <p className="text-gray-600">{item.course[0].subtitle}</p>
-                  <div className="mt-4 text-sm text-gray-600">
-                    <p><strong>Category:</strong> {item.course[0].category}</p>
-                    <p><strong>Level:</strong> {item.course[0].level}</p>
-                    <p><strong>Price:</strong> ₹{item.course[0].courseFee}</p>
-                    <div className="flex items-center mt-2">
-                      <span>{item.course[0].rating}</span>
-                      <span className="ml-1 text-yellow-500">⭐</span>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={() => handleRemove(item._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
-                    <button
-                      onClick={() => handleMoveToWishlist(item._id, item.course[0]._id)}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-                    >
-                      Move to Wishlist
-                    </button>
-                  </div>
-                </div>
+    <section className="py-8 lg:py-24 relative min-h-screen flex flex-col">
+      <div className="w-full max-w-7xl px-4 md:px-5 lg-6 mx-auto flex-grow">
+        <p className="text-2xl font-bold text-center text-sky-500">CART PAGE</p>
+        <div className="border-t border-sky-200 py-3">
+          {cartItems.length > 0 ? (
+            <>
+              <table className="min-w-full table-auto">
+                <thead>
+                  <tr className="border-b">
+                    <th className="px-4 py-2">Course Description</th>
+                    <th className="px-4 py-2">Fee</th>
+                    <th className="px-4 py-2">Remove</th>
+                    <th className="px-4 py-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentItems.map((cartItem) => (
+                    <tr key={cartItem._id} className="border-b">
+                      {cartItem.course.map((course) => (
+                        <td key={course._id} className="px-2 py-2">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={course.thumbnail}
+                              alt={course.title}
+                              className="w-16 h-16 rounded-md"
+                            />
+                            <div>
+                              <p className="px-4 py-2 font-semibold text-sky-600">{course.title}</p>
+                              <p className="px-4 py-2 text-sky-500">Category: {course.category}</p>
+                              <p className="px-4 py-2 text-sky-500">Level: {course.level}</p>
+                              <p className="px-4 py-2 text-sky-500">Rating: {course.rating} ⭐</p>
+                            </div>
+                          </div>
+                        </td>
+                      ))}
+                      <td className="px-4 py-2">₹{cartItem.course[0]?.courseFee}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleRemove(cartItem._id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleMoveToWishlist(cartItem._id, cartItem.course[0]._id)}
+                          className="text-blue-500 hover:text-blue-700 ml-2"
+                        >
+                          Move to Wishlist
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="flex justify-between mt-6">
+                <p className="font-semibold text-lg">Total Amount: ₹{calculateTotalAmount()}</p>
+                <button
+                  onClick={handlePaymentSelection}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Proceed to Checkout
+                </button>
               </div>
-            ))}
-          </div>
-          <div className="mt-6 flex justify-between items-center">
-            <div className="text-xl font-bold">
-              Total: ₹{cartItems.reduce((total, item) => total + item.course[0].courseFee, 0)}
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => paginate(currentPage - 1)}
+                  className="px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 disabled:opacity-50"
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  className="px-4 py-2 ml-2 bg-sky-500 text-white rounded hover:bg-sky-600"
+                  disabled={currentPage * itemsPerPage >= cartItems.length}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-16">
+              <h2 className="text-2xl font-bold text-sky-600">Your cart is empty!</h2>
+              <p className="text-gray-500 mt-4">Looks like you haven’t added anything to your cart yet.</p>
+              <p className="text-gray-500 mt-4">Purchase a course start today learn a new skill.</p>
+              <button
+                onClick={() => window.location.href = '/course-listing'}
+                className="mt-6 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Go to Courses
+              </button>
             </div>
-            <button
-              onClick={handlePaymentSelection}
-              className="px-6 py-3 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600"
-            >
-              Checkout
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+          )}
+        </div>
+      </div>
+      <ToastContainer />
+    </section>
   );
 };
 

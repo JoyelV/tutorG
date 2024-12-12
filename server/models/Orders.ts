@@ -6,6 +6,7 @@ interface ORDER extends Document {
   tutorId: mongoose.Schema.Types.ObjectId;
   status: string;
   paymentMethod: string;
+  sessionId: string;
   amount: number;
   metadata: any; 
   createdAt: Date;
@@ -34,13 +35,14 @@ const orderSchema = new Schema<ORDER>({
   },
   status: {
     type: String,
-    default: "pending", 
+    default: "completed", 
   },
   paymentMethod: {
     type: String,
     enum: ["Stripe", "Wallet"],
     required: true,
   },
+  sessionId: { type: String, required: true }, 
   metadata: {
     type: Schema.Types.Mixed, 
     required: false,

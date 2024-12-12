@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false); 
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const linkClasses =
-    "flex items-center py-2 px-4 rounded transition-colors duration-300";
-  const activeLinkClasses = "bg-orange-500";
+  const baseLinkClasses =
+    "block py-2 px-4 rounded transition-colors duration-300";
+  const activeLinkClasses = "bg-orange-500 text-white";
 
   const handleLogout = async () => {
     try {
@@ -38,56 +38,79 @@ const Sidebar: React.FC = () => {
         <nav className="flex-1">
           <ul>
             <li className="my-2">
-              <a
-                href="/instructor/instructor-dashboard"
-                className="block py-2 px-4 rounded bg-orange-500"
+              <NavLink
+                to="/instructor/instructor-dashboard"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
               >
                 Dashboard
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
-              <a
-                href="/instructor/instructor-createCourse"
-                className="block py-2 px-4 hover:bg-gray-700"
+              <NavLink
+                to="/instructor/instructor-createCourse"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
               >
                 Create Course
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
-              <a
-                href="/instructor/my-courses"
-                className="block py-2 px-4 hover:bg-gray-700"
+              <NavLink
+                to="/instructor/my-courses"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
               >
                 My Courses
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
-              <a href="/instructor/my-students" className="block py-2 px-4 hover:bg-gray-700">
+              <NavLink
+                to="/instructor/my-students"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
+              >
                 My Students
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
-              <a href="#" className="block py-2 px-4 hover:bg-gray-700">
+              <NavLink
+                to="/instructor/my-earnings"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
+              >
                 My Earnings
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
-              <a href="#qa" className="block py-2 px-4 hover:bg-gray-700">
+              <NavLink
+                to="/instructor/messages"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
+              >
                 Messages
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
-              <a
-                href="/instructor/instructor-profile"
-                className="block py-2 px-4 hover:bg-gray-700"
+              <NavLink
+                to="/instructor/instructor-profile"
+                className={({ isActive }) =>
+                  `${baseLinkClasses} ${isActive ? activeLinkClasses : ""}`
+                }
               >
                 Settings
-              </a>
+              </NavLink>
             </li>
             <li className="my-2">
               <button
                 onClick={handleLogout}
-                className={`${linkClasses} hover:bg-gray-700 w-full text-left`}
+                className={`${baseLinkClasses} hover:bg-gray-700 w-full text-left`}
               >
                 Logout
               </button>

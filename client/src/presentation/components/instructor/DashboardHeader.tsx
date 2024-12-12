@@ -9,12 +9,8 @@ const DashboardHeader = () => {
         <p>Good Morning</p>
       </div>
       <div className="flex items-center space-x-4">
-        <input
-          type="text"
-          placeholder="Search"
-          className="border rounded-lg p-2"
-        />
-        <img src={assets.Instructor3} alt="Profile" className="w-10 h-10 rounded-full" />
+      <span className="text-gray-600">Hello, Instructor</span>
+        <img src={assets.Instructor4} alt="Profile" className="w-10 h-10 rounded-full" />
       </div>
     </header>
   );

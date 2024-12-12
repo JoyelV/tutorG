@@ -25,6 +25,9 @@ const PurchaseHistoryPage = () => {
     const fetchPurchaseHistory = async () => {
       try {
         const response = await api.get(`/user/purchase-history`);
+        if(response.status===204){
+          setError('No purchase history,Please purchase a course');
+        }
         setOrders(response.data);
       } catch (err) {
         setError('Failed to fetch purchase history');
@@ -37,39 +40,53 @@ const PurchaseHistoryPage = () => {
   }, [userId]);
 
   if (isLoading) {
-    return <div className="text-center text-xl">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-xl">Loading...</div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-500">{error}</div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Course Title</th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Tutor</th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Payment Method</th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Purchase Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <tr key={order._id} className="border-t">
-              <td className="px-6 py-4 text-sm font-medium text-gray-700">{order.courseId.title}</td>
-              <td className="px-6 py-4 text-sm text-gray-700">{order.tutorId.username}</td>
-              <td className="px-6 py-4 text-sm text-gray-700">₹{order.amount.toFixed(2)}</td> 
-              <td className="px-6 py-4 text-sm text-gray-700">{order.paymentMethod}</td>
-              <td className="px-6 py-4 text-sm text-gray-700">
-                {new Date(order.createdAt).toLocaleDateString()}
-              </td>
+    <div className="min-h-screen max-w-4xl mx-auto p-6 flex flex-col">
+      {orders.length > 0 ? (
+        <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Course Title</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Tutor</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Payment Method</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Purchase Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order._id} className="border-t">
+                <td className="px-6 py-4 text-sm font-medium text-gray-700">{order.courseId.title}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">{order.tutorId.username}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">₹{order.amount.toFixed(2)}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">{order.paymentMethod}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="flex-grow flex items-center justify-center text-gray-500">
+          No purchase history available.
+        </div>
+      )}
     </div>
   );
 };

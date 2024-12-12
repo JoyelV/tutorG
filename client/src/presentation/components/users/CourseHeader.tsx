@@ -16,9 +16,7 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle
   const [instructor, setInstructor] = useState<Instructor | null>(null);
 
   useEffect(() => {
-    // Simulate fetching instructor data
     const fetchInstructorData = async () => {
-      // Replace this mock API call with a real one
       const response = await api.get(`/user/instructorData/${instructorId}`)
       setInstructor(response.data);
     };

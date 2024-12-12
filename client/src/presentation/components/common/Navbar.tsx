@@ -6,7 +6,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import { assets } from '../../../assets/assets_user/assets';
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { Link } from 'react-router-dom'; 
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Navbar: React.FC = () => {
     };
 
     return (
-        <AppBar position="static" color="default" elevation={1} sx={{ backgroundColor: 'white' }}>
+        <AppBar position="static" color="default" elevation={0} sx={{ backgroundColor: 'white' }}>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                 {/* Logo and Brand Name */}
                 <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>

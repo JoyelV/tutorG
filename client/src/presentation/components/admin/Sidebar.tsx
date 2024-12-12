@@ -17,14 +17,14 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <aside className="bg-gray-800 text-white w-64 h-screen flex flex-col shadow-lg">
+        <aside className="bg-gray-800 text-white w-64 h-screen fixed left-0 top-0 shadow-lg z-40">
             {/* Sidebar Header */}
             <div className="p-5 text-2xl font-bold border-b border-gray-700">
                 TutorG
             </div>
             
             {/* Navigation Links */}
-            <nav className="flex-1 mt-4">
+            <nav className="mt-4">
                 <ul className="space-y-2">
                     <li>
                         <NavLink 

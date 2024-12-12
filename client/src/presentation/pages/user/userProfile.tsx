@@ -7,6 +7,7 @@ import WishlistPage from './WishlistPage';
 import EnrolledCoursePage from './EnrolledCourses';
 import PurchaseHistoryPage from './PurchaseHistoryPage';
 import MyTutorsPage from '../instructor/MyTutorsPage';
+import Message from './ChatUser';
 
 export type Section = 'Dashboard' | 'Courses' | 'Teachers' | 'Message' | 'Wishlist' | 'Purchase History' | 'Settings';
 
@@ -26,7 +27,7 @@ const UserProfile = () => {
                 {currentSection === 'Dashboard' && <Dashboard />}
                 {currentSection === 'Courses' &&  <EnrolledCoursePage />}
                 {currentSection === 'Teachers' && <MyTutorsPage />}
-                {currentSection === 'Message' && <div>Message Content</div>}
+                {currentSection === 'Message' && <Message />}
                 {currentSection === 'Wishlist' && <WishlistPage />}
                 {currentSection === 'Purchase History' && <PurchaseHistoryPage />}
                 {currentSection === 'Settings' && <AccountSettings />}

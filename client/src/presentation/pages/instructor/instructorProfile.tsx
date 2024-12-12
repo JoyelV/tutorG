@@ -130,7 +130,7 @@ const InstructorProfile = () => {
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
-            setImage(data.image || null); // Set the image URL fetched from the database
+            setImage(data.image || null); 
             console.log(data.image, "image in fetchUser");
             console.log(image, "image from state");
 
@@ -143,8 +143,8 @@ const InstructorProfile = () => {
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
-        if (file && file.size <= 1 * 1024 * 1024) {  // Validate size < 1MB
-            setImage(URL.createObjectURL(file));  // Preview the selected image
+        if (file && file.size <= 1 * 1024 * 1024) {  
+            setImage(URL.createObjectURL(file));  
             uploadImage(file);
         } else {
             toast.error('Image size should be under 1MB');
@@ -263,7 +263,6 @@ const InstructorProfile = () => {
 
             {/* Main Content */}
             <main className="flex-1 p-6">
-                <TopNav />
                 <Box p={4}>
 
                     <ToastContainer />

@@ -16,6 +16,8 @@ import AddQuizForm from '../pages/instructor/AddQuiz';
 import EditQuizForm from '../pages/instructor/EditQuizForm';
 import StudentsList from '../pages/instructor/MyStudentsList';
 import Pagenotfound from '../components/common/PageNotFound';
+import Earnings from '../pages/instructor/MyEarnings';
+import ChatApp from '../pages/instructor/Messages';
 
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
@@ -47,10 +49,18 @@ const InstructorRoutes = () => {
                 path="/my-courses"
                 element={isInstructor ? <MyCourses /> : <Navigate to="/instructor" />}
             />    
+             <Route
+                path="/messages"
+                element={isInstructor ? <ChatApp /> : <Navigate to="/instructor" />}
+            /> 
             <Route
                 path="/my-students"
                 element={isInstructor ? <StudentsList /> : <Navigate to="/instructor" />}
-            />  
+            />
+            <Route
+                path="/my-earnings"
+                element={isInstructor ? <Earnings /> : <Navigate to="/instructor" />}
+            />     
             <Route path="/course-view/:courseId" element={isInstructor ? <ErrorBoundary>< CourseView /></ErrorBoundary>: <Navigate to="/instructor" />}
             />
             <Route path="/course-edit/:courseId" element={isInstructor ? <EditCourse />: <Navigate to="/instructor" />} 

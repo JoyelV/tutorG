@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; 
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import api from "../../../infrastructure/api/api";
 import Sidebar from "../admin/Sidebar";
 import TopNav from "./TopNav";
-import Swal from 'sweetalert2';
-import Pagination from '@mui/material/Pagination';
+import api from "../../../infrastructure/api/api";
+import { CircularProgress, Box, Typography, TextField, Pagination } from '@mui/material';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 interface Course {
   _id: string;
@@ -22,39 +22,56 @@ interface Course {
 
 const CourseTable: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [coursesPerPage] = useState<number>(5); 
-
-  const navigate = useNavigate(); 
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const coursesPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/admin/courseData");
-        setCourses(response.data);
-      } catch (err) {
-        setError("Failed to fetch courses");
+        const data = response.data;
+        setCourses(data);
+        setFilteredCourses(data);
+      } catch (error) {
+        toast.error("Failed to fetch courses");
       } finally {
         setLoading(false);
       }
     };
+
     fetchCourses();
   }, []);
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = courses.filter((course) =>
+      course.title.toLowerCase().includes(query) ||
+      course.category.toLowerCase().includes(query) ||
+      course.status.toLowerCase().includes(query)
+    );
+
+    setFilteredCourses(filtered);
+    setCurrentPage(1); // Reset to the first page
+  };
 
   const toggleBlockStatus = async (courseId: string, isCurrentlyApproved: boolean) => {
     try {
       const result = await Swal.fire({
-        title: 'Block/Unblock Course?',
-        text: 'Are you sure you want to block/unblock this course?',
-        icon: 'warning',
+        title: "Block/Unblock Course?",
+        text: "Are you sure you want to block/unblock this course?",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'Yes, Proceed!',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: "Yes, Proceed!",
+        cancelButtonText: "Cancel",
       });
-  
+
       if (result.isConfirmed) {
         const response = await api.patch(`/admin/course-status/${courseId}`);
         const updatedCourse = response.data;
@@ -65,108 +82,145 @@ const CourseTable: React.FC = () => {
               : course
           )
         );
+        setFilteredCourses((prevFilteredCourses) =>
+          prevFilteredCourses.map((course) =>
+            course._id === courseId
+              ? { ...course, isApproved: updatedCourse.isApproved }
+              : course
+          )
+        );
         toast.success(
-          updatedCourse.isApproved ? "Course has been Unblocked successfully!" : "Course has been Blocked successfully!"
+          updatedCourse.isApproved
+            ? "Course has been unblocked successfully!"
+            : "Course has been blocked successfully!"
         );
       }
-    } catch (err) {
-      console.error("Error updating block status:", err);
-      setError("Failed to update block status");
+    } catch (error) {
+      console.error("Error updating block status:", error);
+      toast.error("Failed to update block status");
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
-
-  const filteredCourses = courses.filter((course) =>
-    course.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  // Pagination Logic
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
   const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
   const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
 
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <Sidebar />
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6">
+      <Sidebar />
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col ml-64">
         <TopNav />
-        <h1 className="text-3xl font-semibold text-gray-800 mb-4">Course Management</h1>
-        <div className="flex justify-between items-center mb-4">
-          <input
-            type="text"
-            placeholder="Search courses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="p-2 border rounded w-full max-w-sm"
-          />
+        <div className="pt-16 p-6 overflow-y-auto h-full">
+          {loading ? (
+            <Box
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              alignItems="center"
+              height="100vh"
+              bgcolor="#f9f9f9"
+            >
+              <CircularProgress color="primary" size={50} />
+              <Typography variant="h6" color="textSecondary" mt={2}>
+                Loading, please wait...
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {/* Search and Table */}
+              <div className="pt-10 p-2 overflow-y-auto h-full">
+              <div className="mb-4 flex justify-between items-center">
+                <h1 className="text-2xl font-bold">COURSE MANAGEMENT</h1>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  placeholder="Search Courses"
+                  value={searchQuery}
+                  onChange={handleSearch}
+                />
+              </div>
+              <table className="w-full border-collapse border border-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thumbnail
+                    </th>
+                    <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentCourses.map((course) => (
+                    <tr key={course._id} className="border-t">
+                      <td className="px-6 py-3">
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="w-16 h-16 rounded-full"
+                        />
+                      </td>
+                      <td className="px-6 py-3">{course.title}</td>
+                      <td className="px-6 py-3">{course.category}</td>
+                      <td className="px-6 py-3">₹{course.courseFee}</td>
+                      <td className="px-6 py-3">{course.status}</td>
+                      <td className="px-6 py-3 flex space-x-2">
+                        <button
+                          onClick={() => toggleBlockStatus(course._id, course.isApproved)}
+                          className={`px-4 py-2 rounded ${course.isApproved
+                            ? "bg-red-500 hover:bg-red-700"
+                            : "bg-green-500 hover:bg-green-700"
+                            } text-white`}
+                        >
+                          {course.isApproved ? "Blocked" : "Unblock"}
+                        </button>
+                        <button
+                          onClick={() => navigate(`/admin/viewCoursePage/${course._id}`)}
+                          className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Pagination */}
+              <Box display="flex" justifyContent="center" mt={4}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                />
+              </Box>
+              </div>
+            </>
+          )}
         </div>
-        <div className="bg-white shadow rounded-lg">
-          <table className="w-full border-collapse">
-            <thead className="bg-blue-100">
-              <tr>
-                <th className="p-4 text-left">Thumbnail</th>
-                <th className="p-4 text-left">Description</th>
-                <th className="p-4 text-left">Category</th>
-                <th className="p-4 text-left">Price</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentCourses.map((course) => (
-                <tr key={course._id} className="border-t">
-                  <td className="p-4">
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="w-16 h-16 rounded-full"
-                    />
-                  </td>
-                  <td className="p-4">{course.title}</td>
-                  <td className="p-4">{course.category}</td>
-                  <td className="p-4">{course.courseFee}</td>
-                  <td className="p-4">{course.status}</td>
-                  <td className="p-4 flex space-x-2">
-                    <button
-                      onClick={() => toggleBlockStatus(course._id, course.isApproved)}
-                      className={`px-4 py-2 rounded ${
-                        course.isApproved
-                          ? "bg-red-500 hover:bg-red-700"
-                          : "bg-green-500 hover:bg-green-700"
-                      } text-white`}
-                    >
-                      {course.isApproved ? "Blocked" : "Unblock"}
-                    </button>
-                    <button
-                      onClick={() => navigate(`/admin/viewCoursePage/${course._id}`)}
-                      className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* Pagination */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={(_, page) => setCurrentPage(page)}
-            color="primary"
-          />
-        </div>
-      </main>
+      </div>
     </div>
+
   );
 };
 

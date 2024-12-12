@@ -79,11 +79,11 @@ const CourseViewPage = () => {
   };
 
   const handlePublish = () => {
-    updateCourseStatus('published');
+    updateCourseStatus('publish');
   };
 
   const handleReject = () => {
-    updateCourseStatus('rejected');
+    updateCourseStatus('reject');
   };
 
   if (isLoading) {

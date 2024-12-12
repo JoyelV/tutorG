@@ -108,7 +108,9 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 
       const cartItems = session.metadata?.cartItems ? JSON.parse(session.metadata.cartItems) : [];
       console.log(cartItems, "cartItems");
-
+      
+      const sessionId = session.id; 
+      
       const orderPromises = cartItems.map(async (item: any) => {
         const { courseId, studentId, courseFee } = item;
 
@@ -124,6 +126,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           tutorId: courseData.instructorId,
           amount: courseFee,
           paymentMethod: 'Stripe',
+          sessionId, 
         });
         console.log(order, 'order');
 

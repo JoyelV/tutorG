@@ -20,14 +20,7 @@ function Pagenotfound() {
                             Did you know?<br />
                             A "404 Not Found" error was named after a room at the CERN laboratories in Switzerland, where the web was born! Now you know more than just the error code!
                         </p>
-                        <div className="mt-6">
-                            <button 
-                                className="px-6 py-2 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 transition-all duration-200"
-                                onClick={() => window.location.href = '/'}
-                            >
-                                Take me Home
-                            </button>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
