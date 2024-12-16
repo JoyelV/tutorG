@@ -1,12 +1,12 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, InputBase, Button, Select, MenuItem, Box, Badge } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, InputBase, Button, Box, Badge } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import { assets } from '../../../assets/assets_user/assets';
-import { Link } from 'react-router-dom'; 
+import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -19,10 +19,15 @@ const Navbar: React.FC = () => {
 
     return (
         <AppBar position="static" color="default" elevation={0} sx={{ backgroundColor: 'white' }}>
-            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                 {/* Logo and Brand Name */}
-                <Box display="flex" alignItems="center" gap={1} sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
-                    {/* Logo Icon */}
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => navigate('/')}
+                >
                     <Box
                         component="img"
                         src={assets.logo}
@@ -39,67 +44,57 @@ const Navbar: React.FC = () => {
                     </Typography>
                 </Box>
 
-                {/* Search and Category Selector */}
-                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, maxWidth: 600, gap: 1 }}>
-                    <Select
-                        defaultValue="Browse"
-                        variant="outlined"
-                        size="small"
-                        sx={{ bgcolor: 'white', borderRadius: 1, width: 120 }}
-                    >
-                        <MenuItem value="Browse">Browse</MenuItem>
-                        <MenuItem value="Category 1">Category 1</MenuItem>
-                        <MenuItem value="Category 2">Category 2</MenuItem>
-                    </Select>
-                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, bgcolor: 'white', borderRadius: 1, paddingX: 1 }}>
-                        <SearchIcon color="action" />
-                        <InputBase
-                            placeholder="What do you want to learn..."
-                            fullWidth
-                            sx={{ ml: 1 }}
-                        />
-                    </Box>
+                {/* Search Bar */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flex: 1,
+                        maxWidth: 600,
+                        bgcolor: 'white',
+                        borderRadius: 1,
+                        paddingX: 1,
+                    }}
+                >
+                    <SearchIcon color="action" />
+                    <InputBase
+                        placeholder="What do you want to learn..."
+                        fullWidth
+                        sx={{ ml: 1 }}
+                        onFocus={(e) => e.target.select()} 
+                    />
                 </Box>
 
-                {/* Icons */}
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    {/* Notifications Icon with Link */}
+                {/* Icons and Auth Buttons */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {/* Icons */}
                     <Link to="/notifications">
                         <IconButton color="default">
-                            <Badge badgeContent={4} color="secondary">
+                            <Badge badgeContent={0} color="secondary">
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>
                     </Link>
-
-                    {/* Wishlist Icon with Link */}
                     <Link to="/user-profile">
                         <IconButton color="default">
                             <FavoriteBorderIcon />
                         </IconButton>
                     </Link>
-
-                    {/* Shopping Cart Icon with Link */}
                     <Link to="/cart">
                         <IconButton color="default">
-                            <Badge badgeContent={3} color="secondary">
+                            <Badge badgeContent={0} color="secondary">
                                 <ShoppingCartIcon />
                             </Badge>
                         </IconButton>
                     </Link>
-                </Box>
 
-                {/* Auth Buttons */}
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                    {/* Auth Buttons */}
                     {isLoggedIn ? (
                         <Button
                             onClick={handleLogout}
                             variant="contained"
                             color="error"
-                            sx={{
-                                fontWeight: 'bold',
-                                textTransform: 'none',
-                            }}
+                            sx={{ fontWeight: 'bold', textTransform: 'none' }}
                         >
                             Logout
                         </Button>

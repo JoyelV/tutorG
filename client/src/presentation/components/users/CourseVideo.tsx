@@ -47,7 +47,7 @@ const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
       confirmButtonText: 'Go to Listing page',
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate('/admin/courses');
+        navigate('/user-profile');
       }
     });
   };

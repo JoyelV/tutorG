@@ -43,8 +43,8 @@ const ViewCoursesListing: React.FC = () => {
   return (
     <div>
       {/* Top Action Bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white space-x-4 relative">
       <Navbar />
+      <div className="flex items-center justify-between px-6 py-4 bg-white space-x-4 relative">
         {/* Filter Dropdown */}
         <div className="relative">
           <button
@@ -54,12 +54,12 @@ const ViewCoursesListing: React.FC = () => {
             <span>{selectedFilter}</span>
           </button>
           {isDropdownOpen && (
-            <div className="absolute mt-2 bg-white shadow-md rounded-md w-48 border border-gray-200 z-10">
+            <div className="absolute mt-2 bg-white shadow-md rounded-md w-48 border border-white z-10">
               {filterOptions.map((option) => (
                 <button
                   key={option}
                   onClick={() => handleFilterSelect(option)}
-                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-white"
                 >
                   {option}
                 </button>

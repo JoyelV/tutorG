@@ -3,15 +3,12 @@ import { TextField, Button, Container, Typography, Paper, Box, Alert, Link, Grid
 import api from '../../../infrastructure/api/api';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
-import firebaseApp from '../../../infrastructure/config/firebaseConfig';
 
 const AdminLogin: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-    const auth = getAuth(firebaseApp);
 
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();

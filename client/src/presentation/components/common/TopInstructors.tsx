@@ -19,7 +19,7 @@ const instructors: Instructor[] = [
 
 const TopInstructors: React.FC = () => (
     <section className="p-8 bg-white">
-        <h3 className="text-2xl font-bold mb-4 text-center">Top Instructors of the Month</h3>
+        <h3 className="text-2xl font-bold mb-4 text-center">Our Top Instructors</h3>
         <div className="mx-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 justify-center">
             {instructors.map((instructor, index) => (
                 <div

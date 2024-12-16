@@ -15,7 +15,7 @@ function App() {
         <Navbar />
             <HeroSection />
             <Topics />
-            <div className="mt-10 w-full flex justify-center items-center p-10 font-bold text-3xl text-sky-600">
+            <div className="mt-10 w-full flex justify-center items-center p-05 font-bold text-3xl text-sky-600">
             Best Selling Courses
            </div>
             <ImageCard />

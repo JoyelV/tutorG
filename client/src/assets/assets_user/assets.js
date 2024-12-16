@@ -39,6 +39,11 @@ import Instructor2 from './Instructor2.png'
 import Instructor3 from './Instructor3.png'
 import Instructor4 from './Instructor4.png'
 import Instructor5 from './Instructor5.png'
+import Branches from './Branches.png'
+import Branches2 from './Branches2.png'
+import Branches3 from './Branches3.png'
+import Branches4 from './Branches4.png'
+
 
 import netflixLogo from './netflix.png';
 import youtubeLogo from './youtube.png';
@@ -50,7 +55,8 @@ import lexmarkLogo from './lexmark.png';
 import microsoftLogo from './microsoft.png';
 import logo from './GraduationCap.png'
 import FlyingLogo from './Flying Mortarboard.png'
-
+import aboutSectionImage from './aboutSectionImage.png'
+import MissionSectionImage from './MissionSection.png'
 
 export const assets = {
     appointment_img,
@@ -100,6 +106,12 @@ export const assets = {
     netflixLogo,
     lenovoLogo,
     logo,
-    FlyingLogo
+    FlyingLogo,
+    aboutSectionImage,
+    MissionSectionImage,
+    Branches,
+    Branches2,
+    Branches3,
+    Branches4
 }
 

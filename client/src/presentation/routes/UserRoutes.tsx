@@ -15,6 +15,9 @@ import CartPage from '../pages/user/CartPage';
 import PaymentSuccessPage from '../pages/user/PaymentSuccessPage';
 import SingleEnrolledCoursePage from '../pages/user/SingleEnrolledCoursePage';
 import Pagenotfound from '../components/common/PageNotFound';
+import BecomeInstructor from '../components/common/BecomeInstructor';
+import AboutPage from '../pages/user/AboutPage';
+import ContactPage from '../pages/user/ContactPage';
 
 const isLoggedIn = Boolean(localStorage.getItem('token'));
 
@@ -33,6 +36,9 @@ const UserRoutes = () => {
                 path="/user-profile"
                 element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" />}
             />
+            <Route path="/become-an-instructor" element={<BecomeInstructor />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/course-listing" element={<ViewCoursesListing />} />
             <Route path="/course/details/:courseId" element={<DetailedCoursePage />}/>
             <Route path="/wishlist" element={isLoggedIn ?<WishlistPage />: <Navigate to="/login" />}/>

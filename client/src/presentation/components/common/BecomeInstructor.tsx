@@ -1,11 +1,13 @@
 import { assets } from '../../../assets/assets_user/assets';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 const BecomeInstructor: React.FC = () => {
     const navigate = useNavigate();
 
     return (
+        <>
         <section className="flex flex-col md:flex-row flex-wrap bg-white rounded-lg px-6 md:px-10 lg:px-20">
             {/* Left Side */}
             <div className="md:w-1/2 flex flex-col items-start justify-center gap-4 py-10 m-auto md:py-[10vw] md:mb-[-30px] text-black">
@@ -36,6 +38,7 @@ const BecomeInstructor: React.FC = () => {
                 />
             </div>
         </section>
+        </>
     );
 };
 

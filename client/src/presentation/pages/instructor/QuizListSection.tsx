@@ -32,7 +32,6 @@ const QuizList: React.FC = () => {
     fetchQuizzes();
   }, [courseId]);
 
-  // Handle delete
   const handleDelete = async (quizId: string) => {
     try {
       const result = await Swal.fire({
@@ -60,7 +59,6 @@ const QuizList: React.FC = () => {
     }
   };
 
-  // Handle edit navigation
   const handleEdit = (quizId: string) => {
     navigate(`/instructor/quizzes/${courseId}/edit/${quizId}`);
   };
@@ -76,7 +74,7 @@ const QuizList: React.FC = () => {
                 key={quiz._id}
                 className="flex items-center justify-between bg-white p-4 shadow-md rounded-md"
               >
-                <span className="text-gray-800">{quiz.question}</span>
+                <span className="text-gray-800">{quiz._id}</span>
                 <div className="space-x-2">
                   <button
                     onClick={() => handleEdit(quiz._id)}
