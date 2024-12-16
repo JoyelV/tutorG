@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn, refreshAccessToken } from '../controllers/userController';
+import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn } from '../controllers/userController';
 import upload from '../config/multerConfig';
 import { getCourses, getCourseWithFeedbacks, getIndividualCourses, getInstructorData, getViewChapters, updateCourseRating } from '../controllers/courseController';
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
@@ -8,6 +8,7 @@ import { stripePayment } from '../controllers/paymentController';
 import { getEnrolledOrders, getOrdersBySessionId, getUserOrders } from '../controllers/orderController';
 import { verifyToken } from '../utils/VerifyToken';
 import { getMyTutors } from '../controllers/instructorController';
+import { getQuizzesByCourse, submitQuiz } from '../controllers/quizController';
 
 const router = Router();
 
@@ -33,8 +34,10 @@ router.get('/courses',getCourses);
 router.get('/courses/:courseId',getIndividualCourses);
 router.get('/view-lessons/:courseId',getViewChapters);
 router.patch('/rating/:courseId',verifyToken,updateCourseRating);
-router.get('/feedbacks/:courseId',getCourseWithFeedbacks);
-router.get('/instructorData/:instructorId',getInstructorData);
+router.get('/feedbacks/:courseId',verifyToken,getCourseWithFeedbacks);
+router.get('/instructorData/:instructorId',verifyToken,getInstructorData);
+router.get('/quizzes/:courseId', verifyToken,getQuizzesByCourse);
+router.post('/quizzes/attempt', verifyToken,submitQuiz);
 
 //CART MANAGEMENT
 router.post('/cart/add', verifyToken,addToCart);
