@@ -13,7 +13,7 @@ import {
     uploadImage} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, updateChapter } from '../controllers/courseController';
+import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, updateChapter } from '../controllers/courseController';
 import { getUnblockedCategories } from '../controllers/categoryController';
 import { addQuiz, deleteQuiz, getQuizById, getQuizzesByCourse, updateQuiz } from '../controllers/quizController';
 import { getStudentsByInstructor } from '../controllers/userController';
@@ -56,5 +56,10 @@ router.get('/categories', getUnblockedCategories);
 
 //STUDENT LIST
 router.get('/students', verifyToken,getStudentsByInstructor );
-
+router.get('/coursesCount', verifyToken,getEnrolledMyCourses );
+router.get('/my-courses/coursesCount', verifyToken,getMyCourses );
+router.get('/studentsCount', verifyToken,getMyStudents );
+router.get('/earningsCount', verifyToken,getMyEarnings );
+router.get('/getEarningDetails', verifyToken,getEarningDetails );
+  
 export default router;

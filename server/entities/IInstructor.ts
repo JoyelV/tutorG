@@ -21,4 +21,7 @@ export interface IInstructor extends Document {
     areasOfExpertise?: string;
     highestQualification?: string;
     isBlocked: boolean;
+    earnings: Number;
+    totalWithdrawals: Number;
+    currentBalance: Number;
 }

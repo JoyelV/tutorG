@@ -1,6 +1,12 @@
 import { Document, Types } from "mongoose";
 import { IUser } from "./IUser"; 
 
+export interface ICourseProgress {
+  studentId: Types.ObjectId | IUser; 
+  completedLessons: Types.ObjectId[]; 
+  completionDate: Date;
+}
+
 export interface ICourse extends Document {
   title: string;
   subtitle: string;
@@ -27,6 +33,8 @@ export interface ICourse extends Document {
   }[];
   averageRating: number;
   isApproved: boolean;
+  progress: ICourseProgress[];
 
   calculateAverageRating: () => Promise<void>;
+  updateProgress: (studentId: string, lessonId: string) => Promise<void>; 
 }

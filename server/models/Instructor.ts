@@ -19,6 +19,9 @@ const instructorSchema = new Schema<IInstructor>({
     areasOfExpertise: { type: String },
     highestQualification: { type: String },
     isBlocked: { type: Boolean, default: false },
+    earnings: { type: Number, default: 0 },
+    totalWithdrawals: { type: Number, default: 0 },
+    currentBalance: { type: Number, default: 0 },
 });
 
 export default model<IInstructor>('Instructor', instructorSchema);

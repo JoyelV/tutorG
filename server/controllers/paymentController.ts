@@ -3,6 +3,7 @@ import Course from "../models/Course";
 import Stripe from "stripe";
 import orderModel from "../models/Orders";
 import CartModel from "../models/Cart";
+import Instructor from "../models/Instructor";
 
 const stripeSecretKey = process.env.STRIPE_KEY as string;
 
@@ -133,6 +134,15 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         await Course.findByIdAndUpdate(courseData._id, {
           $push: { students: studentId },
         });
+
+        const instructor = await Instructor.findById(courseData.instructorId);
+        if (!instructor) throw new Error('Instructor not found');
+        
+        const earnings = courseData.courseFee * 0.2;
+        instructor.earnings = (instructor.earnings as number) + earnings;
+        instructor.currentBalance = (instructor.currentBalance as number) + earnings;
+        await instructor.save();
+        console.log(instructor,"instructor...");
 
         if (order) {
         const deletedCart = await CartModel.findOneAndDelete({ user: studentId });
