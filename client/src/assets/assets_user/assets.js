@@ -43,7 +43,8 @@ import Branches from './Branches.png'
 import Branches2 from './Branches2.png'
 import Branches3 from './Branches3.png'
 import Branches4 from './Branches4.png'
-
+import signature from './signature.jpg'
+import seal from './seal.jpeg'
 
 import netflixLogo from './netflix.png';
 import youtubeLogo from './youtube.png';
@@ -112,6 +113,8 @@ export const assets = {
     Branches,
     Branches2,
     Branches3,
-    Branches4
+    Branches4,
+    signature,
+    seal
 }
 

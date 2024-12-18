@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseRating from '../../components/courses/CourseRating';
@@ -26,6 +27,8 @@ const CoursePage = () => {
   const [error, setError] = useState('');
   const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedLessons, setCompletedLessons] = useState(0);
+  const [totalLessons, setTotalLessons] = useState(0);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -37,8 +40,10 @@ const CoursePage = () => {
 
       try {
         setIsLoading(true);
-        const { data } = await api.get(`/user/courses/${courseId}`);
-        setCourseData(data);
+        const { data } = await api.get(`/user/courses-enrolled/${courseId}`);
+        setCourseData(data.course);
+        setCompletedLessons(data.completedLessons);
+        setTotalLessons(data.totalLessons);
         setSelectedVideoUrl(data.trailer);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch course data.');
@@ -101,6 +106,8 @@ const CoursePage = () => {
 
   if (error) return <div>Error: {error}</div>;
 
+  const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
   return (
     <div className="flex flex-col w-full min-h-screen p-4">
       <ToastContainer />
@@ -111,7 +118,21 @@ const CoursePage = () => {
             courseSubtitle={courseData.subtitle}
             instructorId={courseData.instructorId}
           />
-          <CourseVideo videoUrl={selectedVideoUrl} />
+
+          <CourseVideo videoUrl={selectedVideoUrl} id={courseId!} />
+
+          <div className="flex justify-between items-center mt-4">
+            <h2 className="text-2xl font-bold">{courseData.title}</h2>
+            {/* Download Certificate Button */}
+            {completedLessons === totalLessons && totalLessons > 0 && (
+              <Link
+                to={`/completion-certificate/${courseId}`}
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-all"
+              >
+                Download Certificate
+              </Link>
+            )}
+          </div>
 
           <div className="flex border-b border-gray-200 mb-6">
             {['Description', 'Requirements', 'Instructor', 'Rating', 'Feedback', 'Quiz'].map((section) => (
@@ -176,7 +197,23 @@ const CoursePage = () => {
             )}
           </div>
         </div>
+
         <div className="md:w-1/3 w-full bg-gray-50 p-6 shadow-md hidden md:block">
+          {/* Course Progress UI */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">Your Progress</h3>
+            <div className="w-full bg-gray-200 rounded-full h-4">
+              <div
+                className="bg-blue-500 h-4 rounded-full text-right"
+                style={{ width: `${progressPercentage}%` }}
+              >
+                <span className="text-xs text-white pr-2">{progressPercentage}%</span>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              {completedLessons} out of {totalLessons} lessons completed
+            </p>
+          </div>
           <CurriculumBox onLessonSelect={setSelectedVideoUrl} />
         </div>
       </div>

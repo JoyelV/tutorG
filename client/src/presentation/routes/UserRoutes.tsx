@@ -18,6 +18,7 @@ import Pagenotfound from '../components/common/PageNotFound';
 import BecomeInstructor from '../components/common/BecomeInstructor';
 import AboutPage from '../pages/user/AboutPage';
 import ContactPage from '../pages/user/ContactPage';
+import CertificateOfCompletion from '../pages/user/CompletionCertificatePage';
 
 const isLoggedIn = Boolean(localStorage.getItem('token'));
 
@@ -45,6 +46,7 @@ const UserRoutes = () => {
             <Route path="/cart" element={isLoggedIn ?<CartPage/>: <Navigate to="/login" />} />
             <Route path="/paymentSuccess" element={isLoggedIn ?<PaymentSuccessPage/>: <Navigate to="/login" />} />
             <Route path="/enrolled-singlecourse/:courseId" element={<SingleEnrolledCoursePage/>} />
+            <Route path="/completion-certificate/:courseId" element={<CertificateOfCompletion/>} />
             <Route path="*" element={<Pagenotfound />} />
         </Routes>
         <Footer />

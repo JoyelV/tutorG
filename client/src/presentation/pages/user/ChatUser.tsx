@@ -12,7 +12,7 @@ import {
   InputAdornment,
   Tooltip,
 } from '@mui/material';
-import { Send, Search, Call, Videocam } from '@mui/icons-material';
+import { Send, VideoCall, Mic, Search, Call, Videocam } from '@mui/icons-material';
 
 interface Message {
   sender: 'student' | 'tutor';
@@ -91,9 +91,8 @@ const ChatUI: React.FC = () => {
             <ListItem
               button
               key={index}
-              className={`hover:bg-gray-200 ${
-                selectedTutor.name === tutor.name ? 'bg-gray-300' : ''
-              }`}
+              className={`hover:bg-gray-200 ${selectedTutor.name === tutor.name ? 'bg-gray-300' : ''
+                }`}
               onClick={() => handleTutorSelect(tutor)}
             >
               <ListItemAvatar>
@@ -110,16 +109,6 @@ const ChatUI: React.FC = () => {
                 secondary={tutor.lastSeen}
                 primaryTypographyProps={{ fontWeight: 'bold' }}
               />
-              <Tooltip title="Call">
-                <IconButton size="small" color="primary">
-                  <Call />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Video">
-                <IconButton size="small" color="primary">
-                  <Videocam />
-                </IconButton>
-              </Tooltip>
             </ListItem>
           ))}
         </List>
@@ -151,16 +140,14 @@ const ChatUI: React.FC = () => {
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${
-                message.sender === 'student' ? 'justify-end' : 'justify-start'
-              }`}
+              className={`flex ${message.sender === 'student' ? 'justify-end' : 'justify-start'
+                }`}
             >
               <div
-                className={`p-3 rounded-lg max-w-md shadow-md ${
-                  message.sender === 'student'
+                className={`p-3 rounded-lg max-w-md shadow-md ${message.sender === 'student'
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-800'
-                }`}
+                  }`}
               >
                 <p className="text-sm">{message.text}</p>
                 <p className="text-xs mt-1 text-right italic">{message.time}</p>
@@ -182,6 +169,12 @@ const ChatUI: React.FC = () => {
           />
           <IconButton color="primary" onClick={handleSendMessage} className="ml-2">
             <Send />
+          </IconButton>
+          <IconButton>
+            <VideoCall color="primary" />
+          </IconButton>
+          <IconButton>
+            <Mic color="primary" />
           </IconButton>
         </div>
       </div>

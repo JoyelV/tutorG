@@ -178,14 +178,15 @@ const ChatApp: React.FC = () => {
                 className="bg-gray-100 rounded-full"
               />
               <IconButton>
+                <Send color="primary" />
+              </IconButton>
+              <IconButton>
                 <VideoCall color="primary" />
               </IconButton>
               <IconButton>
                 <Mic color="primary" />
               </IconButton>
-              <IconButton>
-                <Send color="primary" />
-              </IconButton>
+              
             </div>
           </div>
         </div>

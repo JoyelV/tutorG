@@ -52,13 +52,39 @@ const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
     });
   };
 
-  const videoSource = videoUrl || existingVideoUrl; 
+  const videoSource = videoUrl || existingVideoUrl;
+
+  const updateProgress = async () => {
+    try {
+      const response = await api.put(`/user/progress/${id}`, {
+        completedLesson: id, 
+      });
+      if (response.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Progress Updated',
+          text: 'Your course progress has been updated!',
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Update Progress',
+        text: 'Could not update progress at this moment.',
+      });
+    }
+  };
 
   return (
     <Box>
       <div className="mb-4">
         {videoSource ? (
-          <video src={videoSource} controls className="mb-2 w-full rounded"/>
+          <video
+            src={videoSource}
+            controls
+            className="mb-2 w-full rounded"
+            onEnded={updateProgress} 
+          />
         ) : (
           <div className="mb-2 text-gray-500">No video available</div>
         )}

@@ -14,7 +14,7 @@ import { ChartData } from 'chart.js/auto';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
-const EarningsVsCoursesChart = () => {
+const EnrolledVsCoursesChart = () => {
   const [chartData, setChartData] = useState<ChartData<"line", number[], unknown>>({
     labels: [],
     datasets: [],
@@ -23,31 +23,22 @@ const EarningsVsCoursesChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const coursesResponse = await api.get("/instructor/my-courses/coursesCount");
-        const earningsResponse = await api.get("/instructor/earningsCount");
+        const enrolledResponse = await api.get("/instructor/coursesCount");
+        const myCoursesResponse = await api.get("/instructor/my-courses/coursesCount");
 
-        const totalCourses = coursesResponse.data.count;
-        const totalEarnings = earningsResponse.data.totalEarnings;
+        const enrolledCourses = enrolledResponse.data.count;
+        const totalCourses = myCoursesResponse.data.count;
 
         setChartData({
-          labels: ["Total Courses"],
+          labels: ["Enrolled Courses", "Total Courses"],
           datasets: [
             {
-              label: "Earnings (₹)",
-              data: [totalEarnings],
-              backgroundColor: "rgba(75, 192, 192, 0.2)",
-              borderColor: "rgba(75, 192, 192, 1)",
+              label: "Courses",
+              data: [enrolledCourses, totalCourses],
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              borderColor: "rgba(54, 162, 235, 1)",
               tension: 0.4,
-              pointBackgroundColor: "rgba(75, 192, 192, 1)",
-              pointBorderColor: "#fff",
-            },
-            {
-              label: "Total Courses",
-              data: [totalCourses],
-              backgroundColor: "rgba(255, 159, 64, 0.2)",
-              borderColor: "rgba(255, 159, 64, 1)",
-              tension: 0.4,
-              pointBackgroundColor: "rgba(255, 159, 64, 1)",
+              pointBackgroundColor: "rgba(54, 162, 235, 1)",
               pointBorderColor: "#fff",
             },
           ],
@@ -80,14 +71,16 @@ const EarningsVsCoursesChart = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-lg shadow-lg">
-      <h3 className="text-2xl font-semibold text-blue-800 mb-4">Earnings vs Total Courses</h3>
+    <div className="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-lg">
+      <h3 className="text-2xl font-semibold text-green-800 mb-4">
+        Enrolled Courses vs Total Courses
+      </h3>
       <p className="text-sm text-gray-700 mb-6">
-        This chart compares the earnings with the total number of courses.
+        This chart shows the enrolled courses in comparison to your total courses.
       </p>
       {chartData && <Line data={chartData} options={options} />}
       </div>
   );
 };
 
-export default EarningsVsCoursesChart;
+export default EnrolledVsCoursesChart;

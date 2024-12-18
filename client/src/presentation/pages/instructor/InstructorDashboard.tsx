@@ -1,12 +1,42 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../../components/instructor/Sidebar';
 import DashboardHeader from '../../components/instructor/DashboardHeader';
 import StatsCard from '../../components/instructor/StatsCard';
 import ActivityFeed from '../../components/instructor/ActivityFeed';
-import RevenueChart from '../../components/instructor/RevenueChart';
-import ProfileViewChart from '../../components/instructor/ProfileViewChart';
+import api from '../../../infrastructure/api/api';
+import EarningsVsCoursesChart from '../../components/instructor/RevenueChart';
+import EnrolledVsCoursesChart from '../../components/instructor/EnrolledVsCoursesChart';
 
 const InstructorDashboard = () => {
+  const [stats, setStats] = useState({
+    enrolledCourses: 0,
+    myCourses: 0,
+    myStudents: 0,
+    myEarnings: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const coursesResponse = await api.get('/instructor/coursesCount');
+        const myCoursesResponse = await api.get('/instructor/my-courses/coursesCount');
+        const studentsResponse = await api.get('/instructor/studentsCount');
+        const earningsResponse = await api.get('/instructor/earningsCount');
+
+        setStats({
+          enrolledCourses: coursesResponse.data.count,
+          myCourses: myCoursesResponse.data.count,
+          myStudents: studentsResponse.data.count,
+          myEarnings: Math.floor(earningsResponse.data.totalEarnings),
+        });
+      } catch (error) {
+        console.error('Error fetching instructor stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -24,15 +54,15 @@ const InstructorDashboard = () => {
         {/* Content below the header */}
         <div className="mt-10"> {/* Ensure space below the fixed header */}
           <div className="grid grid-cols-4 gap-6 mt-6">
-            <StatsCard label="Enrolled Courses" value="9" icon={<div>📘</div>} />
-            <StatsCard label="Active Courses" value="19" icon={<div>🎓</div>} />
-            <StatsCard label="Active Students" value="29" icon={<div>📘</div>} />
-            <StatsCard label="Total Earnings" value="3200" icon={<div>🎓</div>} />
+            <StatsCard label="Enrolled Courses" value={stats.enrolledCourses} icon={<div>📘</div>} />
+            <StatsCard label="My Courses" value={stats.myCourses} icon={<div>🎓</div>} />
+            <StatsCard label="My Students" value={stats.myStudents} icon={<div>📘</div>} />
+            <StatsCard label="My Earnings" value={stats.myEarnings} icon={<div>🎓</div>} />
           </div>
           <div className="grid grid-cols-3 gap-6 mt-6">
             <ActivityFeed />
-            <RevenueChart />
-            <ProfileViewChart />
+            <EarningsVsCoursesChart />
+            <EnrolledVsCoursesChart />
           </div>
         </div>
       </div>
@@ -41,4 +71,3 @@ const InstructorDashboard = () => {
 };
 
 export default InstructorDashboard;
-

@@ -79,7 +79,7 @@ const CurriculumPage: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) => {
 
   const handleVideoSelect = (videoUrl: string) => {
     if (onLessonSelect) {
-      onLessonSelect(videoUrl); // Call parent callback with the video URL
+      onLessonSelect(videoUrl); 
     }
   };
 
