@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress } from '@mui/material';
 import { Send, VideoCall, Mic, Search, AttachFile } from '@mui/icons-material';
+import { Check, DoneAll } from '@mui/icons-material'; 
 import api from '../../../infrastructure/api/api';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
@@ -12,9 +13,11 @@ interface User {
 }
 
 interface Message {
+  id: string; 
   sender: 'self' | 'other';
-  text: string;
+  content: string;
   time: string;
+  status: 'sent' | 'delivered' | 'read'; 
   image?: string;
   mediaUrl?: string;
 }
@@ -39,15 +42,29 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    socket.current = io('http://localhost:5000');
+    socket.current = io('http://localhost:5000', {
+      transports: ['websocket'], 
+      withCredentials: true, 
+    });
 
     socket.current.on('receive_message', (message: Message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
+      if (message.id) {
+        socket.current?.emit('message_read', message.id);
+      }
     });
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
     });  
+
+    socket.current.on('message_read_update', (updatedMessage: { id: string; status: 'read' }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === updatedMessage.id ? { ...msg, status: updatedMessage.status } : msg
+        )
+      );
+    });
 
     return () => {
       socket.current?.disconnect();
@@ -68,9 +85,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         if (data.length > 0) {
           setSelectedUser(data[0]);
           setMessages([{
+            id: `${Date.now()}`, 
             sender: 'other',
-            text: `Hi! I'm ${data[0].name}, how can I assist you today?`,
+            content: `Hi! I'm ${data[0].name}, how can I assist you today?`,
             time: new Date().toLocaleTimeString(),
+            status: 'sent'
           }]);
         }
       } catch (err) {
@@ -98,10 +117,12 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       }
 
       const message: Message = {
+        id: `${Date.now()}`, // Temporary ID for client-side
         sender: 'self',
-        text: newMessage,
+        content: newMessage,
         time: new Date().toLocaleTimeString(),
-        image: imageUrl || undefined,
+        mediaUrl: imageUrl || undefined,
+        status: 'sent'
       };
 
       setMessages((prevMessages) => [...prevMessages, message]);
@@ -115,17 +136,27 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         return;
       }
 
-      // Send the message to the socket
       socket.current?.emit('send_message', {
         sender: userId,
         receiver: selectedUser?.id,
         content: newMessage.trim(),
         senderModel: 'User',
         receiverModel: 'Instructor',
-        image: message.image,
+        image: message.mediaUrl,
+        messageId: message.id, // Include the temporary ID for reference
       });
 
     }
+  };
+
+  const renderMessageStatus = (status: 'sent' | 'delivered' | 'read') => {
+    if (status === 'read') {
+      return <DoneAll style={{ color: 'blue' }} />; // Double tick (read)
+    }
+    if (status === 'delivered') {
+      return <DoneAll />; // Double tick (delivered)
+    }
+    return <Check />; // Single tick (sent)
   };
 
   const handleUserSelect = async (user: User) => {
@@ -148,8 +179,8 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         },
       });
       const fetchedMessages = response.data.map((message: any) => ({
-        sender: message.sender === userId ? 'self' : 'other',
-        text: message.content || '',
+        sender: message.senderModel === 'User' ? 'self' : 'other',
+        content: message.content || '',
         time: new Date(message.createdAt).toLocaleTimeString(),
         mediaUrl: message.mediaUrl,
       }));
@@ -209,12 +240,12 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       {/* Sidebar */}
       <aside className="w-64 bg-gradient-to-b from-purple-600 to-indigo-800 text-white flex flex-col">
         <Typography variant="h6" className="p-4 font-bold text-white">
-          {userType === 'User' ? 'Instructor' : 'User'}
+          {userType === 'User' ? 'User' : 'Instructor'}
         </Typography>
         <div className="flex p-4">
           <TextField
             fullWidth
-            placeholder={`Search ${userType === 'User' ? 'Instructor' : 'User'}...`}
+            placeholder={`Search ${userType === 'User' ? 'User' : 'Instructor'}...`}
             variant="outlined"
             onChange={(e) => setSearchQuery(e.target.value)}
             InputProps={{
@@ -279,17 +310,20 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                     className="w-24 h-24 object-cover"
                     style={{
                       borderRadius: '8px',
-                      margin: message.sender === 'self' ? '0 auto 0 0' : '0 0 0 auto',
+                      margin: message.sender === 'self' ? '0 0 0 auto' : '0 auto 0 0' ,
                     }}
                   />
                 )}
-                {message.text && (
-                  <ListItemText primary={message.text} secondary={message.time} />
-                )}
+                {message.content && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: message.sender === 'self' ? 'flex-end' : 'flex-start' }}>
+                <ListItemText primary={message.content} secondary={message.time} />
+                {message.sender === 'self' && <span style={{ marginLeft: '8px' }}>{renderMessageStatus(message.status)}</span>}
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </List>
+            )}
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </List>
         </div>
         {/* Message Input */}
         <div className="flex items-center p-4 border-t">

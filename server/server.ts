@@ -82,39 +82,23 @@ io.use((socket, next) => {
   next();
 });
 
-const typingUsers: { [key: string]: string } = {};
-let onlineUser: { [key: string]: string } = {};
-
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
   socket.on("joinChatRoom", ({ sender, receiver }) => {
-    const roomName = [sender, receiver].sort().join("-");
-    onlineUser[sender] = socket.id;
-    socket.join(roomName);
-    if (onlineUser[receiver]) {
-       io.to(roomName).emit("receiverIsOnline", { user_id: receiver });
-    } else {
-       io.to(roomName).emit("receiverIsOffline", { user_id: receiver });
+    if (!sender || !receiver) {
+      console.error('Invalid room data:', { sender, receiver });
+      return;
     }
+
+    const roomName = [sender, receiver].sort().join("-");
+    socket.join(roomName);
     console.log(`User ${sender} joined room: ${roomName}`);
  });
 
- socket.on("enterToChatScreen", ({ user_id }) => {
-  onlineUser[user_id] = socket.id;
-  io.emit("receiverIsOnline", { user_id });
-});
-
-socket.on("leaveFromChatScreen", ({ user_id }) => {
-  if (onlineUser[user_id]) {
-     delete onlineUser[user_id];
-     io.emit("receiverIsOffline", { user_id });
-  }
-});
-
   socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, image?: string }) => {
     const { sender, receiver, content, senderModel, receiverModel, image } = data;
-
+    console.log(data,"data")
     if (!sender || !receiver ) {
       socket.emit('error', 'Invalid message data');
       return;
@@ -129,11 +113,19 @@ socket.on("leaveFromChatScreen", ({ user_id }) => {
         senderModel,
         receiverModel,
         mediaUrl: image || '',
-        read: false,
+        status: 'sent',
       });
+      console.log("message",message);
 
       await message.save();
-      io.to(roomName).emit("receive_message", message); 
+      io.to(roomName).emit("receive_message", {
+        id: message._id,
+        sender: message.sender,
+        content: message.content,
+        time: message.createdAt,
+        status: message.status,
+        mediaUrl: message.mediaUrl,
+      });
     } catch (error) {
       console.error('Error sending message:', error);
       socket.emit('error', 'Failed to send message');
@@ -142,35 +134,15 @@ socket.on("leaveFromChatScreen", ({ user_id }) => {
 
   socket.on('message_read', async (messageId) => {
     try {
-      await Message.findByIdAndUpdate(messageId, { read: true });
-      socket.broadcast.emit('message_read_update', { messageId });
+      await Message.findByIdAndUpdate(messageId, { status: 'read' });
+      io.emit('message_read_update', { id: messageId, status: 'read' });
     } catch (err) {
       console.error('Error marking message as read:', err);
     }
   });
 
-  socket.on('typing', (userId) => {
-    typingUsers[userId] = socket.id;
-    socket.broadcast.emit('user_typing', userId);
-  });
-
-  socket.on('stop_typing', (userId) => {
-    delete typingUsers[userId];
-    socket.broadcast.emit('user_stopped_typing', userId);
-  });
-
   socket.on('disconnect', () => {
     console.log('A user disconnected:', socket.id);
-    Object.keys(typingUsers).forEach((userId) => {
-      if (typingUsers[userId] === socket.id) {
-        delete typingUsers[userId];
-      }
-    });
-    Object.keys(onlineUser).forEach((userId) => {
-      if (onlineUser[userId] === socket.id) {
-        delete onlineUser[userId];
-      }
-    });
   });
 });
 
