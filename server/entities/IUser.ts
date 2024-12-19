@@ -15,4 +15,5 @@ export interface IUser extends Document {
     gender?: string;
     dob?: string;
     isBlocked: boolean;
+    onlineStatus: boolean;
 }

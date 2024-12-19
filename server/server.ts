@@ -10,21 +10,33 @@ import connectCloudinary from '../server/config/cloudinary';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import { refreshAccessToken } from './utils/VerifyToken';
+import http from 'http';
+import { Server } from 'socket.io';
+import Message from './models/Message';
 
 dotenv.config();
 
 const app = express();
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
+  },
+});
+
 app.use(cors({
-  origin: 'http://localhost:3000', 
-  credentials: true, 
+  origin: process.env.CLIENT_URL,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
 }));
 
-
-// Middleware to parse cookies
-app.use(cookieParser());  
-app.use(express.json());   
-app.use(express.urlencoded({ extended: true })); 
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = process.env.MONGO_URI || '';
@@ -41,15 +53,126 @@ app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/instructor', instructorRoutes);
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
-app.post('/api/refresh-token',refreshAccessToken);
+app.post('/api/refresh-token', refreshAccessToken);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal server error' });
 });
 
+app.get('/api/messages', async (req, res) => {
+  const { senderId, receiverId } = req.query;
+  
+  try {
+    const messages = await Message.find({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId },
+      ],
+    }).sort({ createdAt: 1 });
+
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch messages' });
+  }
+});
+
+io.use((socket, next) => {
+  console.log(`[DEBUG] New connectionccccccc: ${socket.id}`);
+  next();
+});
+
+const typingUsers: { [key: string]: string } = {};
+let onlineUser: { [key: string]: string } = {};
+
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+  socket.on("joinChatRoom", ({ sender, receiver }) => {
+    const roomName = [sender, receiver].sort().join("-");
+    onlineUser[sender] = socket.id;
+    socket.join(roomName);
+    if (onlineUser[receiver]) {
+       io.to(roomName).emit("receiverIsOnline", { user_id: receiver });
+    } else {
+       io.to(roomName).emit("receiverIsOffline", { user_id: receiver });
+    }
+    console.log(`User ${sender} joined room: ${roomName}`);
+ });
+
+ socket.on("enterToChatScreen", ({ user_id }) => {
+  onlineUser[user_id] = socket.id;
+  io.emit("receiverIsOnline", { user_id });
+});
+
+socket.on("leaveFromChatScreen", ({ user_id }) => {
+  if (onlineUser[user_id]) {
+     delete onlineUser[user_id];
+     io.emit("receiverIsOffline", { user_id });
+  }
+});
+
+  socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, image?: string }) => {
+    const { sender, receiver, content, senderModel, receiverModel, image } = data;
+
+    if (!sender || !receiver ) {
+      socket.emit('error', 'Invalid message data');
+      return;
+    }
+    const roomName = [sender, receiver].sort().join("-");
+
+    try {
+      const message = new Message({
+        sender,
+        receiver,
+        content,
+        senderModel,
+        receiverModel,
+        mediaUrl: image || '',
+        read: false,
+      });
+
+      await message.save();
+      io.to(roomName).emit("receive_message", message); 
+    } catch (error) {
+      console.error('Error sending message:', error);
+      socket.emit('error', 'Failed to send message');
+    }
+  });
+
+  socket.on('message_read', async (messageId) => {
+    try {
+      await Message.findByIdAndUpdate(messageId, { read: true });
+      socket.broadcast.emit('message_read_update', { messageId });
+    } catch (err) {
+      console.error('Error marking message as read:', err);
+    }
+  });
+
+  socket.on('typing', (userId) => {
+    typingUsers[userId] = socket.id;
+    socket.broadcast.emit('user_typing', userId);
+  });
+
+  socket.on('stop_typing', (userId) => {
+    delete typingUsers[userId];
+    socket.broadcast.emit('user_stopped_typing', userId);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected:', socket.id);
+    Object.keys(typingUsers).forEach((userId) => {
+      if (typingUsers[userId] === socket.id) {
+        delete typingUsers[userId];
+      }
+    });
+    Object.keys(onlineUser).forEach((userId) => {
+      if (onlineUser[userId] === socket.id) {
+        delete onlineUser[userId];
+      }
+    });
+  });
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-
-
-
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

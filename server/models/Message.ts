@@ -1,26 +1,31 @@
-import mongoose, { Schema, Document, Model, model } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-interface IMessage extends Document {
-    chatId: mongoose.Types.ObjectId; 
-    sender: mongoose.Types.ObjectId; 
-    text?: string; 
-    image?: string; 
-    read: boolean; 
-    createdAt?: Date; 
-    updatedAt?: Date; 
+export interface IMessage extends Document {
+  sender: mongoose.Schema.Types.ObjectId;
+  receiver: mongoose.Schema.Types.ObjectId;
+  content: string;
+  read: boolean;
+  mediaUrl?: string;
+  senderModel: 'User' | 'Instructor'; 
+  receiverModel: 'User' | 'Instructor'; 
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const messageSchema = new Schema<IMessage>(
-    {
-        chatId: { type: Schema.Types.ObjectId, ref: 'chats', required: true },
-        sender: { type: Schema.Types.ObjectId, ref: 'users', required: true },
-        text: { type: String },
-        image: { type: String },
-        read: { type: Boolean, default: false },
-    },
-    { timestamps: true }
+const MessageSchema: Schema = new Schema(
+  {
+    sender: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: 'senderModel' },
+    receiver: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: 'receiverModel' },
+    content: { type: String, required: false },
+    read: { type: Boolean, default: false },
+    mediaUrl: { type: String }, 
+    senderModel: { type: String, required: true, enum: ['User', 'Instructor'] },
+    receiverModel: { type: String, required: true, enum: ['User', 'Instructor'] },
+  },
+  {
+    timestamps: true,
+  }
 );
 
-const Message: Model<IMessage> = model<IMessage>('messages', messageSchema);
-
+const Message = mongoose.model<IMessage>('Message', MessageSchema);
 export default Message;

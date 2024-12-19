@@ -24,4 +24,5 @@ export interface IInstructor extends Document {
     earnings: Number;
     totalWithdrawals: Number;
     currentBalance: Number;
+    onlineStatus: boolean;
 }

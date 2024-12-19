@@ -352,7 +352,7 @@ export const getStudentsByInstructor = async (req: AuthenticatedRequest, res: Re
       res.status(404).json({ message: "No students found for this instructor." });
       return;
     }
-    console.log(orders)
+    console.log(orders,"mystudentsorder")
     res.status(200).json(orders);
   } catch (error) {
     console.error('Error fetching students by instructor:', error);

@@ -22,6 +22,7 @@ const instructorSchema = new Schema<IInstructor>({
     earnings: { type: Number, default: 0 },
     totalWithdrawals: { type: Number, default: 0 },
     currentBalance: { type: Number, default: 0 },
+    onlineStatus: { type: Boolean, default: false }, 
 });
 
 export default model<IInstructor>('Instructor', instructorSchema);
