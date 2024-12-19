@@ -1,198 +1,336 @@
-import React, { useState } from 'react';
-import {
-  Avatar,
-  TextField,
-  IconButton,
-  Badge,
-  Typography,
-  Slide,
-  Box,
-} from '@mui/material';
-import { Send, VideoCall, Mic, Search } from '@mui/icons-material';
-import { FiMoreHorizontal } from 'react-icons/fi';
-import Sidebar from '../../components/instructor/Sidebar';
-import DashboardHeader from '../../components/instructor/DashboardHeader';
+import React, { useState, useEffect, useRef } from 'react';
+import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress } from '@mui/material';
+import { Send, VideoCall, Mic, Search, AttachFile } from '@mui/icons-material';
+import api from '../../../infrastructure/api/api';
+import { io, Socket } from 'socket.io-client';
+import axios from 'axios';
 
-interface User {
-  id: number;
+interface Instructor {
+  id: string;
   name: string;
-  lastMessage: string;
-  time: string;
-  active: boolean;
+  image: string;
 }
 
 interface Message {
-  sender: string;
+  sender: 'self' | 'other';
   text: string;
   time: string;
+  image?: string;
+  mediaUrl?: string;
 }
 
-const ChatApp: React.FC = () => {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+interface Props {
+  userType?: 'Instructor' | 'User';
+}
 
-  const users: User[] = [
-    { id: 1, name: 'Jane Cooper', lastMessage: 'Yeah sure, tell me Zafor', time: 'just now', active: true },
-    { id: 2, name: 'Jenny Wilson', lastMessage: 'Thank you so much, sir', time: '2 d', active: false },
-    { id: 3, name: 'Marvin McKinney', lastMessage: "You're Welcome", time: '1 m', active: true },
-    { id: 4, name: 'Eleanor Pena', lastMessage: 'Thank you so much, sir', time: '1 m', active: true },
-    { id: 5, name: 'Ronald Richards', lastMessage: "Sorry, I can't help you", time: '2 m', active: false },
-    { id: 6, name: 'Kathryn Murphy', lastMessage: 'new message', time: '6 m', active: false },
-  ];
+const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
+  const [users, setUsers] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState<Instructor | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const socket = useRef<Socket | null>(null);
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null); // For image preview
 
-  const messages: Message[] = [
-    { sender: 'Jane Cooper', text: 'Hello and thanks for signing up for the course...', time: 'Today' },
-    { sender: 'Zafor', text: 'Hello, Good Evening.', time: 'Time' },
-    { sender: 'Zafor', text: 'I only have a small doubt about your lecture...', time: 'Time' },
-    { sender: 'Jane Cooper', text: 'Yeah sure, tell me Zafor.', time: 'Time' },
-  ];
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    socket.current = io('http://localhost:5000');
+
+    socket.current.on('receive_message', (message: Message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    socket.current.on('error', (error: string) => {
+      console.error("Socket error:", error);
+    });  
+
+    return () => {
+      socket.current?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchTutors = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/instructor/students');
+        const data = response.data.map((item: any) => ({
+          id: item.studentId._id,
+          name: item.studentId.username,
+          image: `http://localhost:5000/${item.studentId.image}`, 
+        }));
+        setUsers(data);
+        if (data.length > 0) {
+          setSelectedUser(data[0]);
+          setMessages([{
+            sender: 'other',
+            text: `Hi! I'm ${data[0].name}, how can I assist you today?`,
+            time: new Date().toLocaleTimeString(),
+          }]);
+        }
+      } catch (err) {
+        setError('Unable to fetch the list of tutors. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTutors();
+  }, []);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (newMessage.trim() || image) {
+      let imageUrl = '';
+
+      // Upload image if available
+      if (image) {
+        imageUrl = await submitImage(image);
+      }
+
+      const message: Message = {
+        sender: 'self',
+        text: newMessage,
+        time: new Date().toLocaleTimeString(),
+        image: imageUrl || undefined,
+      };
+
+      setMessages((prevMessages) => [...prevMessages, message]);
+      setNewMessage('');
+      setImage(null);
+      setImagePreview(null);
+
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        setError('User is not authenticated!');
+        return;
+      }
+
+      // Send the message to the socket
+      socket.current?.emit('send_message', {
+        sender: userId,
+        receiver: selectedUser?.id,
+        content: newMessage.trim(),
+        senderModel: 'Instructor',
+        receiverModel: 'User',
+        image: message.image,
+      });
+
+    }
+  };
+
+  const handleUserSelect = async (user: Instructor) => {
+    setSelectedUser(user);
+    setLoading(true);
+    try {
+      const userId = localStorage.getItem('userId');
+      if (socket.current && userId) {
+        socket.current.emit('joinChatRoom', {
+          sender: userId,
+          receiver: user.id,
+        });
+      }
+      const response = await api.get('/messages', {
+        params: {
+          senderId: userId,
+          receiverId: user.id,
+        },
+      });
+      const fetchedMessages = response.data.map((message: any) => ({
+        sender: message.sender === userId ? 'self' : 'other',
+        text: message.content || '',
+        time: new Date(message.createdAt).toLocaleTimeString(),
+        mediaUrl: message.mediaUrl,
+      }));
+      setMessages(fetchedMessages);
+    } catch (err) {
+      setError('Failed to fetch messages. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  };
+
+  const submitImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "images_preset");
+    formData.append("cloud_name", "dazdngh4i");
+
+    try {
+      const res = await axios.post(
+        "https://api.cloudinary.com/v1_1/dazdngh4i/image/upload",
+        formData
+      );
+      return res.data.url;
+    } catch (error: any) {
+      console.error("Cloudinary error:", error.response?.data || error.message);
+      setError(`Error uploading image: ${error.response?.data?.message || error.message}`);
+      return "";
+    }
+  };
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-indigo-100 to-purple-200">
       {/* Sidebar */}
       <aside className="w-64 bg-gradient-to-b from-purple-600 to-indigo-800 text-white flex flex-col">
-        <Sidebar />
+        <Typography variant="h6" className="p-4 font-bold text-white">
+          {userType === 'Instructor' ? 'User' : 'Instructor'}
+        </Typography>
+        <div className="flex p-4">
+          <TextField
+            fullWidth
+            placeholder={`Search ${userType === 'Instructor' ? 'User' : 'Instructor'}...`}
+            variant="outlined"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
+        <List>
+          {filteredUsers.map((user) => (
+            <ListItem key={user.id} button onClick={() => handleUserSelect(user)} selected={selectedUser?.id === user.id}>
+              <ListItemAvatar>
+                <Badge color="success" variant="dot">
+                  <Avatar alt={user.name} src={user.image} />
+                </Badge>
+              </ListItemAvatar>
+              <ListItemText primary={user.name} />
+            </ListItem>
+          ))}
+        </List>
       </aside>
 
-      {/* Main content area */}
+      {/* Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Fixed Dashboard Header */}
-        <div className="sticky top-0 z-10 bg-white shadow-md">
-          <DashboardHeader />
+        {/* Chat Header */}
+        <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 flex items-center border-b">
+          {selectedUser ? (
+            <>
+              <Avatar src={selectedUser.image} />
+              <div className="ml-3">
+                <Typography variant="h6" className="font-bold text-gray-900">
+                  {selectedUser.name}
+                </Typography>
+                <Typography variant="caption" className="text-gray-500">
+                  Active
+                </Typography>
+              </div>
+            </>
+          ) : (
+            <Typography>No tutor selected</Typography>
+          )}
         </div>
 
-        {/* Main Chat Layout */}
-        <div className="flex flex-grow">
-          {/* User List Section */}
-          <div className="w-1/4 bg-white border-r overflow-y-auto">
-            <header className="p-4 border-b">
-              <Typography variant="h6" className="font-bold text-gray-700">
-                Chats
-              </Typography>
-              <Box display="flex" alignItems="center" mt={2}>
-                <Search style={{ marginRight: 8, color: '#6B7280' }} />
-                <TextField
-                  size="small"
-                  fullWidth
-                  placeholder="Search users..."
-                  variant="outlined"
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  inputProps={{ style: { background: '#F3F4F6', borderRadius: '8px' } }}
-                />
-              </Box>
-            </header>
-
-            {filteredUsers.map((user) => (
-              <Slide
-                direction="right"
-                in={true}
-                mountOnEnter
-                unmountOnExit
-                timeout={300}
-                key={user.id}
+        {/* Messages Area */}
+        <div className="flex-1 p-4 overflow-y-auto">
+          <List>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  textAlign: message.sender === 'self' ? 'right' : 'left',
+                  margin: '10px 0',
+                }}
               >
-                <div
-                  onClick={() => setSelectedUser(user)}
-                  className={`flex items-center p-4 cursor-pointer hover:bg-gray-100 transition duration-300 ease-in-out ${
-                    selectedUser?.id === user.id ? 'bg-indigo-50' : ''
-                  }`}
-                >
-                  <Badge
-                    color={user.active ? 'success' : 'default'}
-                    variant="dot"
-                    overlap="circular"
-                  >
-                    <Avatar alt={user.name} />
-                  </Badge>
-                  <div className="ml-3 flex-1">
-                    <Typography className="text-sm font-medium text-gray-900 truncate">
-                      {user.name}
-                    </Typography>
-                    <Typography className="text-xs text-gray-500 truncate">
-                      {user.lastMessage}
-                    </Typography>
-                  </div>
-                  <Typography className="text-xs text-gray-400">{user.time}</Typography>
-                </div>
-              </Slide>
+                {message.mediaUrl && (
+                  <img
+                    src={message.mediaUrl}
+                    alt="Media"
+                    className="w-24 h-24 object-cover"
+                    style={{
+                      borderRadius: '8px',
+                      margin: message.sender === 'self' ? '0 auto 0 0' : '0 0 0 auto',
+                    }}
+                  />
+                )}
+                {message.text && (
+                  <ListItemText
+                    primary={message.text}
+                    secondary={message.time}
+                  />
+                )}
+              </div>
             ))}
-          </div>
+          </List>
+        </div>
+        {/* Message Input */}
+        <div className="flex items-center p-4 border-t">
+          <TextField
+            fullWidth
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message"
+            variant="outlined"
+            multiline
+            rows={2}
+          />
+          <Tooltip title="Attach Image">
+            <IconButton onClick={() => imageInputRef.current?.click()}>
+              <AttachFile />
+            </IconButton>
+          </Tooltip>
+          <IconButton onClick={handleSendMessage}>
+            <Send />
+          </IconButton>
 
-          {/* Chat Area Section */}
-          <div className="w-3/4 flex flex-col">
-            {/* Chat Header */}
-            <div className="flex items-center p-4 border-b bg-gradient-to-r from-indigo-50 to-purple-50">
-              {selectedUser ? (
-                <>
-                  <Avatar />
-                  <div className="ml-3">
-                    <Typography variant="h6" className="font-bold text-gray-800">
-                      {selectedUser.name}
-                    </Typography>
-                    <Typography variant="caption" className="text-gray-500">
-                      Active {selectedUser.time}
-                    </Typography>
-                  </div>
-                  <FiMoreHorizontal className="ml-auto text-gray-500 cursor-pointer" />
-                </>
-              ) : (
-                <Typography variant="h6" className="text-gray-500 mx-auto">
-                  Select a user to start chatting
-                </Typography>
-              )}
-            </div>
+          {/* Hidden file input */}
+          <input
+            type="file"
+            ref={imageInputRef}
+            style={{ display: 'none' }}
+            accept="image/*"
+            onChange={handleFileUpload}
+          />
 
-            {/* Messages Section */}
-            <div className="flex-grow p-4 space-y-4 overflow-y-auto bg-gradient-to-b from-purple-50 to-indigo-50">
-              {selectedUser &&
-                messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.sender === 'Zafor' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <div
-                      className={`p-3 rounded-lg max-w-xs shadow-md ${
-                        message.sender === 'Zafor'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-800'
-                      }`}
-                    >
-                      <Typography variant="body2">{message.text}</Typography>
-                    </div>
-                  </div>
-                ))}
+          {/* Image preview */}
+          {imagePreview && (
+            <div>
+              <img src={imagePreview} alt="Image Preview" className="w-24 h-24 object-cover mt-2" />
             </div>
-
-            {/* Input Section */}
-            <div className="flex items-center p-4 border-t bg-gradient-to-t from-purple-50 to-indigo-50">
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Type your message"
-                className="bg-gray-100 rounded-full"
-              />
-              <IconButton>
-                <Send color="primary" />
-              </IconButton>
-              <IconButton>
-                <VideoCall color="primary" />
-              </IconButton>
-              <IconButton>
-                <Mic color="primary" />
-              </IconButton>
-              
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default ChatApp;
+export default TutorChatInterface;
