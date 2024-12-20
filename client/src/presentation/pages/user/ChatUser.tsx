@@ -37,6 +37,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const socket = useRef<Socket | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null); 
+  const userId = localStorage.getItem('userId');
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +49,9 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     });
 
     socket.current.on('receive_message', (message: Message) => {
+      if(message.sender!==userId){
       setMessages((prevMessages) => [...prevMessages, message]);
+      }
       if (message.id) {
         socket.current?.emit('message_read', message.id);
       }
@@ -117,7 +120,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       }
 
       const message: Message = {
-        id: `${Date.now()}`, // Temporary ID for client-side
+        id: `${Date.now()}`, 
         sender: 'self',
         content: newMessage,
         time: new Date().toLocaleTimeString(),
@@ -143,20 +146,19 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         senderModel: 'User',
         receiverModel: 'Instructor',
         image: message.mediaUrl,
-        messageId: message.id, // Include the temporary ID for reference
+        messageId: message.id, 
       });
-
     }
   };
 
   const renderMessageStatus = (status: 'sent' | 'delivered' | 'read') => {
     if (status === 'read') {
-      return <DoneAll style={{ color: 'blue' }} />; // Double tick (read)
+      return <DoneAll style={{ color: 'blue' }} />; 
     }
     if (status === 'delivered') {
-      return <DoneAll />; // Double tick (delivered)
+      return <DoneAll />; 
     }
-    return <Check />; // Single tick (sent)
+    return <Check />; 
   };
 
   const handleUserSelect = async (user: User) => {

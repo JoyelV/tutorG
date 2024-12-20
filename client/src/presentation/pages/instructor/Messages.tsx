@@ -13,7 +13,7 @@ interface Instructor {
 }
 
 interface Message {
-  id: string; // Add this property
+  id: string; 
   sender: 'self' | 'other';
   content: string;
   time: string;
@@ -37,6 +37,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   const socket = useRef<Socket | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null); // For image preview
+  const userId = localStorage.getItem('userId');
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +49,9 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         });
 
     socket.current.on('receive_message', (message: Message) => {
+      if(message.sender!==userId){
       setMessages((prevMessages) => [...prevMessages, message]);
+      }
       if (message.id) {
         socket.current?.emit('message_read', message.id);
       }
@@ -118,7 +121,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       }
 
       const message: Message = {
-        id: `${Date.now()}`, // Temporary ID for client-side
+        id: `${Date.now()}`, 
         sender: 'self',
         content: newMessage,
         time: new Date().toLocaleTimeString(),
@@ -310,7 +313,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                     className="w-24 h-24 object-cover"
                     style={{
                       borderRadius: '8px',
-                      margin: message.sender === 'self' ? '0 auto 0 0' : '0 0 0 auto',
+                      margin: message.sender === 'self' ? '0 0 0 auto' : '0 auto 0 0',
                     }}
                   />
                 )}
