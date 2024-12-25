@@ -5,6 +5,13 @@ export interface Address {
     line2: string;
 }
 
+export interface Transaction {
+    date:Date;
+    method:string;
+    status:string;
+    amount:number;
+}
+
 export interface IInstructor extends Document {
     _id: ObjectId; 
     username: string;
@@ -25,4 +32,5 @@ export interface IInstructor extends Document {
     totalWithdrawals: Number;
     currentBalance: Number;
     onlineStatus: boolean;
+    transactions?: Transaction[]; 
 }

@@ -10,13 +10,14 @@ import {
     resendOtp,
     editUserProfile,
     editPassword,
-    uploadImage} 
+    uploadImage,
+    getStripePayment} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, updateChapter } from '../controllers/courseController';
+import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, getWithdrawalHistory, updateChapter } from '../controllers/courseController';
 import { getUnblockedCategories } from '../controllers/categoryController';
 import { addQuiz, deleteQuiz, getQuizById, getQuizzesByCourse, updateQuiz } from '../controllers/quizController';
-import { getStudentsByInstructor } from '../controllers/userController';
+import { getStudentsByInstructor, getStudentsChat } from '../controllers/userController';
 import { verifyToken } from '../utils/VerifyToken';
 
 const router = Router();
@@ -56,10 +57,13 @@ router.get('/categories', getUnblockedCategories);
 
 //STUDENT LIST
 router.get('/students', verifyToken,getStudentsByInstructor );
+router.get('/students-chat', verifyToken,getStudentsChat );
 router.get('/coursesCount', verifyToken,getEnrolledMyCourses );
 router.get('/my-courses/coursesCount', verifyToken,getMyCourses );
 router.get('/studentsCount', verifyToken,getMyStudents );
 router.get('/earningsCount', verifyToken,getMyEarnings );
 router.get('/getEarningDetails', verifyToken,getEarningDetails );
-  
+router.get('/getWithdrawalHistory', verifyToken,getWithdrawalHistory );
+router.post('/create-checkout-session',verifyToken,getStripePayment);
+
 export default router;

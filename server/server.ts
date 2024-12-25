@@ -20,7 +20,7 @@ const app = express();
 
 const server = http.createServer(app);
 
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
@@ -96,8 +96,8 @@ io.on('connection', (socket) => {
     console.log(`User ${sender} joined room: ${roomName}`);
  });
 
-  socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, image?: string }) => {
-    const { sender, receiver, content, senderModel, receiverModel, image } = data;
+  socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, mediaUrl?: string }) => {
+    const { sender, receiver, content, senderModel, receiverModel, mediaUrl } = data;
     console.log(data,"data")
     if (!sender || !receiver ) {
       socket.emit('error', 'Invalid message data');
@@ -112,7 +112,7 @@ io.on('connection', (socket) => {
         content,
         senderModel,
         receiverModel,
-        mediaUrl: image || '',
+        mediaUrl: mediaUrl,
         status: 'sent',
       });
       console.log("message",message);

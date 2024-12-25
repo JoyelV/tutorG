@@ -5,10 +5,11 @@ import Category from "../models/Category";
 import Lesson from "../models/Lesson";
 import orderModel from "../models/Orders";
 import { AuthenticatedRequest } from '../utils/VerifyToken';
-import { getUserProfileService } from "../services/instructorService";
 import { instructorRepository } from "../repositories/instructorRepository";
 import Instructor from "../models/Instructor";
 import User from "../models/User";
+import Notification from "../models/Notification";
+import Progress from "../models/Progress";
 
 /**
  * Create a course with basic information.
@@ -178,7 +179,6 @@ export const getInstructorData = async (req: AuthenticatedRequest, res: Response
   }
 }
 
-
 export const getIndividualCourses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { courseId } = req.params;
@@ -196,22 +196,25 @@ export const getIndividualCourses = async (req: Request, res: Response, next: Ne
   }
 };
 
-export const getCompletionCertificate = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getCompletionCertificate = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { courseId } = req.params;
   const studentId = req.userId;
-  console.log(studentId, "studentId");
 
   try {
-    const course = await Course.findById(courseId);
-    console.log(course, "course");
-
+    const course = await Course.findById(courseId).lean();
     if (!course) {
       res.status(404).json({ error: "Course not found" });
       return;
     }
 
-    const studentProgress = course.progress.find((p: any) => p.studentId.toString() === studentId);
-    console.log(studentProgress, "studentProgress");
+    const studentProgress = await Progress.findOne({
+      courseId,
+      studentId,
+    });
 
     if (!studentProgress) {
       res.status(404).json({ error: "Student progress not found" });
@@ -220,17 +223,19 @@ export const getCompletionCertificate = async (req: AuthenticatedRequest, res: R
 
     if (!studentProgress.completionDate) {
       studentProgress.completionDate = new Date();
-      await course.save(); 
-      console.log("Completion date saved:", studentProgress.completionDate);
+      await studentProgress.save();
     }
 
+    const formattedCompletionDate = studentProgress.completionDate
+      ? new Date(studentProgress.completionDate).toLocaleDateString("en-GB") 
+      : "Not completed yet";
+
     const student = await User.findById(studentId);
-    console.log(student, "student");
 
     res.status(200).json({
       courseName: course.title,
-      studentName: student?.username,
-      completionDate: studentProgress.completionDate || 'Not completed yet',
+      studentName: student?.username || "Anonymous",
+      completionDate: formattedCompletionDate || "Not completed yet",
     });
   } catch (error) {
     console.error("Error fetching course data:", error);
@@ -246,15 +251,17 @@ export const getIndividualCourseData = async (
   try {
     const { courseId } = req.params; 
     const studentId = req.userId; 
+
     const course = await Course.findById(courseId).lean();
     if (!course) {
       res.status(400).json({ message: "Course not found" });
       return;
     }
 
-    const studentProgress = course?.progress?.find(
-      (progressItem: any) => progressItem.studentId.toString() === studentId
-    );
+    const studentProgress = await Progress.findOne({
+      courseId,
+      studentId,
+    }).lean();
 
     const completedLessonsCount = studentProgress
       ? studentProgress.completedLessons.length
@@ -262,11 +269,10 @@ export const getIndividualCourseData = async (
 
     const totalLessons = await Lesson.countDocuments({ courseId });
     const responseData = {
-      course, 
-      completedLessons: completedLessonsCount, 
-      totalLessons, 
+      course,
+      completedLessons: completedLessonsCount,
+      totalLessons,
     };
-
     res.status(200).json(responseData);
   } catch (error) {
     console.error("Error fetching individual course data:", error);
@@ -356,7 +362,6 @@ export const deleteLesson = async (req:Request,res:Response,next:NextFunction):P
       return ;
     }
 
-    // Find and delete the lesson by ID
     const deletedLesson = await Lesson.findByIdAndDelete(lessonId);
 
     if (!deletedLesson) {
@@ -370,7 +375,6 @@ export const deleteLesson = async (req:Request,res:Response,next:NextFunction):P
     res.status(500).json({ message: 'Internal server error.' });
   }
 }
-
 
 export const getViewChapters = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -456,7 +460,6 @@ export const editCourse = async (req: Request, res: Response): Promise<void> => 
       }
       let subCategory = categoryData.subCategories[0]?.name;
 
-    // Update course
     const updatedCourse = await Course.findByIdAndUpdate(
       courseId,
       {
@@ -530,13 +533,24 @@ export const publishCourse = async (req: Request, res: Response): Promise<void> 
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId);
-   console.log(courseId,"courseId in publish course")
+    console.log(courseId,"courseId in publish course")
     if (!course) {
       res.status(404).json({ message: 'Course not found' });
       return;
     }
     course.status = 'published';
     await course.save();
+
+    const notification = await Notification.create({
+      tutorId: course.instructorId, 
+      title: course.title,
+      subtitle: course.subtitle,
+      thumbnail: course.thumbnail,
+      message: `Your course "${course.title}" has been successfully published.`,
+      isRead: false,
+    });
+
+    await notification.save();
 
     res.status(200).json({ message: 'Course published successfully', course });
   } catch (error) {
@@ -565,24 +579,26 @@ export const rejectCourse = async (req: Request, res: Response): Promise<void> =
 };
 
 export const updateProgress = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-const { completedLesson } = req.body;
+  const { completedLesson } = req.body;
   const { id } = req.params;
   const studentId = req.userId;
 
   try {
-    const course = await Course.findById(id);
-    if (!course) {
-      res.status(404).json({ message: 'Course not found' });
-      return ;
+    const progress = await Progress.findOne({ courseId: id, studentId });
+    if (!progress) {
+      await Progress.create({ courseId: id, studentId, completedLessons: [completedLesson], completionDate: new Date() });
+    } else {
+      if (!progress.completedLessons.includes(completedLesson)) {
+        progress.completedLessons.push(completedLesson);
+        await progress.save();
+      }
     }
-
-    await course.updateProgress(studentId ?? '', completedLesson ?? '');
     res.status(200).json({ message: 'Progress updated successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error updating progress' });
   }
-}
+};
 
 export const getEnrolledMyCourses = async (req: Request, res: Response) => {
   try {
@@ -656,6 +672,43 @@ export const getEarningDetails = async (req: AuthenticatedRequest, res: Response
   } catch (error) {
     console.error("Error fetching earnings:", error);
     res.status(500).json({ message: 'Failed to fetch earnings' });
+  }
+};
+
+export const getWithdrawalHistory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const instructorId = req.userId; 
+    const instructor = await Instructor.findById(instructorId).populate('transactions');  
+    console.log(instructor,"instructor withdrwal history");
+
+    if (!instructor) {
+      res.status(404).json({ message: 'Instructor not found' });
+      return;
+    }
+
+    const withdrawalHistory = instructor.transactions?.map(withdrawal => ({
+      date: withdrawal.date,
+      method: withdrawal.method,
+      amount: withdrawal.amount,
+      status: withdrawal.status,
+    }));
+
+    res.json({ withdrawalHistory });
+  } catch (error) {
+    console.error("Error fetching withdrawal history:", error);
+    res.status(500).json({ message: 'Failed to fetch withdrawal history' });
+  }
+};
+
+export const getNotifications = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const notifications = await Notification.find().sort({ createdAt: -1 });
+    console.log(notifications,"notifications");
+
+    res.status(200).json({ message: 'Notifications retrieved successfully', notifications });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ message: 'Failed to fetch notifications', error });
   }
 };
 

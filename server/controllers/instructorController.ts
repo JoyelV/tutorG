@@ -341,16 +341,67 @@ export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Pro
     .exec();
     console.log(orders,"orders");
 
-  // Filter out duplicate tutorIds
   const uniqueOrders = orders.filter((order, index, self) =>
     index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString())
   );
     
-      console.log(uniqueOrders,"uniqueOrders");
+  console.log(uniqueOrders,"uniqueOrders");
  
-      res.status(200).json(uniqueOrders); 
+  res.status(200).json(uniqueOrders); 
   } catch (error) {
     console.error('Error fetching tutors:', error);
     res.status(500).json({ message: 'Server error' });
   }
 }
+
+const stripe = require('stripe')(process.env.STRIPE_KEY); 
+
+export const getStripePayment = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const { amount } = req.body; 
+  const userId = req.userId;  
+  console.log("Amount in stripe instructor:", amount);
+
+  try {
+    const instructor = await Instructor.findById(userId);
+    
+    if (!instructor) {
+      res.status(404).send('Instructor not found');
+      return ;
+    }
+
+    const { username, email, image } = instructor;
+    console.log("Instructor details:", { username, email, image });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',  
+            product_data: {
+              name: 'Withdrawal', 
+            },
+            unit_amount: amount * 100,  
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/instructor/my-earnings?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/instructor/my-earnings`,
+      metadata:  {
+        type: 'instructor_payout',
+        username,
+        email,
+        image,
+        amount
+      },
+    });
+
+    console.log(session, "Session created successfully for instructor payout");
+    res.json({ sessionId: session.id, instructorDetails: { username, email, image }});
+  } catch (error) {
+    console.error('Error creating Stripe Checkout session:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};

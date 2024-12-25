@@ -359,3 +359,27 @@ export const getStudentsByInstructor = async (req: AuthenticatedRequest, res: Re
     res.status(500).json({ message: 'Error fetching students' });
   }
 };
+
+export const getStudentsChat = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const instructorId = req.userId;
+
+    const orders = await orderModel
+    .find({
+      tutorId: instructorId,
+      studentId: { $ne: null },  
+    })
+    .populate("studentId", "username email phone image gender")
+    .populate("courseId", "title level"); 
+
+    if (orders.length === 0) {
+      res.status(404).json({ message: "No students found for this instructor." });
+      return;
+    }
+    console.log(orders,"mystudentsorder")
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching students by instructor:', error);
+    res.status(500).json({ message: 'Error fetching students' });
+  }
+};

@@ -25,7 +25,7 @@ export const refreshAccessToken = async (req: Request, res: Response, next: Next
           process.env.JWT_SECRET!,
           { expiresIn: '15m' } 
       );
-      console.log("called refereshtoken",newToken);
+      console.log("called accesstoken",newToken);
 
       res.status(200).json({ token: newToken });
   } catch (error) {

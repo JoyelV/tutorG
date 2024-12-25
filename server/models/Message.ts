@@ -5,7 +5,10 @@ export interface IMessage extends Document {
   receiver: mongoose.Schema.Types.ObjectId;
   content: string;
   status: 'sent' | 'delivered' | 'read'; 
-  mediaUrl?: string;
+  mediaUrl?: {
+    url: string;
+    type: string;
+  };
   senderModel: 'User' | 'Instructor'; 
   receiverModel: 'User' | 'Instructor'; 
   createdAt: Date;
@@ -18,7 +21,15 @@ const MessageSchema: Schema = new Schema(
     receiver: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: 'receiverModel' },
     content: { type: String, required: false },
     status: { type: String, required: true, default: 'sent', enum: ['sent', 'delivered', 'read'] }, 
-    mediaUrl: { type: String }, 
+    mediaUrl: {
+      url: {
+        type: String,
+      },
+      type: {
+        type: String,
+        enum: ["image", "video",""],
+      }
+    },
     senderModel: { type: String, required: true, enum: ['User', 'Instructor'] },
     receiverModel: { type: String, required: true, enum: ['User', 'Instructor'] },
   },

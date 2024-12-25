@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn } from '../controllers/userController';
 import upload from '../config/multerConfig';
-import { getCompletionCertificate, getCourses, getCourseWithFeedbacks, getIndividualCourseData, getIndividualCourses, getInstructorData, getViewChapters, updateCourseRating, updateProgress } from '../controllers/courseController';
+import { getCompletionCertificate, getCourses, getCourseWithFeedbacks, getIndividualCourseData, getIndividualCourses, getInstructorData, getNotifications, getViewChapters, updateCourseRating, updateProgress } from '../controllers/courseController';
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
 import { addToWishlist, getWishlistItems, removeWishlistItem } from '../controllers/wishlistController';
 import { stripePayment } from '../controllers/paymentController';
@@ -41,6 +41,7 @@ router.get('/instructorData/:instructorId',verifyToken,getInstructorData);
 router.get('/quizzes/:courseId', verifyToken,getQuizzesByCourse);
 router.post('/quizzes/attempt', verifyToken,submitQuiz);
 router.put('/progress/:id',verifyToken,updateProgress);
+router.get('/notifications', verifyToken,getNotifications);
 
 //CART MANAGEMENT
 router.post('/cart/add', verifyToken,addToCart);

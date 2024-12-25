@@ -29,13 +29,6 @@ const CourseSchema = new Schema<ICourse>({
   ],
   averageRating: { type: Number, default: 0 },
   isApproved: { type: Boolean, default: false },
-  progress: [
-    {
-      studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-      completedLessons: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' }],
-      completionDate: { type: Date },  
-    },
-  ],
 });
 
 CourseSchema.methods.calculateAverageRating = async function () {
@@ -48,21 +41,6 @@ CourseSchema.methods.calculateAverageRating = async function () {
   await this.save();
 };
 
-CourseSchema.methods.updateProgress = async function (studentId: string, lessonId: string) {
-  const progress = this.progress.find((p:any) => p.studentId.toString() === studentId);
-  
-  if (progress) {
-    if (!progress.completedLessons.includes(lessonId)) {
-      progress.completedLessons.push(lessonId);
-      await this.save();
-    }
-  } else {
-    this.progress.push({ studentId, completedLessons: [lessonId] });
-    await this.save();
-  }
-};
-
 const Course = mongoose.model<ICourse>('Course', CourseSchema);
 
 export default Course;
-
