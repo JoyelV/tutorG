@@ -26,6 +26,7 @@ const CoursePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
+  const [lessonId, setLessonId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedLessons, setCompletedLessons] = useState(0);
   const [totalLessons, setTotalLessons] = useState(0);
@@ -44,7 +45,7 @@ const CoursePage = () => {
         setCourseData(data.course);
         setCompletedLessons(data.completedLessons);
         setTotalLessons(data.totalLessons);
-        setSelectedVideoUrl(data.trailer);
+        setSelectedVideoUrl(data.course.trailer);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch course data.');
       } finally {
@@ -119,7 +120,7 @@ const CoursePage = () => {
             instructorId={courseData.instructorId}
           />
 
-          <CourseVideo videoUrl={selectedVideoUrl} id={courseId!} />
+          <CourseVideo videoUrl={selectedVideoUrl} id={courseId!} lesson={lessonId} />
 
           <div className="flex justify-between items-center mt-4">
             <h2 className="text-2xl font-bold">{courseData.title}</h2>
@@ -214,7 +215,7 @@ const CoursePage = () => {
               {completedLessons} out of {totalLessons} lessons completed
             </p>
           </div>
-          <CurriculumBox onLessonSelect={setSelectedVideoUrl} />
+          <CurriculumBox onLessonSelect={setSelectedVideoUrl} onlessonId={setLessonId} />
         </div>
       </div>
       <RelatedCourses />

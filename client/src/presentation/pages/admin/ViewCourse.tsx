@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CourseDescription from '../../components/courses/CourseDescription';
-import CourseRating from '../../components/courses/CourseRating';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
 import CourseVideo from '../../components/admin/CourseVideo';
 import Sidebar from '../../components/admin/Sidebar';
-import CurriculumBox from '../../components/courses/CourseCurriculumBox';
 import CourseHeader from '../../components/admin/CourseHeader';
+import CurriculumDetailed from '../../components/courses/DetailedCurriculumPage';
 
 type Section = 'Description' | 'Requirements' | 'Feedback' | 'Reviews';
 
@@ -209,7 +208,7 @@ const CourseViewPage = () => {
                   </button>
                 )}
             <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
-            <CurriculumBox
+            <CurriculumDetailed
               onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
             />          
             </div>

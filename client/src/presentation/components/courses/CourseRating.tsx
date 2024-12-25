@@ -10,7 +10,8 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
   const [feedback, setFeedback] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
+  const userId = localStorage.getItem('userId');
+  
   const submitRating = async (rating: number, feedback: string) => {
     if (isSubmitting || isSubmitted) return;
     setIsSubmitting(true);
@@ -18,7 +19,7 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
     try {
       const response = await api.patch(
         `/user/rating/${courseId}`,
-        { rating, feedback },
+        { userId,rating, feedback },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -28,9 +29,9 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
 
       if (response.status === 200) {
         console.log('Rating and feedback saved successfully');
-        setIsSubmitted(true); // Disable the form after successful submission
-        setUserRating(null); // Clear the rating
-        setFeedback(''); // Clear the feedback
+        setIsSubmitted(true); 
+        setUserRating(null); 
+        setFeedback(''); 
       } else {
         console.error('Error saving rating and feedback');
       }

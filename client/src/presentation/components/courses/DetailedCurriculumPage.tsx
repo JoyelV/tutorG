@@ -15,10 +15,9 @@ interface Lesson {
 
 interface CurriculumBoxProps {
   onLessonSelect: (videoUrl: string) => void; 
-  onlessonId: (lessonId: string) => void;
 }
 
-const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId }) => {
+const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) => {
   const { courseId } = useParams<{ courseId: string }>();
   const [curriculum, setCurriculum] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,12 +67,9 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
     document.body.removeChild(link);
   };
 
-  const handleVideoSelect = (lessonId: string,videoUrl: string) => {
+  const handleVideoSelect = (videoUrl: string) => {
     if (onLessonSelect) {
       onLessonSelect(videoUrl);
-    }
-    if (onlessonId) {
-      onlessonId(lessonId);  
     }
   };
 
@@ -86,7 +82,6 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
   }
 
   const sections = curriculum.map((lesson, index) => ({
-    _id:lesson._id,
     title: lesson.lessonTitle,
     description: lesson.lessonDescription,
     lectures: 1,
@@ -150,7 +145,7 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleVideoSelect(section._id,topic.link)}
+                            onClick={() => handleVideoSelect(topic.link)}
                             className="hover:underline text-blue-500"
                           >
                             {topic.name}
@@ -170,4 +165,4 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
   );
 };
 
-export default CurriculumBox;
+export default CurriculumDetailed;

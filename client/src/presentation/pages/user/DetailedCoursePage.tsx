@@ -4,15 +4,14 @@ import Navbar from '../../components/common/Navbar';
 import CourseSidebar from '../../components/common/CourseSideBar';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseImage from '../../components/courses/CourseImage';
-import CourseRating from '../../components/courses/CourseRating';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import InstructorInfo from '../../components/courses/InstructorInfo';
 import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
-import CurriculumBox from '../../components/courses/CourseCurriculumBox';
 import { ToastContainer } from 'react-toastify';
 import CourseHeader from '../../components/users/CourseHeader';
+import CurriculumDetailed from '../../components/courses/DetailedCurriculumPage';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Feedback';
 
@@ -102,7 +101,7 @@ const CoursePage = () => {
               <CourseRequirements requirements={courseData.requirements} />
             )}
             {currentSection === 'Curriculum' && (
-              <CurriculumBox
+              <CurriculumDetailed
               onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
             />
             )}

@@ -18,6 +18,10 @@ import StudentsList from '../pages/instructor/MyStudentsList';
 import Pagenotfound from '../components/common/PageNotFound';
 import Earnings from '../pages/instructor/MyEarnings';
 import ChatApp from '../pages/instructor/Messages';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe("pk_test_51QSBeYJoGLfotY8asbavWxONL9xn0Mb93ucMhMpBBUVjDeUTivunzPPkWRz4f5X538J02vmO1Rk9hiM8zM8SM1RS00enXG3dzO");
 
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');
@@ -59,7 +63,9 @@ const InstructorRoutes = () => {
             />
             <Route
                 path="/my-earnings"
-                element={isInstructor ? <Earnings /> : <Navigate to="/instructor" />}
+                element={isInstructor ?  <Elements stripe={stripePromise}>
+                <Earnings />
+              </Elements> : <Navigate to="/instructor" />}
             />     
             <Route path="/course-view/:courseId" element={isInstructor ? <ErrorBoundary>< CourseView /></ErrorBoundary>: <Navigate to="/instructor" />}
             />

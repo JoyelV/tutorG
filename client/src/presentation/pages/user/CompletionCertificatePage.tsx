@@ -11,9 +11,9 @@ const CertificateOfCompletion: React.FC = () => {
   const [courseData, setCourseData] = useState({
     courseName: "",
     studentName: "",
+    completionDate: "",
   });
 
-  // Fetch course data from the backend
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
@@ -21,12 +21,14 @@ const CertificateOfCompletion: React.FC = () => {
         setCourseData({
           courseName: response.data.courseName || "Unknown Course",
           studentName: response.data.studentName || "Anonymous",
+          completionDate: response.data.completionDate || "Not completed yet",
         });
       } catch (error) {
         console.error("Error fetching course data:", error);
         setCourseData({
           courseName: "Error loading course",
           studentName: "Error loading name",
+          completionDate: "Error loading completion date",
         });
       }
     };
@@ -52,13 +54,6 @@ const CertificateOfCompletion: React.FC = () => {
       });
     }
   };
-
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -99,7 +94,10 @@ const CertificateOfCompletion: React.FC = () => {
 
           {/* Completion Date */}
           <p className="text-center text-lg text-gray-700 mb-8">
-            on <span className="font-bold text-gray-900">{formattedDate}</span>
+            on{" "}
+            <span className="font-bold text-gray-900">
+              {courseData.completionDate}
+            </span>
           </p>
 
           {/* Divider Line */}

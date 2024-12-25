@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress } from '@mui/material';
+import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress,LinearProgress } from '@mui/material';
 import { Send, VideoCall, Mic, Search, AttachFile } from '@mui/icons-material';
-import { Check, DoneAll } from '@mui/icons-material'; 
+import { Check, DoneAll } from '@mui/icons-material';
 import api from '../../../infrastructure/api/api';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
+import EmojiPicker from 'emoji-picker-react';
+import { toast } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 interface User {
   id: string;
@@ -13,18 +16,22 @@ interface User {
 }
 
 interface Message {
-  id: string; 
+  id: string;
   sender: 'self' | 'other';
   content: string;
   time: string;
-  status: 'sent' | 'delivered' | 'read'; 
-  image?: string;
-  mediaUrl?: string;
+  status: 'sent' | 'delivered' | 'read';
+  mediaUrl?: {
+    url: string;
+    type: string;
+  };
 }
 
 interface Props {
   userType?: 'User' | 'Instructor';
 }
+
+const VIDEO_SIZE_LIMIT_MB = 100;
 
 const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const [users, setUsers] = useState<User[]>([]);
@@ -36,21 +43,25 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const [newMessage, setNewMessage] = useState('');
   const socket = useRef<Socket | null>(null);
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null); 
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const userId = localStorage.getItem('userId');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [uploading, setUploading] = useState(false); 
+  const [uploadProgress, setUploadProgress] = useState(0); 
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null); 
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     socket.current = io('http://localhost:5000', {
-      transports: ['websocket'], 
-      withCredentials: true, 
+      transports: ['websocket'],
+      withCredentials: true,
     });
 
     socket.current.on('receive_message', (message: Message) => {
-      if(message.sender!==userId){
-      setMessages((prevMessages) => [...prevMessages, message]);
+      if (message.sender !== userId) {
+        setMessages((prevMessages) => [...prevMessages, message]);
       }
       if (message.id) {
         socket.current?.emit('message_read', message.id);
@@ -59,7 +70,8 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
-    });  
+      toast.error(`Socket Error: ${error}`);
+    });
 
     socket.current.on('message_read_update', (updatedMessage: { id: string; status: 'read' }) => {
       setMessages((prevMessages) =>
@@ -82,13 +94,13 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         const data = response.data.map((item: any) => ({
           id: item.tutorId._id,
           name: item.tutorId.username,
-          image: `http://localhost:5000/${item.tutorId.image}`, 
+          image: `http://localhost:5000/${item.tutorId.image}`,
         }));
         setUsers(data);
         if (data.length > 0) {
           setSelectedUser(data[0]);
           setMessages([{
-            id: `${Date.now()}`, 
+            id: `${Date.now()}`,
             sender: 'other',
             content: `Hi! I'm ${data[0].name}, how can I assist you today?`,
             time: new Date().toLocaleTimeString(),
@@ -96,7 +108,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           }]);
         }
       } catch (err) {
-        setError('Unable to fetch the list of tutors. Please try again later.');
+        toast.error('Unable to fetch the list of tutors. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -114,17 +126,19 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const handleSendMessage = async () => {
     if (newMessage.trim() || image) {
       let imageUrl = '';
+      let mediaType = "";
 
       if (image) {
         imageUrl = await submitImage(image);
+        mediaType = image.type.startsWith("image") ? "image" : "video";
       }
 
       const message: Message = {
-        id: `${Date.now()}`, 
+        id: `${Date.now()}`,
         sender: 'self',
         content: newMessage,
         time: new Date().toLocaleTimeString(),
-        mediaUrl: imageUrl || undefined,
+        mediaUrl: { url: imageUrl, type: mediaType },
         status: 'sent'
       };
 
@@ -135,7 +149,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        setError('User is not authenticated!');
+        toast.error('User is not authenticated!');
         return;
       }
 
@@ -145,20 +159,20 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         content: newMessage.trim(),
         senderModel: 'User',
         receiverModel: 'Instructor',
-        image: message.mediaUrl,
-        messageId: message.id, 
+        mediaUrl: message.mediaUrl,
+        messageId: message.id,
       });
     }
   };
 
   const renderMessageStatus = (status: 'sent' | 'delivered' | 'read') => {
     if (status === 'read') {
-      return <DoneAll style={{ color: 'blue' }} />; 
+      return <DoneAll style={{ color: 'blue' }} />;
     }
     if (status === 'delivered') {
-      return <DoneAll />; 
+      return <DoneAll />;
     }
-    return <Check />; 
+    return <Check />;
   };
 
   const handleUserSelect = async (user: User) => {
@@ -198,9 +212,20 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Video file size validation
+  const validateFileSize = (file: File) => {
+    const sizeInMB = file.size / (1024 * 1024); 
+    if (sizeInMB > VIDEO_SIZE_LIMIT_MB) {
+      setFileSizeError(`The file is too large. Please upload a video under ${VIDEO_SIZE_LIMIT_MB}MB.`);
+      return false;
+    }
+    setFileSizeError(null); 
+    return true;
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && validateFileSize(file)) {
       setImage(file);
 
       const objectUrl = URL.createObjectURL(file);
@@ -215,18 +240,35 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     formData.append("file", file);
     formData.append("upload_preset", "images_preset");
     formData.append("cloud_name", "dazdngh4i");
-
+    const uploadURL = file.type.startsWith("image") ? "/v1_1/dazdngh4i/image/upload" : "/v1_1/dazdngh4i/video/upload";
     try {
+      setUploading(true); 
+      setUploadProgress(0);
       const res = await axios.post(
-        "https://api.cloudinary.com/v1_1/dazdngh4i/image/upload",
-        formData
+        `https://api.cloudinary.com${uploadURL}`,
+        formData,
+        {
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(progress); 
+            }
+          }
+        }
       );
+      setUploading(false);
       return res.data.url;
     } catch (error: any) {
       console.error("Cloudinary error:", error.response?.data || error.message);
-      setError(`Error uploading image: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error uploading image: ${error.response?.data?.message || error.message}`);
       return "";
     }
+  };
+
+  const handleVideoCallClick = async (user: User) => {
+    const roomId = [user.id, userId].sort().join("-");
+    const videoCallUrl = `/chat/${roomId}`;
+    window.open(videoCallUrl, '_blank');
   };
 
   if (loading) {
@@ -240,130 +282,167 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-indigo-100 to-purple-200">
       {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-b from-purple-600 to-indigo-800 text-white flex flex-col">
-        <Typography variant="h6" className="p-4 font-bold text-white">
+      <aside className="w-64 bg-gradient-to-b from-purple-600 to-indigo-800 text-white flex flex-col p-4 space-y-4">
+        <Typography variant="h6" className="font-bold text-white">
           {userType === 'User' ? 'User' : 'Instructor'}
         </Typography>
-        <div className="flex p-4">
-          <TextField
-            fullWidth
-            placeholder={`Search ${userType === 'User' ? 'User' : 'Instructor'}...`}
-            variant="outlined"
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </div>
-        <List>
+        <TextField
+          fullWidth
+          placeholder={`Search ${userType === 'User' ? 'Instructor' : 'User'}...`}
+          variant="outlined"
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <div className="overflow-y-auto space-y-2">
           {filteredUsers.map((user) => (
-            <ListItem key={user.id} button onClick={() => handleUserSelect(user)} selected={selectedUser?.id === user.id}>
+            <ListItem
+              button
+              key={user.id}
+              onClick={() => handleUserSelect(user)}
+              className="hover:bg-indigo-600 rounded-md transition-colors"
+            >
               <ListItemAvatar>
-                <Badge color="success" variant="dot">
-                  <Avatar alt={user.name} src={user.image} />
-                </Badge>
+                <Avatar src={user.image} />
               </ListItemAvatar>
               <ListItemText primary={user.name} />
             </ListItem>
           ))}
-        </List>
+        </div>
       </aside>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
-        <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 flex items-center border-b">
-          {selectedUser ? (
-            <>
-              <Avatar src={selectedUser.image} />
-              <div className="ml-3">
-                <Typography variant="h6" className="font-bold text-gray-900">
-                  {selectedUser.name}
-                </Typography>
-                <Typography variant="caption" className="text-gray-500">
-                  Active
-                </Typography>
-              </div>
-            </>
-          ) : (
-            <Typography>No tutor selected</Typography>
-          )}
+      {/* Main chat area */}
+      <main className="flex-1 p-4 flex flex-col">
+        <div className="flex justify-between items-center border-b pb-2 mb-2">
+          <Typography variant="h6" className="flex items-center">
+            <Avatar src={selectedUser?.image} className="mr-2" />
+            {selectedUser?.name}
+          </Typography>
+          <Tooltip title="Video Call">
+            <IconButton onClick={() => handleVideoCallClick(selectedUser!)} aria-label="video call">
+              <VideoCall />
+            </IconButton>
+          </Tooltip>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 150px)' }}>
-          <List>
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                style={{
-                  textAlign: message.sender === 'self' ? 'right' : 'left',
-                  margin: '10px 0',
-                }}
-              >
+        {/* Message list with scroll */}
+        <div
+          className="flex-1 overflow-y-auto p-4 bg-white rounded-lg shadow-md space-y-2"
+          style={{ maxHeight: 'calc(100vh - 200px)' }}
+        >
+          {messages.map((message, index) => (
+            <div key={index} className={`flex ${message.sender === 'self' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-lg ${message.sender === 'self' ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
+                <Typography>{message.content}</Typography>
                 {message.mediaUrl && (
-                  <img
-                    src={message.mediaUrl}
-                    alt="Media"
-                    className="w-24 h-24 object-cover"
-                    style={{
-                      borderRadius: '8px',
-                      margin: message.sender === 'self' ? '0 0 0 auto' : '0 auto 0 0' ,
-                    }}
-                  />
+                  <>
+
+                    {message.mediaUrl.type === "image" && (
+                      <img src={message.mediaUrl.url} alt="Message Media" />
+                    )}
+                    {message.mediaUrl.type === "video" && (
+                      <video controls src={message.mediaUrl.url}></video>
+                    )}
+                  </>
                 )}
-                {message.content && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: message.sender === 'self' ? 'flex-end' : 'flex-start' }}>
-                <ListItemText primary={message.content} secondary={message.time} />
-                {message.sender === 'self' && <span style={{ marginLeft: '8px' }}>{renderMessageStatus(message.status)}</span>}
+                <div className="flex justify-between text-sm mt-1">
+                  <span>{message.time}</span>
+                  {renderMessageStatus(message.status)}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </List>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
         </div>
-        {/* Message Input */}
-        <div className="flex items-center p-4 border-t">
+
+        {/* Message input area */}
+        <div className="flex items-center space-x-2 mt-4">
           <TextField
-            fullWidth
+            variant="outlined"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message"
-            variant="outlined"
-            multiline
-            rows={2}
-          />
-          <Tooltip title="Attach Image">
-            <IconButton onClick={() => imageInputRef.current?.click()}>
+            fullWidth
+            placeholder="Type a message"
+            InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <IconButton onClick={() => setShowEmojiPicker((prev) => !prev)}>
+                                      😀
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <IconButton onClick={handleSendMessage}>
+                                      <Send />
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                            {showEmojiPicker && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top:'500px',
+                                  bottom:'20px',
+                                  left: '210px',
+                                }}
+                              >
+                                <EmojiPicker
+                                  onEmojiClick={(emojiData) => {
+                                    setNewMessage((prevMessage) => prevMessage + emojiData.emoji);
+                                    setShowEmojiPicker(false); 
+                                  }}
+                                />
+                              </div>
+                            )}
+          <Tooltip title="Attach Image...">
+            <IconButton
+              onClick={() => imageInputRef.current?.click()}
+              color="primary"
+            >
               <AttachFile />
             </IconButton>
           </Tooltip>
-          <IconButton onClick={handleSendMessage}>
-            <Send />
-          </IconButton>
+          {/* Image Preview Section */}
+          {imagePreview && (
+            <div className="mt-2 flex justify-center items-center relative">
+              {/* Image Preview */}
+              <img src={imagePreview} alt="preview" className="rounded-lg" style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover' }}
+              />
 
-          {/* Hidden file input */}
+              {/* Close (X) Button */}
+              <button
+                onClick={() => {
+                  setImagePreview(null);
+                  setImage(null);
+                }}
+                className="absolute top-0 right-0 p-2 bg-black text-white rounded-full"
+              >
+                X
+              </button>
+            </div>
+          )}
+
+          {/* Attach File Button */}
           <input
             type="file"
             ref={imageInputRef}
             style={{ display: 'none' }}
-            accept="image/*"
             onChange={handleFileUpload}
           />
-
-          {/* Image preview */}
-          {imagePreview && (
-            <div>
-              <img src={imagePreview} alt="Image Preview" className="w-24 h-24 object-cover mt-2" />
-            </div>
+           {/* Progress Bar */}
+          {uploading && (
+          <LinearProgress variant="determinate" value={uploadProgress} />
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

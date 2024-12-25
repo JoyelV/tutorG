@@ -6,10 +6,11 @@ import api from '../../../infrastructure/api/api';
 
 type CourseVideoProps = {
   videoUrl?: string; 
-  id?: string;       
+  id?: string;     
+  lesson:string;  
 };
 
-const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
+const CourseVideo = ({ videoUrl, id,lesson }: CourseVideoProps) => {
   const [existingVideoUrl, setExistingVideoUrl] = useState<string>('');
   const navigate = useNavigate();
 
@@ -57,7 +58,7 @@ const CourseVideo = ({ videoUrl, id }: CourseVideoProps) => {
   const updateProgress = async () => {
     try {
       const response = await api.put(`/user/progress/${id}`, {
-        completedLesson: id, 
+        completedLesson: lesson, 
       });
       if (response.status === 200) {
         Swal.fire({

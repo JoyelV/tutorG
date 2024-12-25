@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, Typography, Button } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Card, CardContent, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { Bar, Pie } from "react-chartjs-2";
 import DashboardHeader from "../../components/instructor/DashboardHeader";
 import Sidebar from "../../components/instructor/Sidebar";
-import api from "../../../infrastructure/api/api"; 
-import { assets } from "../../../assets/assets_user/assets";
+import api from "../../../infrastructure/api/api";
+import { useElements, useStripe } from '@stripe/react-stripe-js';
+import { useLocation } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface ChartData {
   bar: {
@@ -36,12 +39,51 @@ const Earnings = () => {
     currentBalance: 0,
     totalWithdrawals: 0,
   });
-  
+
   const [chartData, setChartData] = useState<ChartData>({
     bar: { labels: [], datasets: [] },
     pie: { labels: [], datasets: [] },
   });
-  
+
+  const [openModal, setOpenModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawalHistory, setWithdrawalHistory] = useState<any[]>([]);  
+  const location = useLocation();
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const handleWithdrawSubmit = async () => {
+    if (!withdrawAmount) return;
+
+    try {
+      const response = await api.post("/instructor/create-checkout-session", {
+        amount: withdrawAmount,
+      });
+
+      const { sessionId } = response.data;
+
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+
+        if (error) {
+          console.error('Error redirecting to checkout', error);
+          alert('Something went wrong. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error during withdrawal:', error);
+      alert('An error occurred while processing the withdrawal.');
+    }
+  };
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -50,6 +92,8 @@ const Earnings = () => {
         const studentsResponse = await api.get("/instructor/studentsCount");
         const earningsResponse = await api.get("/instructor/earningsCount");
         const response = await api.get("/instructor/getEarningDetails");
+        const historyResponse = await api.get("/instructor/getWithdrawalHistory");  
+
         const currentBalance = response.data.currentBalance;
         const totalWithdrawals = response.data.totalWithdrawals;
 
@@ -57,13 +101,15 @@ const Earnings = () => {
         const myCourses = myCoursesResponse.data.count || 0;
         const totalStudents = studentsResponse.data.count || 0;
         const earnings = earningsResponse.data.totalEarnings || 0;
-        
+
         setStats({
-          totalRevenue: earnings, 
+          totalRevenue: earnings,
           currentBalance: currentBalance,
           totalWithdrawals: totalWithdrawals,
         });
-        
+
+        setWithdrawalHistory(historyResponse.data.withdrawalHistory);
+
         setChartData({
           bar: {
             labels: ["Total Courses", "My Courses", "Students", "Earnings"],
@@ -103,7 +149,14 @@ const Earnings = () => {
     };
 
     fetchStats();
-  }, []);
+    
+   const queryParams = new URLSearchParams(location.search);
+   if (queryParams.get("session_id")) {
+     toast.success("Payment successful! Your withdrawal has been processed.", {
+      position: "top-right", 
+     });
+   }
+ }, [location.search]); 
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -127,25 +180,22 @@ const Earnings = () => {
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-3 gap-4 mb-8">
-            {[
-              { label: "Total Revenue", value: stats.totalRevenue },
-              { label: "Current Balance", value: stats.currentBalance },
-              { label: "Total Withdrawals", value: stats.totalWithdrawals },
+            {[{ label: "Total Revenue", value: stats.totalRevenue },
+            { label: "Current Balance", value: stats.currentBalance },
+            { label: "Total Withdrawals", value: stats.totalWithdrawals },
             ].map((stat, index) => (
               <Card
                 key={index}
-                className={`p-4 text-white ${
-                  index % 2 === 0
+                className={`p-4 text-white ${index % 2 === 0
                     ? "bg-gradient-to-r from-blue-500 to-purple-600"
                     : "bg-gradient-to-r from-green-400 to-teal-500"
-                }`}
+                  }`}
               >
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <div
-                      className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                        index % 2 === 0 ? "bg-blue-700" : "bg-green-600"
-                      }`}
+                      className={`h-12 w-12 rounded-full flex items-center justify-center ${index % 2 === 0 ? "bg-blue-700" : "bg-green-600"
+                        }`}
                     >
                       <span className="text-xl font-bold">{index + 1}</span>
                     </div>
@@ -168,71 +218,81 @@ const Earnings = () => {
             </Typography>
             <div className="grid grid-cols-2 gap-4">
               <div className="h-60">
-                <Bar
-                  data={chartData.bar}
-                  options={{ maintainAspectRatio: false }}
-                />
+                <Bar data={chartData.bar} options={{ maintainAspectRatio: false }} />
               </div>
               <div className="h-60">
-                <Pie
-                  data={chartData.pie}
-                  options={{ maintainAspectRatio: false }}
-                />
+                <Pie data={chartData.pie} options={{ maintainAspectRatio: false }} />
               </div>
             </div>
           </div>
 
           {/* Withdraw Section */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-6 rounded shadow-md">
-              <Typography color="textSecondary" className="mb-2">
-                Payment Method:
+          <Button variant="contained" color="warning" onClick={handleOpenModal}>
+            Withdraw Money
+          </Button>
+
+          {/* Withdraw Modal */}
+          <Dialog open={openModal} onClose={handleCloseModal}>
+            <DialogTitle>Withdraw Money</DialogTitle>
+            <DialogContent>
+              <Typography variant="subtitle1" className="mb-4">
+                Enter the amount you want to withdraw
               </Typography>
-              <div className="flex items-center mb-4">
-                <img src={assets.stripe_logo} alt="Stripe" className="h-8" />
-                <Typography className="ml-2 text-sm text-gray-500">
-                  Your withdrawal will be processed via Stripe.
-                </Typography>
-              </div>
-              <Typography variant="h6" className="font-bold mb-4">
-                {stats.currentBalance}
+              <TextField
+                label="Amount"
+                variant="outlined"
+                type="number"
+                fullWidth
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                margin="normal"
+              />
+              <Typography variant="body2" className="mt-2">
+                Note: Your withdrawal will be processed through Stripe.
               </Typography>
-              <Button variant="contained" color="warning">
-                Withdraw Money
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseModal} color="primary">
+                Cancel
               </Button>
-            </div>
-            <div className="bg-white p-6 rounded shadow-md">
-              <Typography variant="subtitle1" className="font-semibold mb-4">
-                Withdraw History
-              </Typography>
-              <table className="w-full text-left">
-                <thead>
-                  <tr>
-                    <th className="border-b py-2">Date</th>
-                    <th className="border-b py-2">Method</th>
-                    <th className="border-b py-2">Amount</th>
-                    <th className="border-b py-2">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array(5)
-                    .fill(0)
-                    .map((_, index) => (
-                      <tr key={index}>
-                        <td className="py-2">21 Sep, 2021</td>
-                        <td className="py-2">Mastercard</td>
-                        <td className="py-2">₹5000.00</td>
-                        <td className="py-2">
-                          <span className="text-green-500">Completed</span>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              <Button onClick={handleWithdrawSubmit} color="primary">
+                Submit
+              </Button>
+            </DialogActions>
+          </Dialog>
         </main>
+        {/* Withdraw History Table */}
+        <div className="bg-white p-6 rounded shadow-md">
+            <Typography variant="subtitle1" className="font-semibold mb-4">
+              Withdraw History
+            </Typography>
+            <table className="w-full text-left">
+              <thead>
+                <tr>
+                  <th className="border-b py-2">Date</th>
+                  <th className="border-b py-2">Method</th>
+                  <th className="border-b py-2">Amount</th>
+                  <th className="border-b py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {withdrawalHistory.map((transaction, index) => (
+                  <tr key={index}>
+                    <td className="py-2">{new Date(transaction.date).toLocaleDateString()}</td>
+                    <td className="py-2">{transaction.method}</td>
+                    <td className="py-2">₹{transaction.amount}</td>
+                    <td className="py-2">
+                      <span className={`text-${transaction.status === 'completed' ? 'green' : 'red'}-500`}>
+                        {transaction.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

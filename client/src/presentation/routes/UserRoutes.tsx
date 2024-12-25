@@ -19,6 +19,7 @@ import BecomeInstructor from '../components/common/BecomeInstructor';
 import AboutPage from '../pages/user/AboutPage';
 import ContactPage from '../pages/user/ContactPage';
 import CertificateOfCompletion from '../pages/user/CompletionCertificatePage';
+import Notifications from '../pages/user/NotificationPage';
 
 const isLoggedIn = Boolean(localStorage.getItem('token'));
 
@@ -40,6 +41,7 @@ const UserRoutes = () => {
             <Route path="/become-an-instructor" element={<BecomeInstructor />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/notifications" element={<Notifications/>} />
             <Route path="/course-listing" element={<ViewCoursesListing />} />
             <Route path="/course/details/:courseId" element={<DetailedCoursePage />}/>
             <Route path="/wishlist" element={isLoggedIn ?<WishlistPage />: <Navigate to="/login" />}/>
