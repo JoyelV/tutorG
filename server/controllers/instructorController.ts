@@ -11,6 +11,9 @@ import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileServi
 import Instructor from '../models/Instructor';
 import orderModel from '../models/Orders';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
+import Rating from '../models/RateInstructor'; 
+import RateInstructor from '../models/RateInstructor';
+import { Types } from 'mongoose'; 
 
 dotenv.config();
 
@@ -84,7 +87,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
     // Send the refresh token as an HttpOnly cookie
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true, // Prevent access via JavaScript
+      httpOnly: true, 
       secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
       sameSite: 'strict', // Prevent CSRF
       maxAge: 7 * 24 * 60 * 60 * 1000, 
@@ -403,5 +406,43 @@ export const getStripePayment = async (req: AuthenticatedRequest, res: Response)
   } catch (error) {
     console.error('Error creating Stripe Checkout session:', error);
     res.status(500).send('Internal Server Error');
+  }
+};
+
+export const addInstructorRating = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const { rating, comment } = req.body; 
+  const { instructorId } = req.params;   
+  const userId = req.userId; 
+  try {
+    const instructor = await Instructor.findById(instructorId);
+    if (!instructor) {
+      res.status(404).json({ message: 'Instructor not found' });
+      return ;
+    }
+
+    const existingRating = await RateInstructor.findOne({ userId, instructorId });
+    if (existingRating) {
+      res.status(200).json({ message: 'You have already rated this instructor' });
+      return ;
+    }
+
+    const newRating = new RateInstructor({
+      userId,
+      instructorId,
+      rating,
+      comment,
+    });
+
+    await newRating.save();
+    const totalRatings = await RateInstructor.find({ instructorId }).exec(); 
+    const newAverageRating = totalRatings.reduce((acc, r) => acc + r.rating, 0) / totalRatings.length;
+
+    instructor.averageRating = newAverageRating;
+    instructor.numberOfRatings = totalRatings.length;
+    await instructor.save();
+    res.status(201).json({ message: 'Rating submitted successfully!' });
+  } catch (error) {
+    console.error('Error updating instructor rating:', error);
+    res.status(500).json({ message: 'Server error', error });
   }
 };

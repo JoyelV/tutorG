@@ -56,6 +56,27 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const getCategoriesPagination = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
+
+  try {
+    const totalCategories = await Category.countDocuments();
+    const categories = await Category.find()
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    
+    res.status(200).json({
+      categories,
+      totalPages: Math.ceil(totalCategories / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * Fetch all Unblocked categories
  */

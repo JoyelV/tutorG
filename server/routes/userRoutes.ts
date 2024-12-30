@@ -7,8 +7,9 @@ import { addToWishlist, getWishlistItems, removeWishlistItem } from '../controll
 import { stripePayment } from '../controllers/paymentController';
 import { getEnrolledOrders, getOrdersBySessionId, getUserOrders } from '../controllers/orderController';
 import { verifyToken } from '../utils/VerifyToken';
-import { getMyTutors } from '../controllers/instructorController';
+import { addInstructorRating, getMyTutors } from '../controllers/instructorController';
 import { getQuizzesByCourse, submitQuiz } from '../controllers/quizController';
+import { getCategories } from '../controllers/categoryController';
 
 const router = Router();
 
@@ -31,6 +32,7 @@ router.get('/my-tutors',verifyToken,getMyTutors);
 
 //COURSE MANAGEMENT
 router.get('/courses',getCourses);
+router.get('/categories', getCategories);
 router.get('/courses/:courseId',getIndividualCourses);
 router.get('/view-lessons/:courseId',getViewChapters);
 router.get('/courses-enrolled/:courseId',verifyToken,getIndividualCourseData);
@@ -42,6 +44,7 @@ router.get('/quizzes/:courseId', verifyToken,getQuizzesByCourse);
 router.post('/quizzes/attempt', verifyToken,submitQuiz);
 router.put('/progress/:id',verifyToken,updateProgress);
 router.get('/notifications', verifyToken,getNotifications);
+router.put('/instructorRating/:instructorId',verifyToken,addInstructorRating);
 
 //CART MANAGEMENT
 router.post('/cart/add', verifyToken,addToCart);

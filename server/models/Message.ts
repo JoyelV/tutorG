@@ -13,6 +13,7 @@ export interface IMessage extends Document {
   receiverModel: 'User' | 'Instructor'; 
   createdAt: Date;
   updatedAt: Date;
+  messageId:string;
 }
 
 const MessageSchema: Schema = new Schema(
@@ -27,11 +28,12 @@ const MessageSchema: Schema = new Schema(
       },
       type: {
         type: String,
-        enum: ["image", "video",""],
+        enum: ["image", "video","audio"],
       }
     },
     senderModel: { type: String, required: true, enum: ['User', 'Instructor'] },
     receiverModel: { type: String, required: true, enum: ['User', 'Instructor'] },
+    messageId: { type: String, required: true},
   },
   {
     timestamps: true,

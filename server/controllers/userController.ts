@@ -339,21 +339,30 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
 export const getStudentsByInstructor = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const instructorId = req.userId;
+    const { page = 1, limit = 4 } = req.query; 
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const orders = await orderModel
-    .find({
+    const totalStudents = await orderModel.countDocuments({
       tutorId: instructorId,
-      studentId: { $ne: null },  
-    })
-    .populate("studentId", "username email phone image gender")
-    .populate("courseId", "title level"); 
+      studentId: { $ne: null },
+    });
 
-    if (orders.length === 0) {
-      res.status(404).json({ message: "No students found for this instructor." });
-      return;
-    }
-    console.log(orders,"mystudentsorder")
-    res.status(200).json(orders);
+    const students = await orderModel
+      .find({
+        tutorId: instructorId,
+        studentId: { $ne: null },
+      })
+      .populate("studentId", "username email phone image gender")
+      .populate("courseId", "title level")
+      .skip(skip)
+      .limit(Number(limit));
+    
+    res.status(200).json({
+      students,
+      totalStudents,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalStudents / Number(limit)),
+    });
   } catch (error) {
     console.error('Error fetching students by instructor:', error);
     res.status(500).json({ message: 'Error fetching students' });

@@ -33,4 +33,6 @@ export interface IInstructor extends Document {
     currentBalance: Number;
     onlineStatus: boolean;
     transactions?: Transaction[]; 
+    averageRating:number;
+    numberOfRatings:number;
 }

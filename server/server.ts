@@ -96,8 +96,8 @@ io.on('connection', (socket) => {
     console.log(`User ${sender} joined room: ${roomName}`);
  });
 
-  socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, mediaUrl?: string }) => {
-    const { sender, receiver, content, senderModel, receiverModel, mediaUrl } = data;
+  socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, mediaUrl?: string ,messageId:string}) => {
+    const { sender, receiver, content, senderModel, receiverModel, mediaUrl,messageId } = data;
     console.log(data,"data")
     if (!sender || !receiver ) {
       socket.emit('error', 'Invalid message data');
@@ -114,6 +114,7 @@ io.on('connection', (socket) => {
         receiverModel,
         mediaUrl: mediaUrl,
         status: 'sent',
+        messageId,
       });
       console.log("message",message);
 
@@ -125,6 +126,7 @@ io.on('connection', (socket) => {
         time: message.createdAt,
         status: message.status,
         mediaUrl: message.mediaUrl,
+        messageId:messageId
       });
     } catch (error) {
       console.error('Error sending message:', error);

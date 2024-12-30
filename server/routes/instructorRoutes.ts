@@ -14,7 +14,7 @@ import {
     getStripePayment} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
-import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, getWithdrawalHistory, updateChapter } from '../controllers/courseController';
+import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getMyTutorCourses, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, getWithdrawalHistory, updateChapter } from '../controllers/courseController';
 import { getUnblockedCategories } from '../controllers/categoryController';
 import { addQuiz, deleteQuiz, getQuizById, getQuizzesByCourse, updateQuiz } from '../controllers/quizController';
 import { getStudentsByInstructor, getStudentsChat } from '../controllers/userController';
@@ -41,7 +41,7 @@ router.put('/upload-image',upload.single('image'),verifyToken,uploadImage);
 router.post("/addCourse",createCourse);
 router.put("/course/:courseId",editCourse);
 router.delete("/delete-course/:courseId",deleteCourse);
-router.get('/courses',verifyToken,getTutorCourses);
+router.get('/courses',verifyToken,getMyTutorCourses);
 router.get('/course-view/:courseId',getViewCourses);
 router.post('/addLesson',addLesson);
 router.get('/view-lessons/:courseId',getViewChapters);

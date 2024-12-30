@@ -52,21 +52,66 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
 
 export const getCourses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const courses = await Course.find({ status: 'published' });
-    res.status(200).json(courses);
+    const {
+      page = '1',
+      limit = '5',
+      searchTerm = '',
+      filter = '',
+      sortOption = '',
+    } = req.query;
+
+    const currentPage = Number(page);
+    const pageSize = Number(limit);
+    const search = typeof searchTerm === 'string' ? searchTerm : '';
+    const categoryFilter = typeof filter === 'string' ? filter : '';
+
+    const query: any = { status: 'published' };
+
+    if (search) query.title = new RegExp(search, 'i'); 
+    if (categoryFilter && categoryFilter !== 'All Courses') query.category = categoryFilter;
+
+    const sort: any = {};
+    if (sortOption === 'Price: Low to High') sort.courseFee = 1;
+    if (sortOption === 'Price: High to Low') sort.courseFee = -1;
+    if (sortOption === 'Latest') sort.createdAt = -1;
+    if (sortOption === 'Popular') sort.rating = -1;
+
+    const total = await Course.countDocuments(query);
+    console.log(total,"hi total data from pagingation")
+
+    const courses = await Course.find(query)
+      .sort(sort)
+      .skip((currentPage - 1) * pageSize)
+      .limit(pageSize);
+    console.log(courses,"hi course data from pagingation")
+    res.status(200).json({
+      courses,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+      currentPage,
+    });
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    next({ status: 500, message: 'Error fetching categories', error });
+    console.error('Error fetching courses:', error);
+    next({ status: 500, message: 'Error fetching courses', error });
   }
 };
 
 export const getCourseDatas = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const page = Number(req.query.page) || 1; 
+  const limit = Number(req.query.limit) || 5; 
   try {
-    const courses = await Course.find();
-    res.status(200).json(courses);
+  const courses = await Course.find().skip((page - 1) * limit).limit(limit); 
+  const totalCourses = await Course.countDocuments();
+  const total = await Course.find();
+    res.json({
+      courses,
+      totalPages: Math.ceil(totalCourses / limit), 
+      currentPage: Number(page),
+      total
+    });
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    next({ status: 500, message: 'Error fetching categories', error });
+    console.error(error);
+    res.status(500).send("Server Error");
   }
 };
 
@@ -298,21 +343,69 @@ export const courseStatus = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const getTutorCourses = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getTutorCourses = async ( req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {  
   try {
-    const instructorId = req.userId;
-    console.log(instructorId, "Instructor ID in getTutorCourses");
-    
-    const courses = await Course.find({ instructorId });
-    console.log(courses, "Courses fetched");
-    res.json(courses);
+    const page = parseInt(req.query.page as string) || 1; 
+    const limit = parseInt(req.query.limit as string) || 6; 
+
+    if (isNaN(page) || isNaN(limit)) {
+      res.status(400).json({ message: "Invalid page or limit value" });
+      return ;
+    }
+
+    const skip = (page - 1) * limit;
+    const courses = await Course.find()
+      .skip(skip)
+      .limit(limit);
+
+    const totalCourses = await Course.countDocuments();
+    const totalPages = Math.ceil(totalCourses / limit);
+
+    res.json({
+      courses,
+      totalCourses,
+      totalPages,
+      currentPage: page,
+    });
+    return ;
   } catch (error) {
-    console.error("Error fetching courses:", error);
-    res.status(500).json({ message: "Failed to fetch courses" });
+    console.error("Error fetching paginated courses:", error);
+    res.status(500).json({ message: "Server error" });
+    return ;
+  }
+};
+
+export const getMyTutorCourses = async ( req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {  
+  try {
+    const instructorId = req.userId;  
+
+    const page = parseInt(req.query.page as string) || 1; 
+    const limit = parseInt(req.query.limit as string) || 6; 
+
+    if (isNaN(page) || isNaN(limit)) {
+      res.status(400).json({ message: "Invalid page or limit value" });
+      return ;
+    }
+
+    const skip = (page - 1) * limit;
+    const courses = await Course.find({ instructorId })
+      .skip(skip)
+      .limit(limit);
+
+    const totalCourses = await Course.countDocuments({ instructorId });
+    const totalPages = Math.ceil(totalCourses / limit);
+
+    res.json({
+      courses,
+      totalCourses,
+      totalPages,
+      currentPage: page,
+    });
+    return ;
+  } catch (error) {
+    console.error("Error fetching paginated courses:", error);
+    res.status(500).json({ message: "Server error" });
+    return ;
   }
 };
 
@@ -600,10 +693,14 @@ export const updateProgress = async (req: AuthenticatedRequest, res: Response): 
   }
 };
 
-export const getEnrolledMyCourses = async (req: Request, res: Response) => {
+export const getEnrolledMyCourses = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const coursesCount = await Course.countDocuments();
-    res.json({ count: coursesCount });
+    const instructorId = req.userId;  
+    const count = await Course.countDocuments({
+      instructorId: instructorId,
+      status: "published",
+    });
+    res.json({ count: count });
   } catch (error) {
     console.error("Error fetching total courses count:", error);
     res.status(500).json({ message: 'Failed to fetch courses count' });

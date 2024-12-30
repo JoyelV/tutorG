@@ -32,46 +32,76 @@ export const getUserOrders = async (req: AuthenticatedRequest, res: Response,nex
   }
 };
 
-export const getEnrolledOrders = async (req: AuthenticatedRequest, res: Response,next: NextFunction):Promise<void> =>{
-try {
+export const getEnrolledOrders = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
     const userId = req.userId;
 
+    const page = parseInt(req.query.page as string) || 1; 
+    const limit = parseInt(req.query.limit as string) || 8; 
+    const sortBy = req.query.sort as string || 'createdAt'; 
+    const sortDirection = req.query.direction as string || 'desc'; 
+
+    const skip = (page - 1) * limit;
+
+    const sortOptions: any = {};
+    sortOptions[sortBy] = sortDirection === 'asc' ? 1 : -1; 
+
     const orders = await orderModel.find({ studentId: userId })
-      .populate('courseId', 'title') 
-      .populate('tutorId', 'username') 
-      .sort({ createdAt: -1 }); 
+      .populate('courseId', 'title')
+      .populate('tutorId', 'username')
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit);
+
+    const totalOrders = await orderModel.countDocuments({ studentId: userId });
+
+    const totalPages = Math.ceil(totalOrders / limit);
 
     if (orders.length === 0) {
       res.status(204).json({ message: 'No purchase history found' });
-      return ;
+      return;
     }
 
-    res.status(200).json(orders);
+    res.status(200).json({
+      orders,
+      currentPage: page,
+      totalPages: totalPages,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
-}
+};
 
 /**
  * Get all orders with pagination
  * @route GET /api/orders
  */
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const orders = await orderModel
-      .find()
-      .sort({ createdAt: -1 })
-      .populate("studentId", "username")
-      .populate("tutorId", "username")
-      .populate("courseId", "title category");
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
 
+  try {
+    const [orders, totalOrders] = await Promise.all([
+      orderModel
+        .find()
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate("studentId", "username")
+        .populate("tutorId", "username")
+        .populate("courseId", "title category"),
+      orderModel.countDocuments(),
+    ]);
+    const total = await orderModel.find();
     res.status(200).json({
-      success: true,
       orders,
+      totalPages: Math.ceil(totalOrders / limit),
+      currentPage: page,
+      total
     });
   } catch (error: any) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching orders:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to fetch orders",

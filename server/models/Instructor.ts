@@ -31,6 +31,8 @@ const instructorSchema = new Schema<IInstructor>({
             amount: { type: Number, required: true },
         },
     ],
+    averageRating: { type: Number, default: 0 }, 
+    numberOfRatings: { type: Number, default: 0 },
 });
 
 export default model<IInstructor>('Instructor', instructorSchema);
