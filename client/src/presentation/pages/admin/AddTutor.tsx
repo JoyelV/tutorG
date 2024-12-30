@@ -3,6 +3,8 @@ import { TextField, Button, Grid, FormControlLabel, Checkbox } from '@mui/materi
 import 'tailwindcss/tailwind.css';
 import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/admin/Sidebar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface FormData {
     username: string;
@@ -134,8 +136,7 @@ const AddForm: React.FC = () => {
                 const response = await api.post('/admin/add-tutor', formDataToSend);
        
                 if (response.status === 201) {
-                    alert('Tutor added successfully!');
-                    // Optionally clear form
+                    toast.success('Tutor added successfully!');
                     setFormData({
                         username: '',
                         email: '',
@@ -152,15 +153,15 @@ const AddForm: React.FC = () => {
                     });
                     setImagePreview(null);
                 } else {
-                    alert(`Failed to add tutor: ${response.data.message || 'Unknown error'}`);
+                    toast.error(`Failed to add tutor: ${response.data.message || 'Unknown error'}`);
                 }
             } catch (error:any) {
                 console.error('Error while submitting form:', error);
                 const errorMessage = error.response?.data?.message || 'An error occurred. Please try again.';
-                alert(errorMessage);
+                toast.error(errorMessage);
             }
         } else {
-            alert('Please fix the errors before submitting.');
+            toast.error('Please fix the errors before submitting.');
         }
     };
     
@@ -331,6 +332,7 @@ const AddForm: React.FC = () => {
                     </form>
                 </div>
             </div>
+            <ToastContainer />
         </div>
     );
 };

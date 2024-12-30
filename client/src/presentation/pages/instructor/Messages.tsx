@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress,LinearProgress } from '@mui/material';
-import { Send, VideoCall, Mic, Search, AttachFile } from '@mui/icons-material';
+import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress } from '@mui/material';
+import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
 import api from '../../../infrastructure/api/api';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import Sidebar from '../../components/instructor/Sidebar';
 import EmojiPicker from 'emoji-picker-react';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface Instructor {
@@ -17,11 +17,11 @@ interface Instructor {
 }
 
 interface Message {
-  id: string;
+  messageId: string;
   sender: 'self' | 'other';
   content: string;
   time: string;
-  status: 'sent' | 'delivered' | 'read';
+  status: string;
   mediaUrl?: {
     url: string;
     type: string;
@@ -47,12 +47,17 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const userId = localStorage.getItem('userId');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [uploading, setUploading] = useState(false); 
-  const [uploadProgress, setUploadProgress] = useState(0); 
-  const [fileSizeError, setFileSizeError] = useState<string | null>(null); 
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
     socket.current = io('http://localhost:5000', {
@@ -64,8 +69,8 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       if (message.sender !== userId) {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
-      if (message.id) {
-        socket.current?.emit('message_read', message.id);
+      if (message.messageId) {
+        socket.current?.emit('message_read', message.messageId);
       }
     });
 
@@ -78,7 +83,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          msg.id === updatedMessage.id ? { ...msg, status: updatedMessage.status } : msg
+          msg.messageId === updatedMessage.id ? { ...msg, status: updatedMessage.status } : msg
         )
       );
     });
@@ -110,7 +115,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         if (data.length > 0) {
           setSelectedUser(data[0]);
           setMessages([{
-            id: `${Date.now()}`,
+            messageId: `${Date.now()}`,
             sender: 'other',
             content: `Hi! I'm ${data[0].name}, how can I assist you today?`,
             time: new Date().toLocaleTimeString(),
@@ -133,22 +138,69 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     }
   }, [messages]);
 
+  const handleStartRecording = () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((stream) => {
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+
+        const chunks: Blob[] = [];
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          setAudioBlob(blob);
+          setAudioUrl(URL.createObjectURL(blob));
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      })
+      .catch((err) => {
+        toast.error('Failed to access microphone. Please check permissions.');
+        console.error(err);
+      });
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    const stream = mediaRecorderRef.current?.stream;
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        if (track.readyState === 'live') {
+          track.stop();
+        }
+      });
+    }
+    setIsRecording(false);
+  };
+
   const handleSendMessage = async () => {
-    if (newMessage.trim() || image) {
-      let imageUrl = '';
+    if (newMessage.trim() || image || audioBlob) {
+      let mediaUrl = '';
       let mediaType = "";
 
       if (image) {
-        imageUrl = await submitImage(image);
+        mediaUrl = await submitImage(image);
         mediaType = image.type.startsWith("image") ? "image" : "video";
       }
 
+      if (audioBlob) {
+        const audioFile = new File([audioBlob], 'audioMessage.webm', { type: 'audio/webm' });
+        mediaUrl = await submitImage(audioFile);
+        mediaType = 'audio';
+        setAudioBlob(null);
+        setAudioUrl(null);
+      }
+
       const message: Message = {
-        id: `${Date.now()}`,
+        messageId: `${Date.now()}`,
         sender: 'self',
-        content: newMessage,
+        content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
         time: new Date().toLocaleTimeString(),
-        mediaUrl: { url: imageUrl, type: mediaType },
+        mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
         status: 'sent'
       };
 
@@ -166,23 +218,18 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       socket.current?.emit('send_message', {
         sender: userId,
         receiver: selectedUser?.id,
-        content: newMessage.trim(),
+        content: newMessage.trim() || (mediaType === 'audio' ? 'Audio Message' : ''),
         senderModel: 'Instructor',
         receiverModel: 'User',
         mediaUrl: message.mediaUrl,
-        messageId: message.id,
+        messageId: message.messageId,
       });
     }
   };
 
-  const renderMessageStatus = (status: 'sent' | 'delivered' | 'read') => {
-    if (status === 'read') {
-      return <DoneAll style={{ color: 'blue' }} />;
-    }
-    if (status === 'delivered') {
-      return <DoneAll />;
-    }
-    return <Check />;
+  const handleDeleteAudio = () => {
+    setAudioBlob(null);
+    setAudioUrl(null);
   };
 
   const handleUserSelect = async (user: Instructor) => {
@@ -220,14 +267,13 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Video file size validation
   const validateFileSize = (file: File) => {
-    const sizeInMB = file.size / (1024 * 1024); 
+    const sizeInMB = file.size / (1024 * 1024);
     if (sizeInMB > VIDEO_SIZE_LIMIT_MB) {
       setFileSizeError(`The file is too large. Please upload a video under ${VIDEO_SIZE_LIMIT_MB}MB.`);
       return false;
     }
-    setFileSizeError(null); 
+    setFileSizeError(null);
     return true;
   };
 
@@ -250,7 +296,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     formData.append("cloud_name", "dazdngh4i");
     const uploadURL = file.type.startsWith("image") ? "/v1_1/dazdngh4i/image/upload" : "/v1_1/dazdngh4i/video/upload";
     try {
-      setUploading(true); 
+      setUploading(true);
       setUploadProgress(0);
       const res = await axios.post(
         `https://api.cloudinary.com${uploadURL}`,
@@ -259,7 +305,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-              setUploadProgress(progress); 
+              setUploadProgress(progress);
             }
           }
         }
@@ -294,7 +340,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       <aside className="w-64 bg-gray-800 text-white flex flex-col">
         <Sidebar />
       </aside>
-
       {/* Main content area */}
       <div className="flex-1 bg-gray-100">
 
@@ -337,7 +382,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
               ))}
             </List>
           </aside>
-
           {/* Chat Area */}
           <div className="flex-1 flex flex-col pl-64">
             {/* Chat Header */}
@@ -355,7 +399,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                 <Typography>Select a user to start chatting</Typography>
               )}
             </div>
-
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 max-h-[570px]">
               <div className="space-y-4">
@@ -365,26 +408,30 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                       <Typography>{message.content}</Typography>
                       {message.mediaUrl && (
                         <>
-
                           {message.mediaUrl.type === "image" && (
                             <img src={message.mediaUrl.url} alt="Message Media" />
                           )}
                           {message.mediaUrl.type === "video" && (
                             <video controls src={message.mediaUrl.url}></video>
                           )}
+                          {message.mediaUrl.type === "audio" && (
+                            <video controls src={message.mediaUrl.url} ></video>
+                          )}
                         </>
                       )}
                       <div className="flex justify-between text-sm mt-1">
                         <span>{message.time}</span>
-                        {renderMessageStatus(message.status)}
+                        {message.status == 'read' && <DoneAll style={{ color: 'blue' }} />}
+                        {message.status == 'sent' && <Check />}
+                        {message.status != 'read' && message.status != 'sent' && <DoneAll />}
                       </div>
+
                     </div>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
               </div>
             </div>
-
             {/* Message Input */}
             <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 border-t">
               <div className="flex items-center space-x-2">
@@ -405,6 +452,28 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
+                        <div className="flex items-center space-x-2">
+                          <Tooltip title={isRecording ? "Stop Recording" : "Record Audio"}>
+                            <IconButton onClick={isRecording ? handleStopRecording : handleStartRecording}>
+                              {isRecording ? <Stop /> : <Mic />}
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Attach Image...">
+                            <IconButton
+                              onClick={() => imageInputRef.current?.click()}
+                              color="primary"
+                            >
+                              <AttachFile />
+                            </IconButton>
+                          </Tooltip>
+                          {audioBlob && (
+                            <>
+                              <IconButton onClick={handleDeleteAudio} color="secondary">
+                                <Delete />
+                              </IconButton>
+                            </>
+                          )}
+                        </div>
                         <IconButton onClick={handleSendMessage}>
                           <Send />
                         </IconButton>
@@ -416,29 +485,20 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                   <div
                     style={{
                       position: 'absolute',
-                      top:'200px',
-                      bottom:'20px',
+                      top: '200px',
+                      bottom: '20px',
                       left: '510px',
                     }}
                   >
                     <EmojiPicker
                       onEmojiClick={(emojiData) => {
                         setNewMessage((prevMessage) => prevMessage + emojiData.emoji);
-                        setShowEmojiPicker(false); 
+                        setShowEmojiPicker(false);
                       }}
                     />
                   </div>
                 )}
-                <Tooltip title="Attach Image...">
-                  <IconButton
-                    onClick={() => imageInputRef.current?.click()}
-                    color="primary"
-                  >
-                    <AttachFile />
-                  </IconButton>
-                </Tooltip>
               </div>
-
               {/* Image Preview Section */}
               {imagePreview && (
                 <div className="mt-2 flex justify-center items-center relative">
@@ -459,7 +519,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                 </div>
               )}
             </div>
-
             {/* Attach File Button */}
             <input
               type="file"
@@ -475,7 +534,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         </div>
       </div>
     </div>
-
   );
 };
 

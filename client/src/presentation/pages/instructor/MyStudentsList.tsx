@@ -22,27 +22,24 @@ interface Student {
 const StudentsList: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [studentsPerPage] = useState<number>(10); 
-  const instructorId = localStorage.getItem("userId");
+  const [totalPages, setTotalPages] = useState<number>(0);
+
+  const fetchStudents = async (page: number) => {
+    try {
+      const response = await api.get(`/instructor/students`, {
+        params: { page, limit: 4 }, 
+      });
+      const { students, totalPages } = response.data;
+      setStudents(students);
+      setTotalPages(totalPages);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const response = await api.get(`/instructor/students`);
-        setStudents(response.data);
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      }
-    };
-
-    fetchStudents();
-  }, [instructorId]);
-
-  // Pagination logic
-  const indexOfLastStudent = currentPage * studentsPerPage;
-  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent);
-  const totalPages = Math.ceil(students.length / studentsPerPage);
+    fetchStudents(currentPage);
+  }, [currentPage]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -57,8 +54,8 @@ const StudentsList: React.FC = () => {
         <div className="fixed w-full top-0 left-0 z-10 bg-white shadow-md">
           <DashboardHeader />
         </div>
-        
-        <div className="mt-6"> {/* Added margin-top to push content below fixed header */}
+
+        <div className="mt-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Students List</h2>
 
           <div className="overflow-x-auto bg-white shadow rounded-lg">
@@ -75,7 +72,7 @@ const StudentsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentStudents.map((student) => (
+                {students.map((student) => (
                   <tr key={student._id} className="hover:bg-gray-50 transition-all duration-200">
                     <td className="px-4 py-4">
                       <img

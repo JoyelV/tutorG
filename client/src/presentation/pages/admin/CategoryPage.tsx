@@ -30,6 +30,7 @@ interface Category {
 
 const CategoryPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -37,23 +38,44 @@ const CategoryPage: React.FC = () => {
   const [subCategories, setSubCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 5;
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/admin/categories', {
+          params: {
+            page: currentPage,
+            limit: itemsPerPage,
+          },
+        });
+        const data = response.data;
+        setCategories(data.categories);
+        setFilteredCategories(data.categories);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.currentPage); 
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchCategories();
-  }, []);
+  }, [currentPage]); 
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get<Category[]>('/admin/categories');
-      setCategories(response.data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredCategories(categories);
+    } else {
+      setFilteredCategories(
+        categories.filter((category) =>
+          category.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
     }
-  };
+  }, [searchQuery, categories]);  
 
   const handleSaveCategory = async () => {
     if (!categoryName.trim()) {
@@ -132,16 +154,6 @@ const CategoryPage: React.FC = () => {
     setSearchQuery(event.target.value);
     setCurrentPage(1);
   };
-
-  const filteredCategories = categories.filter((category) =>
-    category.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
-  const paginatedCategories = filteredCategories.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const handleToggleBlockCategory = async (id: string) => {
     try {
@@ -247,7 +259,7 @@ const CategoryPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedCategories.map((category) => (
+                    {filteredCategories.map((category) => (
                       <tr key={category._id} className="border-t">
                         <td className="px-6 py-3">{category.categoryName}</td>
                         <td className="px-6 py-3">

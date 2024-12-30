@@ -50,6 +50,15 @@ const Earnings = () => {
   const [withdrawalHistory, setWithdrawalHistory] = useState<any[]>([]);  
   const location = useLocation();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5; 
+  const totalPages = Math.ceil(withdrawalHistory.length / rowsPerPage);
+
+  const paginatedData = withdrawalHistory.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
   const handleOpenModal = () => {
     setOpenModal(true);
   };
@@ -158,6 +167,12 @@ const Earnings = () => {
    }
  }, [location.search]); 
 
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -173,7 +188,7 @@ const Earnings = () => {
         </div>
 
         {/* Main Content */}
-        <main className="ml-4 p-4">
+        <main className="ml-2 p-2">
           <Typography variant="h5" className="mb-4">
             Good Morning, My Earnings
           </Typography>
@@ -186,7 +201,7 @@ const Earnings = () => {
             ].map((stat, index) => (
               <Card
                 key={index}
-                className={`p-4 text-white ${index % 2 === 0
+                className={`p-2 text-white ${index % 2 === 0
                     ? "bg-gradient-to-r from-blue-500 to-purple-600"
                     : "bg-gradient-to-r from-green-400 to-teal-500"
                   }`}
@@ -262,35 +277,67 @@ const Earnings = () => {
           </Dialog>
         </main>
         {/* Withdraw History Table */}
-        <div className="bg-white p-6 rounded shadow-md">
-            <Typography variant="subtitle1" className="font-semibold mb-4">
-              Withdraw History
-            </Typography>
-            <table className="w-full text-left">
-              <thead>
-                <tr>
-                  <th className="border-b py-2">Date</th>
-                  <th className="border-b py-2">Method</th>
-                  <th className="border-b py-2">Amount</th>
-                  <th className="border-b py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {withdrawalHistory.map((transaction, index) => (
-                  <tr key={index}>
-                    <td className="py-2">{new Date(transaction.date).toLocaleDateString()}</td>
-                    <td className="py-2">{transaction.method}</td>
-                    <td className="py-2">₹{transaction.amount}</td>
-                    <td className="py-2">
-                      <span className={`text-${transaction.status === 'completed' ? 'green' : 'red'}-500`}>
-                        {transaction.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <div className="bg-white p-4 rounded shadow-md">
+      <Typography variant="subtitle1" className="font-semibold mb-4">
+        Withdraw History
+      </Typography>
+      <table className="w-full text-left">
+        <thead>
+          <tr>
+            <th className="border-b py-2">Date</th>
+            <th className="border-b py-2">Method</th>
+            <th className="border-b py-2">Amount</th>
+            <th className="border-b py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedData.map((transaction, index) => (
+            <tr key={index}>
+              <td className="py-2">{new Date(transaction.date).toLocaleDateString()}</td>
+              <td className="py-2">{transaction.method}</td>
+              <td className="py-2">₹{transaction.amount}</td>
+              <td className="py-2">
+                <span className={`text-${transaction.status === "completed" ? "green" : "red"}-500`}>
+                  {transaction.status}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-end mt-4">
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="mr-2"
+        >
+          Previous
+        </Button>
+        {[...Array(totalPages)].map((_, index) => (
+          <Button
+            key={index}
+            variant="contained"
+            color={currentPage === index + 1 ? "secondary" : "primary"}
+            onClick={() => handlePageChange(index + 1)}
+            className="mx-1"
+          >
+            {index + 1}
+          </Button>
+        ))}
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
       </div>
       <ToastContainer />
     </div>

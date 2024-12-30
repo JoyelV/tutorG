@@ -69,8 +69,8 @@ const AdminDashboard: React.FC = () => {
                 ]);
 
                 setDashboardData({
-                    orders: ordersRes.data.orders,
-                    courses: coursesRes.data,
+                    orders: ordersRes.data.total,
+                    courses: coursesRes.data.total, 
                     tutors: tutorsRes.data,
                     users: usersRes.data,
                 });
@@ -117,13 +117,12 @@ const AdminDashboard: React.FC = () => {
 
             {/* Main Content */}
             <main className="flex-1 p-6 mt-[64px]">
-            <TopNav/>
+                <TopNav />
 
-            <h1 className="text-3xl font-semibold text-gray-800 mb-4">Dashboard</h1>
-            <p className="text-gray-600 mb-6">Good Morning, Mr. Admin. It’s good to see you again.</p>
+                <h1 className="text-3xl font-semibold text-gray-800 mb-4">Dashboard</h1>
+                <p className="text-gray-600 mb-6">Good Morning, Mr. Admin. It’s good to see you again.</p>
 
                 {/* Overview Cards */}
-
                 <div className="grid grid-cols-4 gap-6 mb-8">
                     <div className="p-4 bg-white shadow rounded-lg flex items-center">
                         <div className="text-blue-500 text-xl mr-3">
@@ -162,8 +161,6 @@ const AdminDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-
 
                 {/* Graphs */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

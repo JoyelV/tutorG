@@ -20,7 +20,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   onView,
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-shadow duration-300">
+    <div className="bg-white rounded-sm shadow-md overflow-hidden border hover:shadow-lg transition-shadow duration-300">
       {/* Course Image */}
       <img
         src={course.thumbnail
@@ -41,8 +41,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <p className="text-lg font-bold text-blue-500">₹{course.courseFee
           }</p>
           <div className="flex items-center gap-1">
-            <span className="text-yellow-500 text-sm">{course.rating} ★</span>
-            <span className="text-gray-500 text-sm">({course.students})</span>
+            <span className="text-yellow-500 text-sm">★ {course.rating}</span>
           </div>
         </div>
       </div>

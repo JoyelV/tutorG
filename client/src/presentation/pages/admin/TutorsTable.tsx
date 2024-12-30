@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
 import { CircularProgress, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 type Tutor = {
   _id: string;
@@ -22,7 +23,7 @@ const TutorsTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(5);
   const [totalTutors, setTotalTutors] = useState<number>(0);
-
+  const navigate = useNavigate();
   useEffect(() => {
     api
       .get('/admin/instructors')
@@ -93,6 +94,10 @@ const TutorsTable: React.FC = () => {
   );
   if (error) return <div>{error}</div>;
 
+  const handleAddTutor = () => {
+    navigate('/admin/add-tutor');
+  };
+
   return (
     <div className="flex flex-col p-6">
       <div className="mb-4 flex justify-between items-center">
@@ -104,8 +109,15 @@ const TutorsTable: React.FC = () => {
           value={searchTerm}
           onChange={handleSearch}
         />
+         <button
+        onClick={handleAddTutor}
+        className="bg-blue-500 hover:bg-blue-700 text-white rounded"
+        style={{ padding: '0.5rem 1rem' }}
+      >
+        Add Tutor
+      </button>
       </div>
-
+     
       <TableContainer className="mb-4">
         <Table>
           <TableHead>

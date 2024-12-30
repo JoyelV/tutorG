@@ -11,12 +11,6 @@ interface Course {
   thumbnail: string;
   rating: number;
   level: string;
-  createdAt: string;
-}
-
-interface Category {
-  name: string;
-  colorClass: string;
 }
 
 interface ImageCardProps {
@@ -31,65 +25,32 @@ const ImageCard: React.FC<ImageCardProps> = ({
   sortOption,
 }) => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
   const coursesPerPage = 5;
 
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get('/user/courses', {
+        params: {
+          page: currentPage,
+          limit: coursesPerPage,
+          searchTerm,
+          filter: selectedFilter !== 'All Courses' ? selectedFilter : undefined,
+          sortOption,
+        },
+      });
+      setCourses(response.data.courses);
+      setTotalPages(Math.ceil(response.data.total / coursesPerPage));
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };  
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [coursesResponse, categoriesResponse] = await Promise.all([
-          api.get('/user/courses'),
-          api.get('/admin/categories'),
-        ]);
-
-        setCourses(coursesResponse.data);
-        setCategories(categoriesResponse.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const getCategoryColor = (category: string): string => {
-    const matchedCategory = categories.find((cat) => cat.name === category);
-    return matchedCategory ? matchedCategory.colorClass : 'bg-gray-100 text-gray-600';
-  };
-
-  // Filter, Search, and Sort Logic
-  const filteredCourses = courses
-    .filter((course) =>
-      selectedFilter === 'All Courses'
-        ? true
-        : course.category.toLowerCase() === selectedFilter.toLowerCase()
-    )
-    .filter((course) =>
-      course.title.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      switch (sortOption) {
-        case 'Price: Low to High':
-          return a.courseFee - b.courseFee;
-        case 'Price: High to Low':
-          return b.courseFee - a.courseFee;
-        case 'Latest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'Popular':
-          return b.rating - a.rating;
-        default:
-          return 0;
-      }
-    });
-
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
-  const displayedCourses = filteredCourses.slice(
-    (currentPage - 1) * coursesPerPage,
-    currentPage * coursesPerPage
-  );
+    fetchCourses();
+  }, [currentPage, searchTerm, selectedFilter, sortOption]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
@@ -102,7 +63,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
   return (
     <div className="w-full">
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-white">
-        {displayedCourses.map((course) => (
+        {courses.map((course) => (
           <div
             key={course._id}
             className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
@@ -115,7 +76,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div
-                  className={`${getCategoryColor(course.category)} px-2 py-1 rounded-full text-xs font-semibold uppercase`}
+                  className={`${course.category} px-2 py-1 rounded-full text-xs font-semibold uppercase`}
                 >
                   {course.category}
                 </div>
@@ -133,7 +94,6 @@ const ImageCard: React.FC<ImageCardProps> = ({
         ))}
       </div>
 
-      {/* Pagination */}
       <div className="flex justify-center mt-6 w-full">
         <Pagination
           count={totalPages}

@@ -24,7 +24,8 @@ const OrdersTable: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 10;
+  const [totalPages, setTotalPages] = useState(1);
+  const ordersPerPage = 5;
 
   const [totalAmount, setTotalAmount] = useState(0);
   const navigate = useNavigate();
@@ -33,16 +34,18 @@ const OrdersTable: React.FC = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/admin/orders`);
-        const data = await response.data;
+        const response = await api.get(`/admin/orders`, {
+          params: {
+            page: currentPage,
+            limit: ordersPerPage,
+          },
+        });
+
+        const data = response.data;
         setOrders(data.orders);
         setFilteredOrders(data.orders);
-
-        const total = data.orders.reduce(
-          (sum: number, order: Order) => sum + order.amount,
-          0
-        );
-        setTotalAmount(total);
+        setTotalPages(data.totalPages);
+        setTotalAmount(data.orders.reduce((sum: number, order: Order) => sum + order.amount, 0));
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -51,7 +54,7 @@ const OrdersTable: React.FC = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [currentPage]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value.toLowerCase();
@@ -66,7 +69,6 @@ const OrdersTable: React.FC = () => {
     );
 
     setFilteredOrders(filtered);
-    setCurrentPage(1); 
     const total = filtered.reduce(
       (sum: number, order: Order) => sum + order.amount,
       0
@@ -78,23 +80,16 @@ const OrdersTable: React.FC = () => {
     navigate(`/admin/orderDetail/${orderId}`);
   };
 
-  // Pagination Logic
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
-
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <Sidebar />
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col ml-64">
         <TopNav />
-        <div className="pt-16 p-6 overflow-y-auto h-full">
+        <div className="pt-6 p-3 overflow-y-auto h-full">
           {loading ? (
             <Box
               display="flex"
@@ -111,7 +106,6 @@ const OrdersTable: React.FC = () => {
             </Box>
           ) : (
             <>
-              {/* Search and Table */}
               <div className="pt-16 p-6 overflow-y-auto h-full">
                 <div className="mb-4 flex justify-between items-center">
                   <h1 className="text-2xl font-bold">ORDERS MANAGEMENT</h1>
@@ -126,7 +120,6 @@ const OrdersTable: React.FC = () => {
                 <table className="w-full border-collapse border border-gray-200 text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      {/* Table Headers */}
                       <th className="px-6 py-3 border border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Student Name
                       </th>
@@ -157,7 +150,7 @@ const OrdersTable: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentOrders.map(order => (
+                    {filteredOrders.map(order => (
                       <tr key={order._id}>
                         <td className="px-6 py-4">{order.studentId.username}</td>
                         <td className="px-6 py-4">{order.courseId.title}</td>
@@ -179,12 +172,12 @@ const OrdersTable: React.FC = () => {
                           {new Date(order.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4">
-                        <button
+                          <button
                             onClick={() => handleView(order._id)}
                             className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded"
-                        >
-                          View
-                        </button>
+                          >
+                            View
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -193,14 +186,14 @@ const OrdersTable: React.FC = () => {
                 <div className="mt-4 text-right font-bold text-gray-700">
                   Total Order Amount: ₹{totalAmount}
                 </div>
-                {/* Pagination */}
-                <Pagination
-                  count={Math.ceil(filteredOrders.length / ordersPerPage)}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  className="mt-4"
-                />
+                <Box display="flex" justifyContent="center" mt={4}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                  />
+                </Box>
               </div>
             </>
           )}

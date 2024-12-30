@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
+import baseUrl from '../../../Constants/BaseUrl';
 
 interface CourseHeaderProps {
   courseTitle: string;
@@ -10,6 +11,8 @@ interface CourseHeaderProps {
 interface Instructor {
   username: string;
   image: string;
+  averageRating:number;
+  numberOfRatings:number;
 }
 
 const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle, instructorId }) => {
@@ -40,11 +43,11 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle
       <div className="flex items-center">
         {/* Instructors */}
         <div className="flex items-center space-x-2">
-          {/* <img
-          src={`${url}/${instructor.image}`}
+          <img
+          src={`${baseUrl}/${instructor.image}`}
           alt={instructor.username}
             className="w-8 h-8 rounded-full border border-gray-200"
-          /> */}
+          />
           <p className="text-sm text-gray-700">
             Created by: <span className="font-medium">{instructor.username}</span> &bull;
           </p>
@@ -52,8 +55,13 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle
         
         {/* Rating (this can also be dynamic based on props or API) */}
         <div className="flex items-center ml-4">
-          <span className="text-orange-500 text-sm">★★★★★</span>
-          <p className="text-gray-700 text-sm ml-2">4.8 (451,444 Ratings)</p>
+          <span className="text-orange-500 text-sm">
+            {'★'.repeat(Math.floor(instructor.averageRating))}
+            {'☆'.repeat(5 - Math.floor(instructor.averageRating))}
+          </span>
+          <p className="text-gray-700 text-sm ml-2">
+            {instructor.averageRating.toFixed(1)} ({instructor.numberOfRatings} Ratings)
+          </p>
         </div>
       </div>
     </div>

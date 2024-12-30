@@ -45,7 +45,7 @@ function EditCourse() {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get("/admin/categories");
+      const response = await api.get("/instructor/categories");
       setCategories(response.data);
     } catch (error) {
       console.error("Failed to fetch categories:", error);

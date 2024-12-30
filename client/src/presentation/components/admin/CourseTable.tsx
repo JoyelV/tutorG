@@ -26,6 +26,7 @@ const CourseTable: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const coursesPerPage = 5;
   const navigate = useNavigate();
 
@@ -33,10 +34,16 @@ const CourseTable: React.FC = () => {
     const fetchCourses = async () => {
       setLoading(true);
       try {
-        const response = await api.get("/admin/courseData");
+        const response = await api.get("/admin/courseData", {
+          params: {
+            page: currentPage,
+            limit: coursesPerPage,
+          },
+        });
         const data = response.data;
-        setCourses(data);
-        setFilteredCourses(data);
+        setCourses(data.courses);
+        setFilteredCourses(data.courses); 
+        setTotalPages(data.totalPages); 
       } catch (error) {
         toast.error("Failed to fetch courses");
       } finally {
@@ -45,7 +52,7 @@ const CourseTable: React.FC = () => {
     };
 
     fetchCourses();
-  }, []);
+  }, [currentPage]); 
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.toLowerCase();
@@ -58,7 +65,7 @@ const CourseTable: React.FC = () => {
     );
 
     setFilteredCourses(filtered);
-    setCurrentPage(1); // Reset to the first page
+    setCurrentPage(1); 
   };
 
   const toggleBlockStatus = async (courseId: string, isCurrentlyApproved: boolean) => {
@@ -100,12 +107,6 @@ const CourseTable: React.FC = () => {
       toast.error("Failed to update block status");
     }
   };
-
-  // Pagination Logic
-  const indexOfLastCourse = currentPage * coursesPerPage;
-  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
-  const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
-  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
@@ -171,7 +172,7 @@ const CourseTable: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentCourses.map((course) => (
+                  {filteredCourses.map((course) => (
                     <tr key={course._id} className="border-t">
                       <td className="px-6 py-3">
                         <img
@@ -220,7 +221,6 @@ const CourseTable: React.FC = () => {
         </div>
       </div>
     </div>
-
   );
 };
 

@@ -19,16 +19,31 @@ const PurchaseHistoryPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [sortOrder, setSortOrder] = useState<string>('createdAt'); // default sort by purchase date
+  const [sortDirection, setSortDirection] = useState<string>('desc'); // default descending order
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchPurchaseHistory = async () => {
       try {
-        const response = await api.get(`/user/purchase-history`);
-        if(response.status===204){
-          setError('No purchase history,Please purchase a course');
+        const response = await api.get(`/user/purchase-history`, {
+          params: {
+            userId,
+            page: currentPage,
+            limit: 7, // You can change the page size here
+            sort: sortOrder,
+            direction: sortDirection
+          }
+        });
+
+        if (response.status === 204) {
+          setError('No purchase history, Please purchase a course');
+        } else {
+          setOrders(response.data.orders);
+          setTotalPages(response.data.totalPages); // assuming your API returns totalPages
         }
-        setOrders(response.data);
       } catch (err) {
         setError('Failed to fetch purchase history');
       } finally {
@@ -37,7 +52,17 @@ const PurchaseHistoryPage = () => {
     };
 
     fetchPurchaseHistory();
-  }, [userId]);
+  }, [userId, currentPage, sortOrder, sortDirection]);
+
+  const handleSortChange = (sortBy: string) => {
+    // Toggle sort direction when the same column is clicked
+    if (sortBy === sortOrder) {
+      setSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortOrder(sortBy);
+      setSortDirection('asc'); // default to ascending when a new column is sorted
+    }
+  };
 
   if (isLoading) {
     return (
@@ -58,30 +83,68 @@ const PurchaseHistoryPage = () => {
   return (
     <div className="min-h-screen max-w-4xl mx-auto p-6 flex flex-col">
       {orders.length > 0 ? (
-        <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Course Title</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Tutor</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Payment Method</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Purchase Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order._id} className="border-t">
-                <td className="px-6 py-4 text-sm font-medium text-gray-700">{order.courseId.title}</td>
-                <td className="px-6 py-4 text-sm text-gray-700">{order.tutorId.username}</td>
-                <td className="px-6 py-4 text-sm text-gray-700">₹{order.amount.toFixed(2)}</td>
-                <td className="px-6 py-4 text-sm text-gray-700">{order.paymentMethod}</td>
-                <td className="px-6 py-4 text-sm text-gray-700">
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </td>
+        <>
+          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                  onClick={() => handleSortChange('courseId.title')}
+                >
+                  Course Title
+                </th>
+                <th
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                  onClick={() => handleSortChange('tutorId.username')}
+                >
+                  Tutor
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Payment Method</th>
+                <th
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                  onClick={() => handleSortChange('createdAt')}
+                >
+                  Purchase Date
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order._id} className="border-t">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-700">{order.courseId.title}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{order.tutorId.username}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">₹{order.amount.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{order.paymentMethod}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-white bg-blue-500 rounded-lg"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 text-sm font-medium text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-white bg-blue-500 rounded-lg"
+            >
+              Next
+            </button>
+          </div>
+        </>
       ) : (
         <div className="flex-grow flex items-center justify-center text-gray-500">
           No purchase history available.

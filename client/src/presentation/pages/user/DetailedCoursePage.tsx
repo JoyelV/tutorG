@@ -5,13 +5,13 @@ import CourseSidebar from '../../components/common/CourseSideBar';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseImage from '../../components/courses/CourseImage';
 import CourseRequirements from '../../components/courses/CourseRequirements';
-import InstructorInfo from '../../components/courses/InstructorInfo';
 import RelatedCourses from '../../components/courses/RelatedCourses';
 import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
 import { ToastContainer } from 'react-toastify';
 import CourseHeader from '../../components/users/CourseHeader';
 import CurriculumDetailed from '../../components/courses/DetailedCurriculumPage';
+import InstructorInfo from '../../components/courses/InstructorRate';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Feedback';
 

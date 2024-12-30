@@ -54,8 +54,8 @@ const InstructorDashboard = () => {
         {/* Content below the header */}
         <div className="mt-10"> {/* Ensure space below the fixed header */}
           <div className="grid grid-cols-4 gap-6 mt-6">
-            <StatsCard label="Enrolled Courses" value={stats.enrolledCourses} icon={<div>📘</div>} />
-            <StatsCard label="My Courses" value={stats.myCourses} icon={<div>🎓</div>} />
+            <StatsCard label="Approved Courses" value={stats.enrolledCourses} icon={<div>📘</div>} />
+            <StatsCard label="My Total Courses" value={stats.myCourses} icon={<div>🎓</div>} />
             <StatsCard label="My Students" value={stats.myStudents} icon={<div>📘</div>} />
             <StatsCard label="My Earnings" value={stats.myEarnings} icon={<div>🎓</div>} />
           </div>
