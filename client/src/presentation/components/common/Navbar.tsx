@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
-    const isLoggedIn = Boolean(localStorage.getItem('token'));
+    const isLoggedIn = localStorage.getItem('role') === 'user';
 
     const handleLogout = async () => {
         localStorage.clear();

@@ -2,10 +2,12 @@ import { Button, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import HeroSection from "../../components/common/HeroSection";
 import { assets } from "../../../assets/assets_user/assets";
+import Navbar from "../../components/common/Navbar";
 
 const ContactPage = () => {
   return (
     <div className="font-sans bg-white">
+      <Navbar/>
       {/* Hero Section */}
       <HeroSection />
 

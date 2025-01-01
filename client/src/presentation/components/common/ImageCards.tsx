@@ -65,7 +65,7 @@ const ImageCard: React.FC = () => {
   };
 
   return (
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-white">
+    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-white">
       {courses.map((course, index) => (
         <div
           key={index}

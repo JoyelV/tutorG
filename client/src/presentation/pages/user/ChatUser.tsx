@@ -56,6 +56,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<{ [userId: string]: number }>({});
 
   useEffect(() => {
     socket.current = io('http://localhost:5000', {
@@ -66,6 +67,12 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     socket.current.on('receive_message', (message: Message) => {
       if (message.sender !== userId) {
         setMessages((prevMessages) => [...prevMessages, message]);
+        if (selectedUser?.id !== message.sender) {
+          setUnreadCounts((prevCounts) => ({
+            ...prevCounts,
+            [message.sender]: (prevCounts[message.sender] || 0) + 1,
+          }));
+        }
       }
       if (message.messageId) {
         socket.current?.emit('message_read', message.messageId);
@@ -84,7 +91,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           msg.messageId === updatedMessage.id ? { ...msg, status: updatedMessage.status } : msg
         )
       );
-      console.log(updatedMessage, "hii updatedMessage in read update")
     });
 
     return () => {
@@ -225,6 +231,10 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
   const handleUserSelect = async (user: User) => {
     setSelectedUser(user);
+    setUnreadCounts((prevCounts) => ({
+      ...prevCounts,
+      [user.id]: 0,
+    }));
     setLoading(true);
     try {
       const userId = localStorage.getItem('userId');
@@ -236,7 +246,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         });
       }
 
-      const response = await api.get('/messages', {
+      const response = await api.get('/user/messages', {
         params: {
           senderId: userId,
           receiverId: user.id,
@@ -245,6 +255,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       const fetchedMessages = response.data.map((message: any) => ({
         sender: message.senderModel === 'User' ? 'self' : 'other',
         content: message.content || '',
+        status: message.status,
         time: new Date(message.createdAt).toLocaleTimeString(),
         mediaUrl: message.mediaUrl,
       }));
@@ -348,16 +359,21 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         />
         <div className="overflow-y-auto space-y-2">
           {filteredUsers.map((user) => (
-            <ListItem
-              button
-              key={user.id}
-              onClick={() => handleUserSelect(user)}
-              className="bg-green-600 rounded-md transition-colors"
-            >
+            <ListItem key={user.id} button onClick={() => handleUserSelect(user)} selected={selectedUser?.id === user.id}>
               <ListItemAvatar>
-                <Avatar src={user.image} />
+                <Badge
+                  badgeContent={unreadCounts[user.id] || 0}
+                  color="error"
+                >
+                  <Avatar src={user.image} alt={user.name} />
+                </Badge>
               </ListItemAvatar>
               <ListItemText primary={user.name} />
+              <Tooltip title="Video Call">
+                <IconButton onClick={() => handleVideoCallClick(user)}>
+                  <VideoCall />
+                </IconButton>
+              </Tooltip>
             </ListItem>
           ))}
         </div>
@@ -365,16 +381,19 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
       {/* Main chat area */}
       <main className="flex-1 p-4 flex flex-col">
-        <div className="flex justify-between items-center border-b pb-2 mb-2">
-          <Typography variant="h6" className="flex items-center">
-            <Avatar src={selectedUser?.image} className="mr-2" />
-            {selectedUser?.name}
-          </Typography>
-          <Tooltip title="Video Call">
-            <IconButton onClick={() => handleVideoCallClick(selectedUser!)} aria-label="video call">
-              <VideoCall />
-            </IconButton>
-          </Tooltip>
+        <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 flex items-center border-b">
+          {selectedUser ? (
+            <>
+              <Avatar src={selectedUser.image} />
+              <div className="ml-3">
+                <Typography variant="h6" className="font-bold">
+                  {selectedUser.name}
+                </Typography>
+              </div>
+            </>
+          ) : (
+            <Typography>Select a user to start chatting</Typography>
+          )}
         </div>
 
         {/* Message list with scroll */}
@@ -401,9 +420,13 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                 )}
                 <div className="flex justify-between text-sm mt-1">
                   <span>{message.time}</span>
-                  {message.status == 'read' && <DoneAll style={{ color: 'blue' }} />}
-                  {message.status == 'sent' && <Check />}
-                  {message.status != 'read' && message.status != 'sent' && <DoneAll />}
+                  {message.status === 'read' ? (
+                    <DoneAll style={{ color: 'blue' }} />
+                  ) : message.status === 'sent' ? (
+                    <Check />
+                  ) : (
+                    <DoneAll />
+                  )}
                 </div>
 
               </div>

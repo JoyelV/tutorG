@@ -10,11 +10,11 @@ interface Instructor {
 }
 
 const instructors: Instructor[] = [
-    { name: "Devon Lane", title: "Senior Developer", category: "MACHINE LEARNING", image: assets.Instructor1, rating: "4.6", students: "854" },
-    { name: "Jane Smith", title: "Web Developer", category: "WEB DEVELOPMENT", image: assets.Instructor2, rating: "4.8", students: "8K" },
-    { name: "Emily Davis", title: "Marketing Expert", category: "MARKETING", image: assets.Instructor3, rating: "4.7", students: "7K" },
-    { name: "Albert Flores", title: "Adobe Instructor", category: "DESIGN", image: assets.Instructor4, rating: "5.0", students: "12K" },
-    { name: "Kathryn Murphy", title: "Lead Developer", category: "DATA SCIENCE", image: assets.Instructor5, rating: "5.0", students: "12K" },
+    { name: "Devon Lane", title: "Senior Developer", category: "MACHINE LEARNING", image: assets.Instructor1, rating: "4.6", students: "4" },
+    { name: "Jane Smith", title: "Web Developer", category: "WEB DEVELOPMENT", image: assets.Instructor2, rating: "4.8", students: "12" },
+    { name: "Emily Davis", title: "Marketing Expert", category: "MARKETING", image: assets.Instructor3, rating: "4.7", students: "11" },
+    { name: "Albert Flores", title: "Adobe Instructor", category: "DESIGN", image: assets.Instructor4, rating: "4.0", students: "22" },
+    { name: "Kathryn Murphy", title: "Lead Developer", category: "DATA SCIENCE", image: assets.Instructor5, rating: "4.3", students: "8" },
 ];
 
 const TopInstructors: React.FC = () => (

@@ -24,7 +24,7 @@ const CourseVideo = ({ videoUrl, id,lesson }: CourseVideoProps) => {
           return;
         }
         const response = await api.get(`/instructor/course-view/${id}`);
-        console.log(response.data, 'Video data in instructor');
+        
         if (response.status === 200) {
           const data = response.data;
           setExistingVideoUrl(data.trailer || '');

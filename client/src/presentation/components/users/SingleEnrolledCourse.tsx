@@ -56,7 +56,7 @@ const CoursePage = () => {
     const fetchQuizData = async () => {
       try {
         const { data } = await api.get(`/user/quizzes/${courseId}`);
-        console.log(data, "quizdata");
+ 
         setQuizData(Array.isArray(data) ? data : []);
       } catch (err: any) {
         setQuizError(err.message || 'Failed to fetch quiz data.');

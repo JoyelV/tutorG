@@ -130,7 +130,7 @@ const Login: React.FC = () => {
                             )}
                             <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
                                 <TextField
-                                    label="Email"
+                                    label="Email(use small letters)"
                                     fullWidth
                                     required
                                     value={email}

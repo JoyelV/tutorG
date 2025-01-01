@@ -79,11 +79,13 @@ const ViewCoursesListing: React.FC = () => {
         </div>
       </div>
 
+      <div className="min-h-[50vh] flex flex-col items-center justify-center">
       <ImageCard
         searchTerm={searchTerm}
         selectedFilter={selectedFilter}
         sortOption={sortOption}
       />
+     </div>
     </div>
   );
 };

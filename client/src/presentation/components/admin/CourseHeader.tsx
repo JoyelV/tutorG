@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
+import BaseUrl from '../../../Constants/BaseUrl';
 
 interface CourseHeaderProps {
   courseTitle: string;
@@ -14,7 +15,6 @@ interface Instructor {
 
 const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle, instructorId }) => {
   const [instructor, setInstructor] = useState<Instructor | null>(null);
-  const url = 'http://localhost:5000';
 
   useEffect(() => {
     const fetchInstructorData = async () => {
@@ -42,7 +42,7 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle
         {/* Instructors */}
         <div className="flex items-center space-x-2">
           <img
-          src={`${url}/${instructor.image}`}
+          src={`${BaseUrl}/${instructor.image}`}
           alt={instructor.username}
             className="w-8 h-8 rounded-full border border-gray-200"
           />
@@ -53,8 +53,8 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ courseTitle, courseSubtitle
         
         {/* Rating (this can also be dynamic based on props or API) */}
         <div className="flex items-center ml-4">
-          <span className="text-orange-500 text-sm">★★★★★</span>
-          <p className="text-gray-700 text-sm ml-2">4.8 (451,444 Ratings)</p>
+          <span className="text-orange-500 text-sm">★★★★</span>
+          <p className="text-gray-700 text-sm ml-2">4.0 (9 Ratings)</p>
         </div>
       </div>
     </div>

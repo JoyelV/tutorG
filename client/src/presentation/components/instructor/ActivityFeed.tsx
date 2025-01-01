@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaComment, FaStar, FaBook, FaCheckCircle } from 'react-icons/fa';
 
 const activities = [

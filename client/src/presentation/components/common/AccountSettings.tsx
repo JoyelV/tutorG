@@ -5,6 +5,7 @@ import api from '../../../infrastructure/api/api'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
+import BaseUrl from '../../../Constants/BaseUrl';
 
 interface UserProfileData {
   username: string;
@@ -35,7 +36,6 @@ const AccountSettings: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
-  // Function to toggle password visibility
   const togglePasswordVisibility = (type: 'current' | 'new' | 'confirm') => {
     switch (type) {
       case 'current':
@@ -266,7 +266,7 @@ const AccountSettings: React.FC = () => {
             />
             <label htmlFor="profile-image-upload">
               <Avatar
-                src={`http://localhost:5000/${image}` || assets.Instructor3}
+                src={`${BaseUrl}/${image}` || assets.Instructor3}
                 sx={{ width: 250, height: 250, cursor: 'pointer' }}
               />
             </label>

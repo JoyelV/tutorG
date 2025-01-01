@@ -11,11 +11,11 @@ interface Course {
 }
 
 const courses: Course[] = [
-  { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹499", image: assets.DESIGN, rating: "5.0", students: "265.7K" },
-  { name: "How to Learn HTML and CSS With Zero Experience", category: "WEB DEVELOPMENT", price: "₹700", image: assets.LIFESTYLE, rating: "4.5", students: "180K" },
-  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹800", image: assets.BUSINESS, rating: "4.8", students: "200K" },
-  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "4.8", students: "200K" },
-  { name: "Reiki Level I, II and Master/Teacher Program", category: "IT & SOFTWARE", price: "₹800", image: assets.Health, rating: "4.8", students: "200K" },
+  { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹499", image: assets.DESIGN, rating: "4.0", students: "26" },
+  { name: "How to Learn HTML and CSS With Zero Experience", category: "WEB DEVELOPMENT", price: "₹700", image: assets.LIFESTYLE, rating: "4.5", students: "18" },
+  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹800", image: assets.BUSINESS, rating: "4.8", students: "10" },
+  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "3.8", students: "20" },
+  { name: "Reiki Level I, II and Master/Teacher Program", category: "IT & SOFTWARE", price: "₹800", image: assets.Health, rating: "3.8", students: "15" },
 ];
 
 const getCategoryColor = (category: string): string => {

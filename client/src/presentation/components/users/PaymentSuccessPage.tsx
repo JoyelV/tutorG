@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../../../infrastructure/api/api";
+import BaseUrl from "../../../Constants/BaseUrl";
 
 interface Order {
   _id: string;
@@ -78,7 +79,7 @@ const CheckoutSuccess = () => {
                   <p className="text-lg font-semibold">Student Details:</p>
                   <div className="flex items-center mt-2">
                     <img
-                      src={`http://localhost:5000/${order.studentId.image}`}
+                      src={`${BaseUrl}/${order.studentId.image}`}
                       alt={order.studentId.username}
                       className="w-16 h-16 rounded-full shadow-md mr-4"
                     />
@@ -128,7 +129,7 @@ const CheckoutSuccess = () => {
                     <tr>
                       <td className="py-4">
                         <img
-                          src={`http://localhost:5000/${order.tutorId.image}`}
+                          src={`${BaseUrl}/${order.tutorId.image}`}
                           alt={order.tutorId.username}
                           className="w-16 h-16 object-cover rounded-md"
                         />

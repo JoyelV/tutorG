@@ -58,6 +58,8 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<{ [userId: string]: number }>({});
+
 
   useEffect(() => {
     socket.current = io('http://localhost:5000', {
@@ -68,6 +70,12 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     socket.current.on('receive_message', (message: Message) => {
       if (message.sender !== userId) {
         setMessages((prevMessages) => [...prevMessages, message]);
+        if (selectedUser?.id !== message.sender) {
+          setUnreadCounts((prevCounts) => ({
+            ...prevCounts,
+            [message.sender]: (prevCounts[message.sender] || 0) + 1,
+          }));
+        }
       }
       if (message.messageId) {
         socket.current?.emit('message_read', message.messageId);
@@ -79,8 +87,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     });
 
     socket.current.on('message_read_update', (updatedMessage: { id: string; status: 'read' }) => {
-      console.log("Updated message status:", updatedMessage);
-
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.messageId === updatedMessage.id ? { ...msg, status: updatedMessage.status } : msg
@@ -234,6 +240,10 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
   const handleUserSelect = async (user: Instructor) => {
     setSelectedUser(user);
+    setUnreadCounts((prevCounts) => ({
+      ...prevCounts,
+      [user.id]: 0,
+    }));
     setLoading(true);
     try {
       const userId = localStorage.getItem('userId');
@@ -243,7 +253,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
           receiver: user.id,
         });
       }
-      const response = await api.get('/messages', {
+      const response = await api.get('/instructor/messages', {
         params: {
           senderId: userId,
           receiverId: user.id,
@@ -252,6 +262,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       const fetchedMessages = response.data.map((message: any) => ({
         sender: message.senderModel === 'Instructor' ? 'self' : 'other',
         content: message.content || '',
+        status: message.status,
         time: new Date(message.createdAt).toLocaleTimeString(),
         mediaUrl: message.mediaUrl,
       }));
@@ -345,7 +356,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
         <div className="flex min-h-screen bg-gradient-to-r from-indigo-100 to-purple-200">
           {/* Sidebar */}
-          <aside className="w-64 bg-gradient-to-b from-purple-600 to-indigo-800 text-white flex flex-col fixed top-0 h-screen z-50">
+          <aside className="w-64 bg-gradient-to-b from-yellow-400 to-blue-300 text-black flex flex-col fixed top-0 h-screen z-50">
             <Typography variant="h6" className="p-4 font-bold text-white">
               {userType === 'User' ? 'User' : 'Instructor'}
             </Typography>
@@ -364,12 +375,15 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                 }}
               />
             </div>
-            <List>
+            <div className="overflow-y-auto space-y-2">
               {filteredUsers.map((user) => (
                 <ListItem key={user.id} button onClick={() => handleUserSelect(user)} selected={selectedUser?.id === user.id}>
                   <ListItemAvatar>
-                    <Badge color="success" variant="dot">
-                      <Avatar alt={user.name} src={user.image} />
+                    <Badge
+                      badgeContent={unreadCounts[user.id] || 0}
+                      color="error"
+                    >
+                      <Avatar src={user.image} alt={user.name} />
                     </Badge>
                   </ListItemAvatar>
                   <ListItemText primary={user.name} />
@@ -380,7 +394,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                   </Tooltip>
                 </ListItem>
               ))}
-            </List>
+            </div>
           </aside>
           {/* Chat Area */}
           <div className="flex-1 flex flex-col pl-64">
@@ -421,9 +435,13 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                       )}
                       <div className="flex justify-between text-sm mt-1">
                         <span>{message.time}</span>
-                        {message.status == 'read' && <DoneAll style={{ color: 'blue' }} />}
-                        {message.status == 'sent' && <Check />}
-                        {message.status != 'read' && message.status != 'sent' && <DoneAll />}
+                        {message.status === 'read' ? (
+                          <DoneAll style={{ color: 'blue' }} />
+                        ) : message.status === 'sent' ? (
+                          <Check />
+                        ) : (
+                          <DoneAll />
+                        )}
                       </div>
 
                     </div>

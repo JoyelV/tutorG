@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../../../infrastructure/api/api'
+import api from '../../../infrastructure/api/api';
 
 interface LocationState {
   email: string;
@@ -9,8 +9,21 @@ interface LocationState {
 const VerifyOtp: React.FC = () => {
   const [otp, setOtp] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [resendTimer, setResendTimer] = useState<number>(30);
+  const [canResend, setCanResend] = useState<boolean>(false);
+
   const { state } = useLocation() as { state: LocationState };
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
+    } else {
+      setCanResend(true);
+    }
+    return () => clearTimeout(timer); 
+  }, [resendTimer]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +33,17 @@ const VerifyOtp: React.FC = () => {
     } catch (error) {
       setError('Invalid OTP');
       console.error('Error:', error);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      await api.post('/user/send-otp', { email: state.email });
+      setResendTimer(30); 
+      setCanResend(false);
+    } catch (err) {
+      setError('Failed to resend OTP. Please try again.');
+      console.error('Resend OTP failed:', err);
     }
   };
 
@@ -50,6 +74,19 @@ const VerifyOtp: React.FC = () => {
           </div>
           {error && <p className="text-center text-red-500 font-semibold">{error}</p>}
         </form>
+        <div className="mt-4 text-center">
+          <button
+            onClick={handleResendOtp}
+            disabled={!canResend}
+            className={`w-full px-4 py-3 font-semibold rounded-lg focus:outline-none focus:ring-2 ${
+              canResend
+                ? 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {canResend ? 'Resend OTP' : `Resend OTP in ${resendTimer}s`}
+          </button>
+        </div>
       </div>
     </div>
   );

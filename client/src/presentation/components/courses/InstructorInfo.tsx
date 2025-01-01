@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
+import BaseUrl from '../../../Constants/BaseUrl';
 
 interface InstructorInfoProps {
   instructorId: string;
@@ -18,7 +19,6 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
   const [instructorData, setInstructorData] = useState<Instructor | null>(null);
   const [userRating, setUserRating] = useState<number>(0);
   const [ratingMessage, setRatingMessage] = useState<string>('');  
-  const url = 'http://localhost:5000';
 
   useEffect(() => {
     const fetchInstructorData = async () => {
@@ -63,7 +63,7 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
       <h2 className="text-2xl font-semibold">Course Instructor</h2>
       <div className="flex items-center mt-4">
         <img
-          src={`${url}/${instructorData.image}`}
+          src={`${BaseUrl}/${instructorData.image}`}
           alt={instructorData.username}
           className="w-16 h-16 rounded-full mr-4"
         />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
 
@@ -9,8 +9,19 @@ interface LocationState {
 const VerifyOtp: React.FC = () => {
   const [otp, setOtp] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [resendTimer, setResendTimer] = useState<number>(30); 
+  const [canResend, setCanResend] = useState<boolean>(false); 
   const { state } = useLocation() as { state: LocationState };
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true); 
+    }
+  }, [resendTimer]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,11 +34,23 @@ const VerifyOtp: React.FC = () => {
     }
   };
 
+  const handleResendOtp = async () => {
+    try {
+      setCanResend(false); 
+      setResendTimer(30); 
+      await api.post('/instructor/send-otp', { email: state.email });
+      setError(''); 
+    } catch (error) {
+      setError('Failed to resend OTP. Please try again later.');
+      console.error('Error:', error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">Verify OTP</h2>
-        
+
         <form onSubmit={handleVerify} className="space-y-6">
           <div>
             <input
@@ -51,7 +74,17 @@ const VerifyOtp: React.FC = () => {
         </form>
 
         <p className="text-sm text-center text-gray-600 mt-4">
-          <span>Didn't receive the OTP?</span> <a href='/instructor/resend-otp' className="text-blue-500 hover:underline">Resend OTP</a>
+          Didn't receive the OTP?{' '}
+          {canResend ? (
+            <button
+              onClick={handleResendOtp}
+              className="text-blue-500 hover:underline focus:outline-none"
+            >
+              Resend OTP
+            </button>
+          ) : (
+            <span className="text-gray-500">Resend OTP in {resendTimer}s</span>
+          )}
         </p>
       </div>
     </div>

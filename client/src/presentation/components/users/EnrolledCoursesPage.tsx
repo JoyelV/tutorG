@@ -10,10 +10,7 @@ function EnrolledCourseData() {
   const [currentPage, setCurrentPage] = useState(1);
   const dataPerPage = 4;
 
-  // Total pages calculation
   const totalPages = Math.ceil(enrolledCourses.length / dataPerPage);
-
-  // Paginated data calculation
   const paginatedData = enrolledCourses.slice(
     (currentPage - 1) * dataPerPage,
     currentPage * dataPerPage
@@ -33,7 +30,6 @@ function EnrolledCourseData() {
     handlePageChange(currentPage + 1);
   };
 
-  // Fetch orders and courses from backend
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {

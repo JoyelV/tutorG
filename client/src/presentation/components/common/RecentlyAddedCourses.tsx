@@ -11,11 +11,11 @@ interface Course {
 }
 
 const courses: Course[] = [
-  { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹499", image: assets.DESIGN, rating: "5.0", students: "265.7K" },
-  { name: "How to Learn HTML and CSS With Zero Experience", category: "WEB DEVELOPMENT", price: "₹700", image: assets.LIFESTYLE, rating: "4.5", students: "180K" },
-  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹800", image: assets.BUSINESS, rating: "4.8", students: "200K" },
-  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "4.8", students: "200K" },
-  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "4.8", students: "200K" },
+  { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹1299", image: assets.DESIGN, rating: "4.0", students: "6" },
+  { name: "How to Learn HTML and CSS With Zero Experience", category: "WEB DEVELOPMENT", price: "₹799", image: assets.LIFESTYLE, rating: "3.5", students: "8" },
+  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹799", image: assets.BUSINESS, rating: "4.3", students: "18" },
+  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹499", image: assets.Marketing, rating: "3.8", students: "10" },
+  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹499", image: assets.Marketing, rating: "4.2", students: "15" },
 ];
 
 const getCategoryColor = (category: string): string => {
@@ -38,7 +38,7 @@ const getCategoryColor = (category: string): string => {
 };
 
 const RecentlyAddedCourses: React.FC = () => (
-  <section className="p-8 bg-white flex justify-center">
+  <section className="px-8 py-2 bg-white flex justify-center">
     <div className="text-center">
       <h3 className="text-2xl font-bold mb-4">Recently Added Courses</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 justify-center">

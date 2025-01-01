@@ -28,7 +28,6 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
       );
 
       if (response.status === 200) {
-        console.log('Rating and feedback saved successfully');
         setIsSubmitted(true); 
         setUserRating(null); 
         setFeedback(''); 
@@ -86,7 +85,7 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
           onChange={handleFeedbackChange}
           className="w-full p-2 border border-gray-300 rounded-md"
           placeholder="Enter your feedback"
-          disabled={isSubmitted} // Disable feedback input after submission
+          disabled={isSubmitted} 
         />
       </div>
 
@@ -98,7 +97,7 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
             submitRating(userRating, feedback);
           }
         }}
-        disabled={isSubmitting || !userRating || !feedback || isSubmitted} // Disable button after submission
+        disabled={isSubmitting || !userRating || !feedback || isSubmitted} 
       >
         {isSubmitted ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit Rating and Feedback'}
       </button>

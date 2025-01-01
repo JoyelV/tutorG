@@ -109,21 +109,25 @@ const AdminDashboard: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
             {/* Sidebar */}
-            <aside className="w-64 bg-gray-800 text-white flex flex-col">
+            <aside className="hidden md:block w-64 bg-gray-800 text-white">
                 <Sidebar />
             </aside>
-
+    
             {/* Main Content */}
-            <main className="flex-1 p-6 mt-[64px]">
+            <main className="flex-1 p-4 md:p-6">
                 <TopNav />
-
-                <h1 className="text-3xl font-semibold text-gray-800 mb-4">Dashboard</h1>
-                <p className="text-gray-600 mb-6">Good Morning, Mr. Admin. It’s good to see you again.</p>
-
+    
+                <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">
+                    Dashboard
+                </h1>
+                <p className="text-sm md:text-base text-gray-600 mb-6">
+                    Good Morning, Mr. Admin. It’s good to see you again.
+                </p>
+    
                 {/* Overview Cards */}
-                <div className="grid grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <div className="p-4 bg-white shadow rounded-lg flex items-center">
                         <div className="text-blue-500 text-xl mr-3">
                             <FaShoppingCart />
@@ -161,17 +165,21 @@ const AdminDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
+    
                 {/* Graphs */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="bg-white shadow rounded-lg p-6">
-                        <h2 className="text-lg font-semibold text-gray-700">Orders Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div className="bg-white shadow rounded-lg p-4 md:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-gray-700">
+                            Orders Overview
+                        </h2>
                         <div className="mt-4">
                             <Line data={orderData} options={{ responsive: true }} />
                         </div>
                     </div>
-                    <div className="bg-white shadow rounded-lg p-6">
-                        <h2 className="text-lg font-semibold text-gray-700">Courses Overview</h2>
+                    <div className="bg-white shadow rounded-lg p-4 md:p-6">
+                        <h2 className="text-base md:text-lg font-semibold text-gray-700">
+                            Courses Overview
+                        </h2>
                         <div className="mt-4">
                             <Bar data={courseData} options={{ responsive: true }} />
                         </div>
@@ -179,7 +187,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </main>
         </div>
-    );
+    );    
 };
 
 export default AdminDashboard;

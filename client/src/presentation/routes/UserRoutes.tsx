@@ -21,7 +21,7 @@ import ContactPage from '../pages/user/ContactPage';
 import CertificateOfCompletion from '../pages/user/CompletionCertificatePage';
 import Notifications from '../pages/user/NotificationPage';
 
-const isLoggedIn = Boolean(localStorage.getItem('token'));
+const isLoggedIn = localStorage.getItem('role') === 'user';
 
 const UserRoutes = () => {
     return (

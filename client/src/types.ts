@@ -3,7 +3,7 @@ export interface Address {
     line2: string;
   }
   
-  export interface UserData {
+export interface UserData {
     _id: string;
     name: string;
     email: string; 
@@ -13,7 +13,7 @@ export interface Address {
     address: Address;
   }
   
-  export type AdminCategoryData = {
+export type AdminCategoryData = {
     categoryname: string;
     description: string;
-  }
+}

@@ -166,10 +166,6 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           {loadingCart ? "Adding..." : "Add To Cart"}
         </button>
         
-        {/* <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600">
-          Buy Now
-        </button> */}
-        
         <button
           onClick={handleAddToWishlist}
           className="border border-gray-300 py-3 rounded-md font-semibold text-gray-700 hover:bg-gray-100"

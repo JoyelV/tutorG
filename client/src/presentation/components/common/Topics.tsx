@@ -10,14 +10,14 @@ interface Topic {
 }
 
 const topics: Topic[] = [
-    { name: "Business", courses: "32,821 Courses", icon: assets.Business_icon, bgColor: "#e8f5e9" },
-    { name: "Music", courses: "33,417 Courses", icon: assets.Music_icon, bgColor: "#e3f2fd" },
-    { name: "Health & Fitness", courses: "33,417 Courses", icon: assets.Personal_Development_icon, bgColor: "#fce4ec" },
-    { name: "Design", courses: "33,417 Courses", icon: assets.Finance_icon, bgColor: "#fff3e0" },
-    { name: "Lifestyle", courses: "33,417 Courses", icon: assets.Lifestyle_icon, bgColor: "#fce4ec" },
-    { name: "Photography & Video", courses: "33,417 Courses", icon: assets.Photography_icon, bgColor: "#fff3e0" },
-    { name: "Marketing", courses: "33,417 Courses", icon: assets.Marketing_icon, bgColor: "#eaf7ea" },
-    { name: "Label", courses: "33,417 Courses", icon: assets.logo, bgColor: "#f0eaff" },
+    { name: "Business", courses: "8 Courses", icon: assets.Business_icon, bgColor: "#e8f5e9" },
+    { name: "Music", courses: "3 Courses", icon: assets.Music_icon, bgColor: "#e3f2fd" },
+    { name: "Health & Fitness", courses: "4 Courses", icon: assets.Personal_Development_icon, bgColor: "#fce4ec" },
+    { name: "Design", courses: "13 Courses", icon: assets.Finance_icon, bgColor: "#fff3e0" },
+    { name: "Lifestyle", courses: "23 Courses", icon: assets.Lifestyle_icon, bgColor: "#fce4ec" },
+    { name: "Photography & Video", courses: "3 Courses", icon: assets.Photography_icon, bgColor: "#fff3e0" },
+    { name: "Marketing", courses: "4 Courses", icon: assets.Marketing_icon, bgColor: "#eaf7ea" },
+    { name: "Label", courses: "7 Courses", icon: assets.logo, bgColor: "#f0eaff" },
 ];
 
 const Topics: React.FC = () => {
@@ -28,7 +28,7 @@ const Topics: React.FC = () => {
     };
 
     return (
-        <section className="p-8 bg-white">
+        <section className="px-8 py-2 bg-white">
             <h3 className="text-2xl font-bold mb-4">Topics recommended for you</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {topics.map((topic, index) => (

@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import api from '../../../infrastructure/api/api';
+import Navbar from '../../components/common/Navbar';
 
 interface Notification {
     tutorId: string;
@@ -37,6 +38,8 @@ const NotificationPage = () => {
     if (error) return <div className="text-center text-red-500">{error}</div>;
 
     return (
+    <div>
+      <Navbar />
         <section className="py-8 lg:py-24 relative min-h-screen flex flex-col">
             <div className="w-full max-w-7xl px-4 md:px-5 lg:px-6 mx-auto flex-grow">
                 <h2 className="text-2xl font-bold text-center text-sky-500">NOTIFICATIONS</h2>
@@ -77,6 +80,7 @@ const NotificationPage = () => {
             </div>
             <ToastContainer />
         </section>
+        </div>
     );
 };
 
