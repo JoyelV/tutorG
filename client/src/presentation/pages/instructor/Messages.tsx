@@ -69,18 +69,23 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
     socket.current.on('receive_message', (message: Message) => {
       if (message.sender !== userId) {
-        setMessages((prevMessages) => [...prevMessages, message]);
+        // Update unread counts if message is not from the selected user
         if (selectedUser?.id !== message.sender) {
           setUnreadCounts((prevCounts) => ({
             ...prevCounts,
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
+        } else {
+          // Only add message to state if it's from the currently selected user
+          setMessages((prevMessages) => [...prevMessages, message]);
         }
       }
+    
+      // Emit read receipt for any received message
       if (message.messageId) {
         socket.current?.emit('message_read', message.messageId);
       }
-    });
+    });    
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
