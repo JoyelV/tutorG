@@ -73,8 +73,10 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
         } 
-        // Only add message to state if it's from the currently selected user
-        setMessages((prevMessages) => [...prevMessages, message]);
+        if (selectedUser?.id === message.sender) {
+          // Only add message to state if it's from the currently selected user
+          setMessages((prevMessages) => [...prevMessages, message]);
+        }
       }
     
       if (message.messageId) {

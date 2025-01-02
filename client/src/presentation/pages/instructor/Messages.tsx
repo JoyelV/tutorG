@@ -76,9 +76,11 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
         } 
+        
+        if (selectedUser?.id === message.sender) {
           // Only add message to state if it's from the currently selected user
           setMessages((prevMessages) => [...prevMessages, message]);
-        
+        }
       }
     
       // Emit read receipt for any received message
