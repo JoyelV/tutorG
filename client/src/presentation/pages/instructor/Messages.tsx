@@ -75,13 +75,12 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             ...prevCounts,
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
-        } else{
+        } 
         setMessages((prevMessages) =>
             prevMessages.some((msg) => msg.messageId === message.messageId)
               ? prevMessages
               : [...prevMessages, message]
           );
-        }
       }
     
       // Emit read receipt for any received message
