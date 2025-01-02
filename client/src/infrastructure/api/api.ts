@@ -22,8 +22,10 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
         if(error.response.status === 403 ){
-            window.location.href = '/';
-            return;
+            const message = error.response?.data?.message || "Forbidden";
+            localStorage.clear();
+            alert(message); 
+            window.location.href = '/login';
         }
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true; 
