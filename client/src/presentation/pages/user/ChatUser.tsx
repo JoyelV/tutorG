@@ -66,12 +66,13 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
     socket.current.on('receive_message', (message: Message) => {
       if (message.sender !== userId) {
+        // Update unread counts if message is not from the selected user
         if (!selectedUser || selectedUser.id !== message.sender) {
           setUnreadCounts((prevCounts) => ({
             ...prevCounts,
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
-        }
+        } 
         setMessages((prevMessages) =>
             prevMessages.some((msg) => msg.messageId === message.messageId)
               ? prevMessages
@@ -206,6 +207,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         status: 'sent',
       };
 
+      setMessages((prevMessages) => [...prevMessages, message]);
       setNewMessage('');
       setImage(null);
       setImagePreview(null);
@@ -405,7 +407,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           style={{ maxHeight: 'calc(100vh - 200px)' }}
         >
           {messages.map((message, index) => (
-          <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id !== message.sender ? '':'justify-start') }`}>
+            <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
               <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                 <Typography>{message.content}</Typography>
                 {message.mediaUrl && (
