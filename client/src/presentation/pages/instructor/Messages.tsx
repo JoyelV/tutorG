@@ -77,15 +77,12 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
           }));
         } 
         
-        if (selectedUser?.id === message.sender) {
           // Only add message to state if it's from the currently selected user
           setMessages((prevMessages) =>
             prevMessages.some((msg) => msg.messageId === message.messageId)
               ? prevMessages
               : [...prevMessages, message]
           );
-          
-        }
       }
     
       // Emit read receipt for any received message
