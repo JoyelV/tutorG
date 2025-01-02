@@ -24,26 +24,20 @@ export const addToCart = async (req: Request, res: Response, next: NextFunction)
         return ;
         
     } catch (error) {
-        // console.error("Error occurred while adding to cart", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
 export const getCartItems = async (req: AuthenticatedRequest, res: Response) => {
-    const studentId = req.userId;
-
-    console.log(studentId, "........................");
-    
+    const studentId = req.userId;    
     try {
         const cartItems = await CartModel.find({ user: studentId })
             .populate('course')  
             .lean(); 
-
         cartItems.forEach(item => {
             console.log('Populated Course:', item.course); 
         });
         
-        console.log('cartItems Course:', cartItems); 
         res.status(200).json(cartItems);
     } catch (error) {
         console.error("Error fetching cart items", error);

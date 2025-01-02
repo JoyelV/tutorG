@@ -5,7 +5,6 @@ export const userRepository = {
   async createUser(username: string, email: string, password: string): Promise<void> {
     const newUser = new User({ username, email, password });
     await newUser.save();
-    console.log("newUser in userrepo - vERIFTY OTP",newUser);
   },
   async findUserByEmail(email: string): Promise<IUser | null> {
     return await User.findOne({ email });

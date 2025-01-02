@@ -5,12 +5,8 @@ import Course from '../models/Course';
 export const addReview = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, material, comment } = req.body;
-    console.log(req.body,"req.body");
-
     const { courseId } = req.params;
-    console.log(courseId,"hii");
-
-     const existingReview = await Review.findOne({ courseId });
+    const existingReview = await Review.findOne({ courseId });
 
      if (existingReview) {
        res.status(200).json({ 
@@ -25,9 +21,7 @@ export const addReview = async (req: Request, res: Response): Promise<void> => {
       comment,
       courseId,
     });
-
     await newReview.save();
-    console.log(newReview,"newReview");
 
      const course = await Course.findById(courseId);
      if (course) {

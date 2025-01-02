@@ -50,24 +50,19 @@ export const getQuizzesByCourse = async (req: Request, res: Response): Promise<v
 
   try {
     const quizzes = await Quiz.find({ courseId })
-      .populate('courseId', 'title description')  // Populating course details (title, description)
+      .populate('courseId', 'title description')  
       .exec();
 
     if (!quizzes || quizzes.length === 0) {
       res.status(404).json({ message: 'No quizzes found for this course.' });
       return;
     }
-
-    // Logging quizzes to verify all fields, including questions, are populated correctly
-    console.log(JSON.stringify(quizzes, null, 2), "quizzes.........");
-    // Return the quizzes with all the populated fields
     res.status(200).json(quizzes);
   } catch (error: any) {
     console.error('Error fetching quizzes:', error);
     res.status(500).json({ message: 'Failed to fetch quizzes.', error: error.message });
   }
 };
-
 
 export const getQuizById = async (req: Request, res: Response): Promise<void> => {
   const { courseId, quizId } = req.params;
@@ -79,7 +74,6 @@ export const getQuizById = async (req: Request, res: Response): Promise<void> =>
       res.status(404).json({ message: 'Quiz not found.' });
       return;
     }
-    console.log(quiz, 'quiz');
     res.status(200).json(quiz); 
   } catch (error) {
     console.error('Error fetching quiz:', error);
@@ -90,8 +84,6 @@ export const getQuizById = async (req: Request, res: Response): Promise<void> =>
 export const updateQuiz = async (req: Request, res: Response) : Promise<void> => {
   const { courseId, quizId } = req.params;
   const { question, answer, options } = req.body;
-  console.log(req.body,"req.body")
-  console.log(req.params,"req.params")
 
   try {
     const quiz = await Quiz.findOneAndUpdate(
@@ -99,7 +91,7 @@ export const updateQuiz = async (req: Request, res: Response) : Promise<void> =>
       { question, answer, options },
       { new: true, runValidators: true }
     );
-    console.log(quiz,"quiz")
+
     if (!quiz) {
       res.status(404).json({ message: 'Quiz not found.' });
       return 
@@ -184,4 +176,3 @@ export const submitQuiz = async (req: AuthenticatedRequest, res: Response): Prom
     res.status(500).send({ message: 'An error occurred while submitting the quiz' });
   }
 };
-

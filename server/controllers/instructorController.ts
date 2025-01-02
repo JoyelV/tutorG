@@ -5,15 +5,12 @@ import { generateOTP } from '../utils/otpGenerator';
 import { verifyOTP, loginService, resetPasswordService } from '../services/instructorService';
 import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/instructorService';
 import Instructor from '../models/Instructor';
 import orderModel from '../models/Orders';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
-import Rating from '../models/RateInstructor'; 
 import RateInstructor from '../models/RateInstructor';
-import { Types } from 'mongoose'; 
 
 dotenv.config();
 
@@ -50,7 +47,6 @@ export const resendOtp = async (req:Request, res:Response,next: NextFunction) =>
     const otp = generateOTP();
     otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
     await sendOTPEmail(email, otp);
-    console.log(otp);
     
     res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
   } catch (error) {
@@ -134,7 +130,6 @@ export const verifyPasswordOtp = (req: Request, res: Response, next: NextFunctio
     }
 
     const token = otpService.verifyOtpAndGenerateToken(email, otp);
-    console.log('Generated token:', token);
 
     res.status(200).json({ token });
   } catch (error) {
@@ -161,7 +156,6 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
 
-  console.log("fetchUserProfile", userId);
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
     return;
@@ -169,8 +163,6 @@ export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response)
 
   try {
     const user = await getUserProfileService(userId);
-    console.log("user", user);
-
     res.status(200).json(user);
   } catch (error: unknown) {
     res.status(404).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -179,10 +171,7 @@ export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response)
 
 export const editUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
-
   const updates = req.body;
-  console.log("userId", userId);
-  console.log("updates", updates);
 
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
@@ -191,8 +180,6 @@ export const editUserProfile = async (req: AuthenticatedRequest, res: Response):
 
   try {
     const updatedUser = await updateUserProfile(userId, updates);
-    console.log("updatedUser", updatedUser);
-
     res.status(200).json(updatedUser);
   } catch (error: unknown) {
     res.status(400).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -201,9 +188,7 @@ export const editUserProfile = async (req: AuthenticatedRequest, res: Response):
 
 export const editPassword = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
-
   const { currentPassword, newPassword } = req.body;
-  console.log("req.params in editPassword", req.params);
 
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
@@ -225,7 +210,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
-  console.log("req.file.path", req.file.path);
   const imageUrl = req.file ? req.file.path : "";
 
   if (!userId) {
@@ -235,8 +219,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
 
   try {
     const updatedUser = await uploadUserImage(userId, imageUrl);
-    console.log("updatedUser", updatedUser);
-
     res.status(200).json({ success: true, imageUrl, user: updatedUser });
   } catch (error: unknown) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An error occurred' });
@@ -245,9 +227,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
 
 export const toggleTutorStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('Request Params:', req.params); 
-    console.log('Request Body:', req.body);     
-
     const { tutorId } = req.params;
     const { isBlocked } = req.body;
 
@@ -266,7 +245,6 @@ export const toggleTutorStatus = async (req: Request, res: Response): Promise<vo
       { isBlocked },
       { new: true }
     );
-console.log(updatedUser);
 
     if (!updatedUser) {
       res.status(404).json({ message: 'User not found' });
@@ -282,7 +260,6 @@ console.log(updatedUser);
 
 
 export const addTutors = async (req: Request, res: Response): Promise<void> => {
-  console.log("hi in addtutors controller function",req.body);
   try {
     const {
         username,
@@ -342,14 +319,9 @@ export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Pro
     const orders = await orderModel.find({ studentId })
     .populate('tutorId', 'username image') 
     .exec();
-    console.log(orders,"orders");
-
   const uniqueOrders = orders.filter((order, index, self) =>
     index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString())
-  );
-    
-  console.log(uniqueOrders,"uniqueOrders");
- 
+  ); 
   res.status(200).json(uniqueOrders); 
   } catch (error) {
     console.error('Error fetching tutors:', error);
@@ -362,7 +334,6 @@ const stripe = require('stripe')(process.env.STRIPE_KEY);
 export const getStripePayment = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { amount } = req.body; 
   const userId = req.userId;  
-  console.log("Amount in stripe instructor:", amount);
 
   try {
     const instructor = await Instructor.findById(userId);
@@ -373,7 +344,6 @@ export const getStripePayment = async (req: AuthenticatedRequest, res: Response)
     }
 
     const { username, email, image } = instructor;
-    console.log("Instructor details:", { username, email, image });
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -401,7 +371,6 @@ export const getStripePayment = async (req: AuthenticatedRequest, res: Response)
       },
     });
 
-    console.log(session, "Session created successfully for instructor payout");
     res.json({ sessionId: session.id, instructorDetails: { username, email, image }});
   } catch (error) {
     console.error('Error creating Stripe Checkout session:', error);

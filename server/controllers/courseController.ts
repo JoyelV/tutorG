@@ -65,7 +65,10 @@ export const getCourses = async (req: Request, res: Response, next: NextFunction
     const search = typeof searchTerm === 'string' ? searchTerm : '';
     const categoryFilter = typeof filter === 'string' ? filter : '';
 
-    const query: any = { status: 'published' };
+    const query: any = { 
+      status: 'published',
+      isApproved: true, 
+    };
 
     if (search) query.title = new RegExp(search, 'i'); 
     if (categoryFilter && categoryFilter !== 'All Courses') query.category = categoryFilter;
@@ -77,13 +80,12 @@ export const getCourses = async (req: Request, res: Response, next: NextFunction
     if (sortOption === 'Popular') sort.rating = -1;
 
     const total = await Course.countDocuments(query);
-    console.log(total,"hi total data from pagingation")
 
     const courses = await Course.find(query)
       .sort(sort)
       .skip((currentPage - 1) * pageSize)
       .limit(pageSize);
-    console.log(courses,"hi course data from pagingation")
+
     res.status(200).json({
       courses,
       total,
@@ -130,9 +132,6 @@ export const updateCourseRating = async (
       res.status(404).json({ message: 'No purchase history found' });
       return ;
     }
-    console.log(orders, "orders");
-    console.log(req.body, "req.body");
-    console.log(courseId, "courseId");
 
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       res.status(400).json({ message: "Invalid course ID format" });
@@ -145,7 +144,6 @@ export const updateCourseRating = async (
     }
 
     const course = await Course.findById(courseId);
-    console.log(course, "course");
 
     if (!course) {
       res.status(404).json({ message: "Course not found" });
@@ -162,10 +160,8 @@ export const updateCourseRating = async (
     } else {
       course.ratingsAndFeedback.push({ userId, rating, feedback });
     }
-
     await course.calculateAverageRating();
 
-    console.log(course, "updated course");
     res.status(200).json({
       message: "Course rating updated successfully",
       course,
@@ -197,7 +193,7 @@ export const getCourseWithFeedbacks = async (req: Request, res: Response, next: 
         feedback: feedback.feedback,          
       })),
     };
-    console.log(courseData,"courseData")
+
     res.json(courseData);
   } catch (error) {
     console.error("Error fetching course details:", error);
@@ -208,7 +204,6 @@ export const getCourseWithFeedbacks = async (req: Request, res: Response, next: 
 export const getInstructorData = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const {instructorId} = req.params;
 
-  console.log("fetchUserProfile", instructorId);
   if (!instructorId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
     return;
@@ -216,8 +211,6 @@ export const getInstructorData = async (req: AuthenticatedRequest, res: Response
 
   try {
     const user = await instructorRepository.findUserById(instructorId);
-    console.log("user", user);
-
     res.status(200).json(user);
   } catch (error: unknown) {
     res.status(404).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -232,8 +225,6 @@ export const getIndividualCourses = async (req: Request, res: Response, next: Ne
     if(!courses){
       res.status(400).json({message:"Not valid request"})
     }
-    console.log(courses,"courses............")
-
     res.status(200).json(courses);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -426,7 +417,6 @@ export const getViewCourses = async (req: Request, res: Response, next: NextFunc
 export const addLesson = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
   try{
     const { lessonTitle, lessonDescription, lessonVideo, lessonPdf, courseId } = req.body;
-    console.log(req.body,"hello addlesson data.....");
 
   if (!lessonTitle || !lessonDescription || !courseId) {
     res.status(400).json({ error: "All required fields must be filled." });
@@ -472,11 +462,8 @@ export const deleteLesson = async (req:Request,res:Response,next:NextFunction):P
 export const getViewChapters = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { courseId } = req.params;
-    console.log(courseId)
-
     const lessons = await Lesson.find(
       {courseId:courseId});
-      console.log(lessons,"lessons........");
 
     if(!lessons){
       res.status(400).json({message:"Not valid request"})
@@ -574,7 +561,7 @@ export const editCourse = async (req: Request, res: Response): Promise<void> => 
       { new: true } 
     );
      await updatedCourse?.save();
-     console.log(updatedCourse,"updatecourse")
+
     if (!updatedCourse) {
       res.status(404).json({ message: "Course not found" });
       return;
@@ -600,11 +587,9 @@ export const deleteCourse = async (req: Request, res: Response): Promise<void> =
 
     const deletedCourse = await Course.findByIdAndDelete(courseId);
     const lessons = await Lesson.find({ courseId });
-    console.log(lessons, "lessons");
 
     if (lessons.length > 0) {
       await Lesson.deleteMany({ courseId });
-      console.log(`Deleted ${lessons.length} lessons associated with the course`);
     }
     
     if (!deletedCourse) {
@@ -626,7 +611,7 @@ export const publishCourse = async (req: Request, res: Response): Promise<void> 
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId);
-    console.log(courseId,"courseId in publish course")
+
     if (!course) {
       res.status(404).json({ message: 'Course not found' });
       return;
@@ -656,7 +641,6 @@ export const rejectCourse = async (req: Request, res: Response): Promise<void> =
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId);
-   console.log(courseId,"courseId in rejected course")
     if (!course) {
       res.status(404).json({ message: 'Course not found' });
       return;
@@ -776,7 +760,6 @@ export const getWithdrawalHistory = async (req: AuthenticatedRequest, res: Respo
   try {
     const instructorId = req.userId; 
     const instructor = await Instructor.findById(instructorId).populate('transactions');  
-    console.log(instructor,"instructor withdrwal history");
 
     if (!instructor) {
       res.status(404).json({ message: 'Instructor not found' });
@@ -800,8 +783,6 @@ export const getWithdrawalHistory = async (req: AuthenticatedRequest, res: Respo
 export const getNotifications = async (req: Request, res: Response): Promise<void> => {
   try {
     const notifications = await Notification.find().sort({ createdAt: -1 });
-    console.log(notifications,"notifications");
-
     res.status(200).json({ message: 'Notifications retrieved successfully', notifications });
   } catch (error) {
     console.error('Error fetching notifications:', error);

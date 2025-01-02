@@ -17,7 +17,7 @@ import upload from '../config/multerConfig';
 import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getMyTutorCourses, getTutorCourses, getViewChapter, getViewChapters, getViewCourses, getWithdrawalHistory, updateChapter } from '../controllers/courseController';
 import { getUnblockedCategories } from '../controllers/categoryController';
 import { addQuiz, deleteQuiz, getQuizById, getQuizzesByCourse, updateQuiz } from '../controllers/quizController';
-import { getStudentsByInstructor, getStudentsChat } from '../controllers/userController';
+import { getMyMessages, getStudentsByInstructor, getStudentsChat } from '../controllers/userController';
 import { verifyToken } from '../utils/VerifyToken';
 
 const router = Router();
@@ -36,6 +36,9 @@ router.get('/profile',verifyToken,fetchUserProfile);
 router.put('/update',verifyToken,editUserProfile);
 router.put('/update-password',verifyToken,editPassword);
 router.put('/upload-image',upload.single('image'),verifyToken,uploadImage);
+
+//CHAT MANANGEMENT
+router.get('/messages',verifyToken,getMyMessages);
 
 //COURSE MANAGEMENT
 router.post("/addCourse",createCourse);

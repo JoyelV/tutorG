@@ -17,7 +17,7 @@ const NotificationSchema = new Schema<INotification>({
   thumbnail: { type: String, default: '' },
   message: { type: String, required: true },
   isRead: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now, expires: '30d' }, //TTL (Time-To-Live) Index used here to delete automatically ater 30 day
+  createdAt: { type: Date, default: Date.now, expires: '07d' }, //TTL 
 });
 
 export default mongoose.model<INotification>('Notification', NotificationSchema);

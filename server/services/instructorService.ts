@@ -99,7 +99,6 @@ export const resetPasswordService = async (token: string, newPassword: string): 
 };
 
 //Profile Service management
-
 export const getUserProfileService = async (userId: string): Promise<IInstructor> => {
   try {
     const user = await instructorRepository.findUserById(userId);

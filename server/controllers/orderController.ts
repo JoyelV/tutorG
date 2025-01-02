@@ -4,9 +4,6 @@ import { AuthenticatedRequest } from "../utils/VerifyToken";
 
 export const getUserOrders = async (req: AuthenticatedRequest, res: Response,next: NextFunction):Promise<void> =>{
   const userId = req.userId;
-
- console.log(userId,"userId");
- 
   try {
     if (!userId) {
       res.status(400).json({ message: "User ID is required and must be a string" });
@@ -16,7 +13,6 @@ export const getUserOrders = async (req: AuthenticatedRequest, res: Response,nex
     const orders = await orderModel.find({ 
         studentId
         :userId }).populate("courseId", "title thumbnail courseFee level");
-    console.log(orders,"orders");
 
     if (!orders || orders.length === 0) {
       res.status(404).json({ message: "No orders found for this user" });
@@ -35,7 +31,6 @@ export const getUserOrders = async (req: AuthenticatedRequest, res: Response,nex
 export const getEnrolledOrders = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = req.userId;
-
     const page = parseInt(req.query.page as string) || 1; 
     const limit = parseInt(req.query.limit as string) || 8; 
     const sortBy = req.query.sort as string || 'createdAt'; 
@@ -119,7 +114,6 @@ export const getOrderDetail = async (req: Request, res: Response): Promise<void>
     .populate("studentId", "username email image") 
     .populate("courseId", "title subtitle subCategory language thumbnail description") 
     .populate("tutorId", "username email image"); 
-  console.log(order,"order......");
 
     if (!order) {
       res.status(404).json({ message: "Order not found" });

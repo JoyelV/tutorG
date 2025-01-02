@@ -23,18 +23,12 @@ export const addToWishlist = async(req:Request, res:Response,next: NextFunction)
 }
 
 export const  getWishlistItems = async(req:AuthenticatedRequest, res:Response,next: NextFunction):Promise<void> =>{
-    const studentId = req.userId;
-
-    console.log(studentId,"........................");
-    
+    const studentId = req.userId;    
     try {
         const wishlistItems = await WishListModel.find({ user: studentId }).populate("course");
-
         wishlistItems.forEach(item => {
             console.log('Populated Course:', item.course); 
         });
-        
-    console.log(wishlistItems, "items");
 
     res.status(200).json(wishlistItems);
     } catch (error) {

@@ -5,7 +5,6 @@ import { generateOTP } from '../utils/otpGenerator';
 import { loginService, resetPasswordService } from '../services/adminService';
 import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
-import jwt from 'jsonwebtoken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/adminService';
 import { userRepository } from '../repositories/userRepository';
 import { instructorRepository } from '../repositories/instructorRepository';
@@ -25,7 +24,6 @@ export const resendOtp = async (req:Request, res:Response,next: NextFunction) =>
     const otp = generateOTP();
     otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
     await sendOTPEmail(email, otp);
-    console.log(otp);
     
     res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
   } catch (error) {
@@ -39,7 +37,6 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { token, refreshToken ,user } = await loginService(email, password);
 
-    // Send the refresh token as an HttpOnly cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // Prevent access via JavaScript
       secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
@@ -88,8 +85,6 @@ export const verifyPasswordOtp = (req: Request, res: Response, next: NextFunctio
     }
 
     const token = otpService.verifyOtpAndGenerateToken(email, otp);
-    console.log('Generated token:', token);
-
     res.status(200).json({ token });
   } catch (error) {
     console.error('Error verifying OTP:', error);
@@ -134,16 +129,12 @@ export const getAllInstructors = async (req: Request, res: Response): Promise<vo
 
 export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
-
-  console.log("fetchUserProfile", req.params);
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
     return;
   }
   try {
     const user = await getUserProfileService(userId);
-    console.log("user", user);
-
     res.status(200).json(user);
   } catch (error: unknown) {
     res.status(404).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -152,10 +143,7 @@ export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response)
 
 export const editUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
-
   const updates = req.body;
-  console.log("req.params", req.params);
-  console.log("updates", updates);
 
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
@@ -164,8 +152,6 @@ export const editUserProfile = async (req: AuthenticatedRequest, res: Response):
 
   try {
     const updatedUser = await updateUserProfile(userId, updates);
-    console.log("updatedUser", updatedUser);
-
     res.status(200).json(updatedUser);
   } catch (error: unknown) {
     res.status(400).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -174,9 +160,7 @@ export const editUserProfile = async (req: AuthenticatedRequest, res: Response):
 
 export const editPassword = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
-
   const { currentPassword, newPassword } = req.body;
-  console.log("req.params in editPassword", req.params);
 
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
@@ -198,7 +182,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
-  console.log("req.file.path", req.file.path);
   const imageUrl = req.file ? req.file.path : "";
 
   if (!userId) {
@@ -208,12 +191,9 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
 
   try {
     const updatedUser = await uploadUserImage(userId, imageUrl);
-    console.log("updatedUser", updatedUser);
-
     res.status(200).json({ success: true, imageUrl, user: updatedUser });
   } catch (error: unknown) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An error occurred' });
   }
 }
-
 

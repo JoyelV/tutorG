@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
 import User from '../models/User'
+import Message from '../models/Message';
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -45,7 +46,6 @@ export const resendOtp = async (req:Request, res:Response,next: NextFunction) =>
     const otp = generateOTP();
     otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
     await sendOTPEmail(email, otp);
-    console.log(otp);
     
     res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
   } catch (error) {
@@ -80,7 +80,6 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { token, refreshToken ,user } = await loginService(email, password);
 
-    // Send the refresh token as an HttpOnly cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // Prevent access via JavaScript
       secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
@@ -106,7 +105,6 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
 export const googleSignIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { token: googleToken } = req.body;
-  console.log(req.body,"body in googledata")
   if (!googleToken) {
     res.status(400).json({ message: 'Google token is required' });
     return;
@@ -114,8 +112,6 @@ export const googleSignIn = async (req: Request, res: Response, next: NextFuncti
 
   try {
     const { token, refreshToken, user } = await googleLoginService(googleToken);
-    console.log(token, refreshToken, user,"token, refreshToken, user")
-
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'development', 
@@ -151,14 +147,11 @@ export const refreshAccessToken = async (req: Request, res: Response, next: Next
 
   try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
-      
       const newToken = jwt.sign(
           { id: (decoded as any).id, role: (decoded as any).role },
           process.env.JWT_SECRET!,
           { expiresIn: '15m' } 
       );
-      console.log("called refereshtoken",newToken);
-
       res.status(200).json({ token: newToken });
   } catch (error) {
       console.error('Error refreshing token:', error);
@@ -191,8 +184,6 @@ export const verifyPasswordOtp = (req: Request, res: Response, next: NextFunctio
     }
 
     const token = otpService.verifyOtpAndGenerateToken(email, otp);
-    console.log('Generated token:', token);
-
     res.status(200).json({ token });
   } catch (error) {
     console.error('Error verifying OTP:', error);
@@ -213,10 +204,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 }
 
 export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  const userId = req.userId;
-  
-  console.log(userId,"userId hi second");
-  
+  const userId = req.userId;  
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
     return;
@@ -224,13 +212,11 @@ export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response)
 
   try {
     const user = await getUserProfileService(userId);
-    console.log(user,"user");
 
     if (!user) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
-
     res.status(200).json(user);
   } catch (error: unknown) {
     res.status(404).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -240,9 +226,7 @@ export const fetchUserProfile = async (req: AuthenticatedRequest, res: Response)
 export const editUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
   const updates = req.body;
-  console.log("req.params", req.params);
 
-  console.log("updates", updates);
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
     return;
@@ -250,8 +234,6 @@ export const editUserProfile = async (req: AuthenticatedRequest, res: Response):
 
   try {
     const updatedUser = await updateUserProfile(userId, updates);
-    console.log("updatedUser", updatedUser);
-
     res.status(200).json(updatedUser);
   } catch (error: unknown) {
     res.status(400).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
@@ -261,7 +243,6 @@ export const editUserProfile = async (req: AuthenticatedRequest, res: Response):
 export const editPassword = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;
   const { currentPassword, newPassword } = req.body;
-  console.log("req.params in editPassword", req.params);
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });
     return;
@@ -282,7 +263,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
-  console.log("req.file.path", req.file.path);
   const imageUrl = req.file ? req.file.path : "";
   
   if (!userId) {
@@ -292,8 +272,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
 
   try {
     const updatedUser = await uploadUserImage(userId, imageUrl);
-    console.log("updatedUser", updatedUser);
-
     res.status(200).json({ success: true, imageUrl, user: updatedUser });
   } catch (error: unknown) {
     res.status(500).json({ message: error instanceof Error ? error.message : 'An error occurred' });
@@ -302,9 +280,6 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
 
 export const toggleUserStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('Request Params:', req.params); 
-    console.log('Request Body:', req.body);     
-
     const { userId } = req.params;
     const { isBlocked } = req.body;
 
@@ -385,10 +360,26 @@ export const getStudentsChat = async (req: AuthenticatedRequest, res: Response):
       res.status(404).json({ message: "No students found for this instructor." });
       return;
     }
-    console.log(orders,"mystudentsorder")
     res.status(200).json(orders);
   } catch (error) {
     console.error('Error fetching students by instructor:', error);
     res.status(500).json({ message: 'Error fetching students' });
   }
 };
+
+export const getMyMessages = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const { senderId, receiverId } = req.query;
+    
+  try {
+    const messages = await Message.find({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId },
+      ],
+    }).sort({ createdAt: 1 });
+
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch messages' });
+  }
+}

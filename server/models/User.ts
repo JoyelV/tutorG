@@ -15,7 +15,7 @@ const UserSchema: Schema = new Schema({
   gender: { type: String },
   dob: { type: String },
   isBlocked: { type: Boolean, default: false },
-  onlineStatus: { type: Boolean, default: false }, // Added field for online status
+  onlineStatus: { type: Boolean, default: false }, 
 });
 
 export default model<IUser>('User', UserSchema);

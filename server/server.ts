@@ -60,31 +60,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-app.get('/api/messages', async (req, res) => {
-  const { senderId, receiverId } = req.query;
-  
-  try {
-    const messages = await Message.find({
-      $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId },
-      ],
-    }).sort({ createdAt: 1 });
-
-    res.status(200).json(messages);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch messages' });
-  }
-});
-
 io.use((socket, next) => {
-  console.log(`[DEBUG] New connectionccccccc: ${socket.id}`);
   next();
 });
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-
   socket.on("joinChatRoom", ({ sender, receiver }) => {
     if (!sender || !receiver) {
       console.error('Invalid room data:', { sender, receiver });
@@ -93,12 +73,12 @@ io.on('connection', (socket) => {
 
     const roomName = [sender, receiver].sort().join("-");
     socket.join(roomName);
-    console.log(`User ${sender} joined room: ${roomName}`);
  });
 
   socket.on('send_message', async (data: { sender: string, receiver: string, content: string, senderModel: string, receiverModel: string, mediaUrl?: string ,messageId:string}) => {
+
     const { sender, receiver, content, senderModel, receiverModel, mediaUrl,messageId } = data;
-    console.log(data,"data")
+
     if (!sender || !receiver ) {
       socket.emit('error', 'Invalid message data');
       return;
@@ -116,7 +96,6 @@ io.on('connection', (socket) => {
         status: 'sent',
         messageId,
       });
-      console.log("message",message);
 
       await message.save();
       io.to(roomName).emit("receive_message", {
@@ -136,7 +115,10 @@ io.on('connection', (socket) => {
 
   socket.on('message_read', async (messageId) => {
     try {
-      await Message.findByIdAndUpdate(messageId, { status: 'read' });
+      await Message.findOneAndUpdate(
+        { messageId: messageId }, 
+        { status: 'read' } 
+      );      
       io.emit('message_read_update', { id: messageId, status: 'read' });
     } catch (err) {
       console.error('Error marking message as read:', err);

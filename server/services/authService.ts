@@ -86,13 +86,11 @@ export const googleLoginService = async (googleToken: string) => {
     idToken: googleToken,
     audience: process.env.GOOGLE_CLIENT_ID,
   });
-  console.log(ticket,"ticket in googledata")
 
   const payload = ticket.getPayload();
   if (!payload || !payload.email || !payload.name) {
     throw new Error('Invalid Google token or payload');
   }
-  console.log(payload,"payload in googledata")
 
   const email = payload.email;
   let user = await userRepository.findUserByEmail(email);
@@ -101,7 +99,7 @@ export const googleLoginService = async (googleToken: string) => {
     const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-    console.log(generatedPassword,"gemerated password")
+
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
       
     user = await User.create({
@@ -111,7 +109,6 @@ export const googleLoginService = async (googleToken: string) => {
       role: 'user',
     });
   }
-  console.log(user,"user in googledata")
 
   if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
     throw new Error('JWT secrets are not set in environment variables');
@@ -131,8 +128,6 @@ export const googleLoginService = async (googleToken: string) => {
 
   return { token, refreshToken, user };
 };
-
-
 
 export const resetPasswordService = async (token: string, newPassword: string): Promise<string> => {
   try {

@@ -15,20 +15,16 @@ export const saveCategory = async (req: Request, res: Response, next: NextFuncti
     }
 
     if (id) {
-      // Edit category
       const category = await Category.findById(id);
       if (!category) {
         res.status(404).json({ message: 'Category not found' });
         return;
       }
       category.categoryName = categoryName;
-      console.log(categoryName)
       category.subCategories = subCategories.map((name: string) => ({ name }));
-      console.log(category.subCategories,"subcategories data.........")
       const updatedCategory = await category.save();
       res.status(200).json(updatedCategory);
     } else {
-      // Create category
       const newCategory = new Category({
         categoryName,
         subCategories: subCategories.map((name: string) => ({ name })),

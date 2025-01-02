@@ -18,7 +18,6 @@ const stripe = new Stripe(stripeSecretKey, {
 export const stripePayment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { cartItems } = req.body;
-    console.log(cartItems,"cartItems");
     
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       res.status(400).json({ error: "Cart items are required." });
@@ -44,7 +43,6 @@ export const stripePayment = async (req: Request, res: Response, next: NextFunct
         quantity: 1,
       };
     });
-    console.log(lineItems,"lineItems");
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -58,7 +56,6 @@ export const stripePayment = async (req: Request, res: Response, next: NextFunct
         cartItems: JSON.stringify(cartItems), 
       }
     });
-    console.log(session,"session");
 
     res.json({
       status: true,
@@ -74,7 +71,6 @@ let endpointSecret:any;
 
 export const handleStripeWebhook = async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"];
-  console.log(sig,"sig...............")
     let eventType;
     let data;
 
@@ -86,7 +82,6 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           sig as string, 
           endpointSecret
         );
-        console.log(event,"event...............")
 
       } catch (err:any) {
         res.status(400).send(`Webhook Error: ${err.message}`);
@@ -100,8 +95,6 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     }
 
     if (eventType === "checkout.session.completed") {
-      console.log(data,"hurreeyyyyyyyyyyyy");
-
       const flowType = data.metadata?.type;
 
       if (flowType === 'instructor_payout') {
@@ -111,7 +104,6 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         }
       }else if (flowType === 'course_purchase') {
       const session = data as Stripe.Checkout.Session;
-      console.log(session, "session................");
 
       const cartItems = session.metadata?.cartItems ? JSON.parse(session.metadata.cartItems) : [];
       
@@ -133,7 +125,6 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           paymentMethod: 'Stripe',
           sessionId, 
         });
-        console.log(order, 'order');
 
         await Course.findByIdAndUpdate(courseData._id, {
           $push: { students: studentId },
@@ -148,7 +139,6 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 
         if (order) {
         const deletedCart = await CartModel.findOneAndDelete({ user: studentId });
-        console.log(deletedCart, 'deletedCart');
   
         if (deletedCart) {
           console.log("Cart cleared for user:", studentId);
@@ -160,7 +150,6 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
       });
 
       const orders = await Promise.all(orderPromises);
-      console.log(orders, 'orders');
       res.json({ status: 'success', orders });
     }else {
       console.log('Unknown flow type:', flowType);
@@ -170,11 +159,9 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 };
 
 const handleInstructorPayout = async (session: any) => {
-  console.log('Processing instructor payout:', session.metadata);
   const { email, amount } = session.metadata;
   const instructor = await Instructor.findOne({ email });
   const withdrawnAmount = (amount*1) / 100; 
-  console.log(withdrawnAmount,"withdrawnAmount data pyout updated")
 
   if(!instructor){
     return false;
@@ -182,7 +169,6 @@ const handleInstructorPayout = async (session: any) => {
   instructor.earnings = (Number(instructor.earnings) + withdrawnAmount) as number; 
   instructor.totalWithdrawals = (Number(instructor.totalWithdrawals) + 1) as number; 
   instructor.currentBalance = (Number(instructor.currentBalance) - withdrawnAmount) as number; 
-  console.log(instructor,"instructor data pyout updated")
 
   const newTransaction = {
     date: new Date(),  

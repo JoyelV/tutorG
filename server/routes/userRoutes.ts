@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn } from '../controllers/userController';
+import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn, getMyMessages } from '../controllers/userController';
 import upload from '../config/multerConfig';
 import { getCompletionCertificate, getCourses, getCourseWithFeedbacks, getIndividualCourseData, getIndividualCourses, getInstructorData, getNotifications, getViewChapters, updateCourseRating, updateProgress } from '../controllers/courseController';
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
@@ -29,6 +29,9 @@ router.put('/update',verifyToken,editUserProfile);
 router.put('/update-password',verifyToken,editPassword );
 router.put('/upload-image', upload.single('image'),verifyToken,uploadImage);
 router.get('/my-tutors',verifyToken,getMyTutors);
+
+//CHAT MANAGEMENT
+router.get('/messages',verifyToken,getMyMessages);
 
 //COURSE MANAGEMENT
 router.get('/courses',getCourses);
