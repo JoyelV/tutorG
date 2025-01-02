@@ -77,8 +77,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
           }));
         } 
         
-          // Only add message to state if it's from the currently selected user
-          setMessages((prevMessages) =>
+        setMessages((prevMessages) =>
             prevMessages.some((msg) => msg.messageId === message.messageId)
               ? prevMessages
               : [...prevMessages, message]
@@ -426,7 +425,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             <div className="flex-1 overflow-y-auto p-4 max-h-[570px]">
               <div className="space-y-4">
                 {messages.map((message, index) => (
-                  <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
+                  <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id !== message.sender ? '':'justify-start') }`}>
               <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                       <Typography>{message.content}</Typography>
                       {message.mediaUrl && (

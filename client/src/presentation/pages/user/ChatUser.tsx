@@ -73,8 +73,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
         } 
-          // Only add message to state if it's from the currently selected user
-          setMessages((prevMessages) =>
+        setMessages((prevMessages) =>
             prevMessages.some((msg) => msg.messageId === message.messageId)
               ? prevMessages
               : [...prevMessages, message]
@@ -408,7 +407,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           style={{ maxHeight: 'calc(100vh - 200px)' }}
         >
           {messages.map((message, index) => (
-            <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
+          <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id !== message.sender ? '':'justify-start') }`}>
               <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                 <Typography>{message.content}</Typography>
                 {message.mediaUrl && (
