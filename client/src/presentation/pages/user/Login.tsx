@@ -6,12 +6,10 @@ import {
     Typography,
     Paper,
     Box,
-    Avatar,
     Alert,
     Grid,
     Link,
 } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';

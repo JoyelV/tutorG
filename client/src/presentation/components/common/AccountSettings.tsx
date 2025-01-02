@@ -5,7 +5,6 @@ import api from '../../../infrastructure/api/api'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
-import BaseUrl from '../../../Constants/BaseUrl';
 
 interface UserProfileData {
   username: string;
@@ -266,7 +265,7 @@ const AccountSettings: React.FC = () => {
             />
             <label htmlFor="profile-image-upload">
               <Avatar
-                src={`${BaseUrl}/${image}` || assets.Instructor3}
+                src={`${process.env.REACT_APP_SOCKET_URL}/${image}` || assets.Instructor3}
                 sx={{ width: 250, height: 250, cursor: 'pointer' }}
               />
             </label>

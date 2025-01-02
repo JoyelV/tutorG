@@ -7,7 +7,7 @@ import Sidebar from "../../components/instructor/Sidebar";
 import DashboardHeader from "../../components/instructor/DashboardHeader";
 
 function EditCourse() {
-  const { courseId } = useParams(); 
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -37,10 +37,10 @@ function EditCourse() {
     courseFee: "",
     courseDescription: "",
     courseLearningPoints: "",
-    courseTargetAudience:"",
-    courseRequirements:"",
-    image:"",
-    trailer:"",
+    courseTargetAudience: "",
+    courseRequirements: "",
+    image: "",
+    trailer: "",
   });
 
   const fetchCategories = async () => {
@@ -135,36 +135,34 @@ function EditCourse() {
   };
   const validateForm = () => {
     const newErrors: any = {};
-  
-    // Regex for letters and numbers only
     const alphanumericRegex = /^[a-zA-Z]{3}[a-zA-Z0-9 ]*$/;
-  
+
     if (!courseName.trim()) newErrors.courseName = "Course name cannot be empty.";
     else if (!alphanumericRegex.test(courseName)) newErrors.courseName = "Course name can only contain letters and numbers with first 3 characters must be letters .";
-    
+
     if (!courseSubtitle.trim()) newErrors.courseSubtitle = "Course subtitle cannot be empty.";
     else if (!alphanumericRegex.test(courseSubtitle)) newErrors.courseSubtitle = "Course subtitle can only contain letters and numbers with first 3 characters must be letters .";
-    
+
     if (!selectCategory) newErrors.selectCategory = "Please select a course category.";
     if (!courseLanguage) newErrors.courseLanguage = "Please select a course language.";
     if (!courseLevel) newErrors.courseLevel = "Please select a course level.";
-    
+
     if (!courseDuration || isNaN(Number(courseDuration)) || Number(courseDuration) <= 0)
       newErrors.courseDuration = "Please provide a valid course duration (number > 0).";
-    
+
     if (!courseFee || isNaN(Number(courseFee)) || Number(courseFee) < 0)
       newErrors.courseFee = "Please provide a valid course fee (non-negative number).";
-    
+
     if (!alphanumericRegex.test(courseDescription)) newErrors.courseDescription = "Course description can only contain letters and numbers with first 3 characters must be letters .";
     if (!alphanumericRegex.test(courseRequirements)) newErrors.courseRequirements = "Course requirements can only contain letters and numbers with first 3 characters must be letters .";
     if (!alphanumericRegex.test(courseLearningPoints)) newErrors.courseLearningPoints = "Course learning points can only contain letters and numbers with first 3 characters must be letters .";
     if (!alphanumericRegex.test(courseTargetAudience)) newErrors.courseTargetAudience = "Target audience can only contain letters and numbers with first 3 characters must be letters .";
-    
+
     if (!image) newErrors.image = "Please upload a course thumbnail image.";
     if (!trailer) newErrors.trailer = "Please upload a course trailer video.";
-  
+
     setErrors(newErrors);
-  
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -202,11 +200,11 @@ function EditCourse() {
         ...(imageUrl && { thumbnail: imageUrl }),
         ...(trailerUrl && { trailer: trailerUrl }),
       };
-      console.log(courseData,"data in editcourse")
+      console.log(courseData, "data in editcourse")
 
       const response = await api.put(`/instructor/course/${courseId}`, courseData);
-      console.log(courseId,"id");
-      console.log(response,"editedcoursedata.....")
+      console.log(courseId, "id");
+      console.log(response, "editedcoursedata.....")
       toast.success("Course updated successfully!");
       navigate(`/instructor/course-view/${courseId}`);
     } catch (error: any) {
@@ -224,182 +222,182 @@ function EditCourse() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-    {/* Sidebar */}
-    <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-800 text-white flex flex-col">
         <Sidebar />
-    </aside>
+      </aside>
       <div className="flex-1 p-6 bg-gray-100 min-h-screen">
-        <DashboardHeader/>
+        <DashboardHeader />
         <section>
-        <div className="p-6">
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold mb-4">Edit Course</h1>
-        <form>
-          {/* Form Fields */}
-          <div className="mb-4">
-          {/* Course Name */}
-          <input
-            type="text"
-            value={courseName}
-            onChange={(e) => setCourseName(e.target.value)}
-            placeholder="Course Name"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-        {errors.courseName && <p className="text-red-500 text-sm">{errors.courseName}</p>}
-        </div>
+          <div className="p-6">
+            <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Edit Course</h1>
+              <form>
+                {/* Form Fields */}
+                <div className="mb-4">
+                  {/* Course Name */}
+                  <input
+                    type="text"
+                    value={courseName}
+                    onChange={(e) => setCourseName(e.target.value)}
+                    placeholder="Course Name"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                  {errors.courseName && <p className="text-red-500 text-sm">{errors.courseName}</p>}
+                </div>
 
-        {/* Course Subtitle */}
-        <div className="mb-4">
-          <input
-            type="text"
-            value={courseSubtitle}
-            onChange={(e) => setCourseSubtitle(e.target.value)}
-            placeholder="Course Subtitle"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-         {errors.courseSubtitle && <p className="text-red-500 text-sm">{errors.courseSubtitle}</p>}
-         
-        </div>
+                {/* Course Subtitle */}
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={courseSubtitle}
+                    onChange={(e) => setCourseSubtitle(e.target.value)}
+                    placeholder="Course Subtitle"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                  {errors.courseSubtitle && <p className="text-red-500 text-sm">{errors.courseSubtitle}</p>}
 
-        {/* Course Category */}
-        <div className="mb-4">
-          <select
-            onChange={(e) => setSelectCategory(e.target.value)}
-            value={selectCategory}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          >
-            <option value="" disabled>Select Category</option>
-            {categories.map((category: any) => (
-              <option key={category._id} value={category._id}>
-                {category.categoryName}
-              </option>
-            ))}
-          </select>
-        </div>
+                </div>
 
-        {/* Language and Level */}
-        <div className="mb-4 grid grid-cols-2 gap-4">
-          <select
-            value={courseLanguage}
-            onChange={(e) => setCourseLanguage(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          >
-            <option value="" disabled>Select Language</option>
-            <option value="English">English</option>
-            <option value="Malayalam">Malayalam</option>
-            <option value="Hindi">Hindi</option>
-          </select>
+                {/* Course Category */}
+                <div className="mb-4">
+                  <select
+                    onChange={(e) => setSelectCategory(e.target.value)}
+                    value={selectCategory}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="" disabled>Select Category</option>
+                    {categories.map((category: any) => (
+                      <option key={category._id} value={category._id}>
+                        {category.categoryName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-          <select
-            value={courseLevel}
-            onChange={(e) => setCourseLevel(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          >
-            <option value="" disabled>Select Level</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
-          </select>
-        </div>
+                {/* Language and Level */}
+                <div className="mb-4 grid grid-cols-2 gap-4">
+                  <select
+                    value={courseLanguage}
+                    onChange={(e) => setCourseLanguage(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="" disabled>Select Language</option>
+                    <option value="English">English</option>
+                    <option value="Malayalam">Malayalam</option>
+                    <option value="Hindi">Hindi</option>
+                  </select>
 
-        {/* Duration and Fee */}
-        <div className="mb-4 grid grid-cols-2 gap-4">
-          <input
-            type="number"
-            value={courseDuration}
-            onChange={(e) => setCourseDuration(e.target.value)}
-            placeholder="Course Duration"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-{errors.courseDuration && <p className="text-red-500 text-sm">{errors.courseDuration}</p>}
+                  <select
+                    value={courseLevel}
+                    onChange={(e) => setCourseLevel(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="" disabled>Select Level</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
 
-          <input
-            type="number"
-            value={courseFee}
-            onChange={(e) => setCourseFee(e.target.value)}
-            placeholder="Course Fee"
-            className="w-full p-3 border border-gray-300 rounded-lg"           
-          />
+                {/* Duration and Fee */}
+                <div className="mb-4 grid grid-cols-2 gap-4">
+                  <input
+                    type="number"
+                    value={courseDuration}
+                    onChange={(e) => setCourseDuration(e.target.value)}
+                    placeholder="Course Duration"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                  {errors.courseDuration && <p className="text-red-500 text-sm">{errors.courseDuration}</p>}
 
-{errors.courseFee && <p className="text-red-500 text-sm">{errors.courseFee}</p>}
+                  <input
+                    type="number"
+                    value={courseFee}
+                    onChange={(e) => setCourseFee(e.target.value)}
+                    placeholder="Course Fee"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
 
-        </div>
+                  {errors.courseFee && <p className="text-red-500 text-sm">{errors.courseFee}</p>}
 
-        {/* Description */}
-        <div className="mb-4">
-          <textarea
-            value={courseDescription}
-            onChange={(e) => setCourseDescription(e.target.value)}
-            placeholder="Course Description"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
+                </div>
+
+                {/* Description */}
+                <div className="mb-4">
+                  <textarea
+                    value={courseDescription}
+                    onChange={(e) => setCourseDescription(e.target.value)}
+                    placeholder="Course Description"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
                   {errors.courseDescription && <p className="text-red-500 text-sm">{errors.courseDescription}</p>}
 
-        </div>
+                </div>
 
-        <div className="mb-4">
-          <textarea
-            value={courseRequirements}
-            onChange={(e) => setCourseRequirements(e.target.value)}
-            placeholder="Course Requirements"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-        </div>
-        {errors.courseRequirements && <p className="text-red-500 text-sm">{errors.courseRequirements}</p>}
-        <div className="mb-4">
-          <textarea
-            value={courseTargetAudience}
-            onChange={(e) => setCourseTargetAudience(e.target.value)}
-            placeholder="Course Target Audience"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-        </div>
-        {errors.courseTargetAudience && <p className="text-red-500 text-sm">{errors.courseTargetAudience}</p>}
+                <div className="mb-4">
+                  <textarea
+                    value={courseRequirements}
+                    onChange={(e) => setCourseRequirements(e.target.value)}
+                    placeholder="Course Requirements"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                {errors.courseRequirements && <p className="text-red-500 text-sm">{errors.courseRequirements}</p>}
+                <div className="mb-4">
+                  <textarea
+                    value={courseTargetAudience}
+                    onChange={(e) => setCourseTargetAudience(e.target.value)}
+                    placeholder="Course Target Audience"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                {errors.courseTargetAudience && <p className="text-red-500 text-sm">{errors.courseTargetAudience}</p>}
 
-        <div className="mb-4">
-          <textarea
-            value={courseLearningPoints}
-            onChange={(e) => setCourseLearningPoints(e.target.value)}
-            placeholder="Course Learning Points"
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-        </div>
-        {errors.courseLearningPoints && <p className="text-red-500 text-sm">{errors.courseLearningPoints}</p>}
-        {/* Image Upload */}
-        <div className="mb-4">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-        </div>
-        {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
-        {/* Trailer Upload */}
-        <div className="mb-4">
-          <input
-            type="file"
-            accept="video/mp4"
-            onChange={handleTrailerChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
-        </div>
-        {errors.trailer && <p className="text-red-500 text-sm">{errors.trailer}</p>}
-        <div className="text-center">
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-            disabled={loading}
-          >
-            {loading ? "Editing..." : "Edit Course"}
-          </button>
-        </div>
-      </form>
+                <div className="mb-4">
+                  <textarea
+                    value={courseLearningPoints}
+                    onChange={(e) => setCourseLearningPoints(e.target.value)}
+                    placeholder="Course Learning Points"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                {errors.courseLearningPoints && <p className="text-red-500 text-sm">{errors.courseLearningPoints}</p>}
+                {/* Image Upload */}
+                <div className="mb-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
+                {/* Trailer Upload */}
+                <div className="mb-4">
+                  <input
+                    type="file"
+                    accept="video/mp4"
+                    onChange={handleTrailerChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                {errors.trailer && <p className="text-red-500 text-sm">{errors.trailer}</p>}
+                <div className="text-center">
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                    disabled={loading}
+                  >
+                    {loading ? "Editing..." : "Edit Course"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
       </div>
-      </div>
-      </section>
-      </div>
-      </div>
+    </div>
   );
 }
 

@@ -21,7 +21,6 @@ const ViewCoursesListing: React.FC = () => {
     setSelectedFilter(event.target.value);
   };
 
-  // Fetch categories from the backend
   const fetchCategories = async () => {
     try {
       const response = await api.get('/user/categories');

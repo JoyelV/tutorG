@@ -21,8 +21,8 @@ const PurchaseHistoryPage = () => {
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [sortOrder, setSortOrder] = useState<string>('createdAt'); // default sort by purchase date
-  const [sortDirection, setSortDirection] = useState<string>('desc'); // default descending order
+  const [sortOrder, setSortOrder] = useState<string>('createdAt'); 
+  const [sortDirection, setSortDirection] = useState<string>('desc'); 
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const PurchaseHistoryPage = () => {
           params: {
             userId,
             page: currentPage,
-            limit: 7, // You can change the page size here
+            limit: 7, 
             sort: sortOrder,
             direction: sortDirection
           }
@@ -42,7 +42,7 @@ const PurchaseHistoryPage = () => {
           setError('No purchase history, Please purchase a course');
         } else {
           setOrders(response.data.orders);
-          setTotalPages(response.data.totalPages); // assuming your API returns totalPages
+          setTotalPages(response.data.totalPages);
         }
       } catch (err) {
         setError('Failed to fetch purchase history');
@@ -55,12 +55,11 @@ const PurchaseHistoryPage = () => {
   }, [userId, currentPage, sortOrder, sortDirection]);
 
   const handleSortChange = (sortBy: string) => {
-    // Toggle sort direction when the same column is clicked
     if (sortBy === sortOrder) {
       setSortDirection(prevDirection => (prevDirection === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortOrder(sortBy);
-      setSortDirection('asc'); // default to ascending when a new column is sorted
+      setSortDirection('asc'); 
     }
   };
 

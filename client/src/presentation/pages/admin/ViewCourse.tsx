@@ -163,7 +163,6 @@ const CourseViewPage = () => {
                   )}
                 </div>
               )}
-              
             </div>
           </div>
 

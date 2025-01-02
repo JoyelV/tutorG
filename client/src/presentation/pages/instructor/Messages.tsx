@@ -62,7 +62,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
 
   useEffect(() => {
-    socket.current = io('http://localhost:5000', {
+    socket.current = io(`${process.env.REACT_APP_SOCKET_URL}`, {
       transports: ['websocket'],
       withCredentials: true,
     });
@@ -111,7 +111,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             studentsMap[studentId] = {
               id: studentId,
               name: item.studentId.username,
-              image: `http://localhost:5000/${item.studentId.image}`,
+              image: `${process.env.REACT_APP_SOCKET_URL}/${item.studentId.image}`,
             };
           }
         });

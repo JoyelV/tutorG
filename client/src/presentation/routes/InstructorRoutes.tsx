@@ -21,7 +21,13 @@ import ChatApp from '../pages/instructor/Messages';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe("pk_test_51QSBeYJoGLfotY8asbavWxONL9xn0Mb93ucMhMpBBUVjDeUTivunzPPkWRz4f5X538J02vmO1Rk9hiM8zM8SM1RS00enXG3dzO");
+const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripePublicKey) {
+    throw new Error("Stripe public key is missing in environment variables.");
+}
+
+const stripePromise = loadStripe(stripePublicKey);
 
 const InstructorRoutes = () => {
     const value = localStorage.getItem('role');

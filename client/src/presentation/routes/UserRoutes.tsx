@@ -47,8 +47,8 @@ const UserRoutes = () => {
             <Route path="/wishlist" element={isLoggedIn ?<WishlistPage />: <Navigate to="/login" />}/>
             <Route path="/cart" element={isLoggedIn ?<CartPage/>: <Navigate to="/login" />} />
             <Route path="/paymentSuccess" element={isLoggedIn ?<PaymentSuccessPage/>: <Navigate to="/login" />} />
-            <Route path="/enrolled-singlecourse/:courseId" element={<SingleEnrolledCoursePage/>} />
-            <Route path="/completion-certificate/:courseId" element={<CertificateOfCompletion/>} />
+            <Route path="/enrolled-singlecourse/:courseId" element={isLoggedIn ?<SingleEnrolledCoursePage/>: <Navigate to="/login" />} />
+            <Route path="/completion-certificate/:courseId" element={isLoggedIn ?<CertificateOfCompletion/>: <Navigate to="/login" />} />
             <Route path="*" element={<Pagenotfound />} />
         </Routes>
         <Footer />

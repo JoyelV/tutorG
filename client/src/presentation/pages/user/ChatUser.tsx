@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Badge, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress } from '@mui/material';
+import { Avatar, TextField, IconButton, Typography, Badge, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
 import api from '../../../infrastructure/api/api';
@@ -59,7 +59,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const [unreadCounts, setUnreadCounts] = useState<{ [userId: string]: number }>({});
 
   useEffect(() => {
-    socket.current = io('http://localhost:5000', {
+    socket.current = io(`${process.env.REACT_APP_SOCKET_URL}`, {
       transports: ['websocket'],
       withCredentials: true,
     });
@@ -106,7 +106,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         const data = response.data.map((item: any) => ({
           id: item.tutorId._id,
           name: item.tutorId.username,
-          image: `http://localhost:5000/${item.tutorId.image}`,
+          image: `${process.env.REACT_APP_SOCKET_URL}/${item.tutorId.image}`,
         }));
         setUsers(data);
         if (data.length > 0) {

@@ -6,7 +6,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
 import Sidebar from '../../components/instructor/Sidebar';
-import TopNav from '../../components/instructor/DashboardHeader';
 
 const InstructorProfile = () => {
     const [image, setImage] = useState<string | null>(null);
@@ -41,80 +40,66 @@ const InstructorProfile = () => {
     };
 
     const validateProfile = () => {
-        // Check if any required field is empty
         if (!username || !email || !phone || !addressLine1 || !addressLine2 || !gender || !dob) {
             toast.error('All fields are required.');
             return false;
         }
 
-        // Validate email format
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
         if (!emailRegex.test(email)) {
             toast.error('Invalid email format.');
             return false;
         }
 
-        // Validate phone number (10 digits)
         if (!/^\d{10}$/.test(phone)) {
             toast.error('Phone number should be exactly 10 digits.');
             return false;
         }
 
-        // Gender validation (only male, female, transgender allowed)
         const validGenders = ['male', 'female', 'transgender'];
         if (!validGenders.includes(gender)) {
             toast.error('Please select a valid gender');
             return false;
         }
 
-        // Date of birth validation (check if it's a valid date)
         const dobDate = new Date(dob);
         if (isNaN(dobDate.getTime())) {
             toast.error('Invalid date of birth.');
             return false;
         }
 
-        // Validate that address fields do not contain special characters or numbers (if required)
         const addressRegex = /^[A-Za-z0-9\s]+$/;
         if (!addressRegex.test(addressLine1) || !addressRegex.test(addressLine2)) {
             toast.error('Address should contain only letters,numbers and spaces.');
             return false;
         }
 
-        // Validate that username contains only letters and spaces (if required)
         const usernameRegex = /^[A-Za-z\s]+$/;
         if (!usernameRegex.test(username)) {
             toast.error('Username should contain only letters and spaces.');
             return false;
         }
-
         return true;
     };
 
-
     const validatePassword = () => {
-        // Check if any password fields are empty
         if (!currentPassword || !newPassword || !confirmPassword) {
             toast.error('All password fields are required.');
             return false;
         }
 
-        // Validate new password strength (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character)
         const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordStrengthRegex.test(newPassword)) {
             toast.error('New password must be at least 8 characters long, include uppercase, lowercase, number, and special character.');
             return false;
         }
 
-        // Check if new password matches confirm password
         if (newPassword !== confirmPassword) {
             toast.error('New passwords do not match.');
             return false;
         }
-
         return true;
     };
-
 
     const fetchUserData = async () => {
         try {
@@ -140,7 +125,6 @@ const InstructorProfile = () => {
         }
     };
 
-
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
         if (file && file.size <= 1 * 1024 * 1024) {  
@@ -162,7 +146,6 @@ const InstructorProfile = () => {
                 toast.error('User not logged in');
                 return;
             }
-
             const response = await api.put(
                 `/instructor/upload-image`,
                 formData,
@@ -172,7 +155,6 @@ const InstructorProfile = () => {
                     },
                 }
             );
-
             console.log(response.data, "image uploaded details");
             if (response.data.success) {
                 toast.success('Image uploaded successfully!');
@@ -249,7 +231,6 @@ const InstructorProfile = () => {
         }
     };
 
-
     useEffect(() => {
         fetchUserData();
     }, []);
@@ -260,7 +241,6 @@ const InstructorProfile = () => {
             <aside className="w-64 bg-gray-800 text-white flex flex-col">
                 <Sidebar />
             </aside>
-
             {/* Main Content */}
             <main className="flex-1 p-6">
                 <Box p={4}>
@@ -280,7 +260,7 @@ const InstructorProfile = () => {
                                 />
                                 <label htmlFor="profile-image-upload">
                                     <Avatar
-                                        src={`http://localhost:5000/${image}` || assets.Instructor3}
+                                        src={`${process.env.REACT_APP_SOCKET_URL}/${image}` || assets.Instructor3}
                                         sx={{ width: 250, height: 250, cursor: 'pointer', borderRadius: 2 }}
                                     />
                                 </label>
@@ -474,9 +454,7 @@ const InstructorProfile = () => {
                 </Box>
             </main>
         </div>
-
     );
 };
-
 
 export default InstructorProfile;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Paper, Box, Avatar, Grid } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, Box, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { GoogleLogin, googleLogout } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { ToastContainer, toast } from 'react-toastify';
 import { assets } from '../../../assets/assets_user/assets';
 import 'react-toastify/dist/ReactToastify.css';

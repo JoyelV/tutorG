@@ -76,7 +76,7 @@ const StudentsList: React.FC = () => {
                   <tr key={student._id} className="hover:bg-gray-50 transition-all duration-200">
                     <td className="px-4 py-4">
                       <img
-                        src={`http://localhost:5000/${student.studentId.image}`}
+                        src={`${process.env.REACT_APP_SOCKET_URL}/${student.studentId.image}`}
                         alt={student.studentId.username}
                         className="w-12 h-12 rounded-full object-cover"
                       />

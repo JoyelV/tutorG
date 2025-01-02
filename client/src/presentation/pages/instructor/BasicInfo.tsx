@@ -4,29 +4,12 @@ import { toast } from 'react-toastify';
 import api from '../../../infrastructure/api/api';
 import axios from "axios";
 
-interface ErrorState {
-  courseName?: string;
-  courseSubtitle?: string;
-  selectCategory?: string;
-  courseLanguage?: string;
-  courseLevel?: string;
-  courseDuration?: string;
-  courseRequirements?: string;
-  courseFee?: string;
-  courseLearningPoints?: string;
-  courseTargetAudience?: string;
-  courseDescription?: string;
-  image?: string;
-  trailer?: string;
-}
-
 function AddCourse() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Array<{ _id: string; categoryName: string }>>([]);
   const [loading, setLoading] = useState(false);
   const userInfo = localStorage.getItem('userId');
 
-  // State for course inputs
   const [courseName, setCourseName] = useState("");
   const [courseSubtitle, setCourseSubtitle] = useState("");
   const [selectCategory, setSelectCategory] = useState("");
@@ -40,7 +23,6 @@ function AddCourse() {
   const [courseDescription, setCourseDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [trailer, setTrailer] = useState<File | null>(null);
-  // Error states
   const [errors, setnewErrors] = useState({
     courseName: "",
     courseSubtitle: "",

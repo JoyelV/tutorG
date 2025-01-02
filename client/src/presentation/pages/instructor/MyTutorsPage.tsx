@@ -24,7 +24,7 @@ const MyTutorsPage: React.FC = () => {
 
         const tutorsList = orders.map((order: any) => ({
           username: order.tutorId.username,
-          image: `http://localhost:5000/${order.tutorId.image}`,  
+          image: `${process.env.REACT_APP_SOCKET_URL}/${order.tutorId.image}`,  
           title: 'Instructor',
         }));
 

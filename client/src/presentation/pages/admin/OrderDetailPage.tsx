@@ -99,8 +99,6 @@ const OrderView: React.FC = () => {
     );
   }
 
-  const progressColor = order.status === "Completed" ? "success" : "primary";
-
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Sidebar */}
@@ -140,7 +138,7 @@ const OrderView: React.FC = () => {
                     <TableRow>
                       <TableCell><strong>Profile Image</strong></TableCell>
                       <TableCell>
-                        <Avatar src={`http://localhost:5000/${order.studentId.image}`} alt={order.studentId.username} />
+                        <Avatar src={`${process.env.REACT_APP_SOCKET_URL}/${order.studentId.image}`} alt={order.studentId.username} />
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -172,7 +170,7 @@ const OrderView: React.FC = () => {
                     <TableRow>
                       <TableCell><strong>Profile Image</strong></TableCell>
                       <TableCell>
-                        <Avatar src={`http://localhost:5000/${order.tutorId.image}`} alt={order.tutorId.username} />
+                        <Avatar src={`${process.env.REACT_APP_SOCKET_URL}/${order.tutorId.image}`} alt={order.tutorId.username} />
                       </TableCell>
                     </TableRow>
                   </TableBody>

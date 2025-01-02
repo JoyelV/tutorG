@@ -6,7 +6,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
 import Sidebar from '../../components/admin/Sidebar';
-import TopNav from '../../components/admin/TopNav';
 
 const AccountSettings = () => {
     const [image, setImage] = useState<string | null>(null);
@@ -121,8 +120,6 @@ const AccountSettings = () => {
             const userId = localStorage.getItem('userId');
             const response = await api.get(`/admin/profile`);
             const data = response.data;
-            console.log(data, "data in fetch");
-
             setUsername(data.username || '');
             setEmail(data.email || '');
             setPhone(data.phone || '');
@@ -131,21 +128,17 @@ const AccountSettings = () => {
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
-            setImage(data.image || null); // Set the image URL fetched from the database
-            console.log(data.image, "image in fetchUser");
-            console.log(image, "image from state");
-
+            setImage(data.image || null);
         } catch (error) {
             console.error('Error fetching user data:', error);
             toast.error('Error fetching user data');
         }
     };
 
-
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
-        if (file && file.size <= 1 * 1024 * 1024) {  
-            setImage(URL.createObjectURL(file));  
+        if (file && file.size <= 1 * 1024 * 1024) {
+            setImage(URL.createObjectURL(file));
             uploadImage(file);
         } else {
             toast.error('Image size should be under 1MB');
@@ -250,22 +243,20 @@ const AccountSettings = () => {
         }
     };
 
-
     useEffect(() => {
         fetchUserData();
     }, []);
 
     return (
         <div className="flex min-h-screen bg-gray-100">
-        {/* Sidebar */}
-        <aside className="w-64 bg-gray-800 text-white flex flex-col">
-          <Sidebar />
-        </aside>
-  
-        {/* Main Content */}
-        <main className="flex-1 p-6">
-                <Box p={4}>
+            {/* Sidebar */}
+            <aside className="w-64 bg-gray-800 text-white flex flex-col">
+                <Sidebar />
+            </aside>
 
+            {/* Main Content */}
+            <main className="flex-1 p-6">
+                <Box p={4}>
                     <ToastContainer />
                     <Grid container spacing={4}>
                         {/* Profile Image Section */}
@@ -281,7 +272,7 @@ const AccountSettings = () => {
                                 />
                                 <label htmlFor="profile-image-upload">
                                     <Avatar
-                                        src={`http://localhost:5000/${image}`|| assets.Instructor3}
+                                        src={`${process.env.REACT_APP_SOCKET_URL}/${image}` || assets.Instructor3}
                                         sx={{ width: 250, height: 250, cursor: 'pointer', borderRadius: 2 }}
                                     />
                                 </label>
@@ -418,7 +409,6 @@ const AccountSettings = () => {
                                         }}
                                     />
                                 </Grid>
-
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth
@@ -439,7 +429,6 @@ const AccountSettings = () => {
                                         }}
                                     />
                                 </Grid>
-
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth
@@ -461,7 +450,6 @@ const AccountSettings = () => {
                                     />
                                 </Grid>
                             </Grid>
-
                             <Box mt={4}>
                                 <Button type="submit" variant="contained" color="warning">
                                     Change Password
@@ -469,13 +457,10 @@ const AccountSettings = () => {
                             </Box>
                         </form>
                     </Box>
-
                 </Box>
             </main>
         </div>
-
     );
 };
-
 
 export default AccountSettings;
