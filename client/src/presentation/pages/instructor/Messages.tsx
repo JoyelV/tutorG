@@ -219,7 +219,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         status: 'sent'
       };
 
-      setMessages((prevMessages) => [...prevMessages, message]);
       setNewMessage('');
       setImage(null);
       setImagePreview(null);

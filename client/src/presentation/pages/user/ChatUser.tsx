@@ -207,7 +207,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         status: 'sent',
       };
 
-      setMessages((prevMessages) => [...prevMessages, message]);
       setNewMessage('');
       setImage(null);
       setImagePreview(null);
