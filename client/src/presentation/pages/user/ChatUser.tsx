@@ -140,7 +140,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, []);
+  }, [messages]);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })

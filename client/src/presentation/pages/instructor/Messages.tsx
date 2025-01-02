@@ -151,7 +151,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, []);
+  }, [messages]);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
