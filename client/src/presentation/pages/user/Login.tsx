@@ -63,8 +63,8 @@ const Login: React.FC = () => {
             toast.success('Google Sign-In successful!');
             navigate('/');
         } catch (error) {
-            setError('Google Sign-In failed. Please try again.');
-            toast.error('Google Sign-In failed. Please try again.');
+            setError('Google Sign-In failed. Please check your credentials and try again.');
+            toast.error('Google Sign-In failed. Please check your credentials and try again.');
             console.error('Google Sign-In failed:', error);
         }
     };
