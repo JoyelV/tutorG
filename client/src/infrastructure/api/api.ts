@@ -25,7 +25,6 @@ api.interceptors.response.use(
             const message = error.response?.data?.message || "Forbidden";
             alert(message); 
             window.location.href = '/';
-            return Promise.reject(error);
         }
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true; 
