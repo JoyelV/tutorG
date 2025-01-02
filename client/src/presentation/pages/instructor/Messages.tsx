@@ -18,7 +18,7 @@ interface Instructor {
 
 interface Message {
   messageId: string;
-  sender: 'self' | 'other';
+  sender: string;
   content: string;
   time: string;
   status: string;
@@ -151,7 +151,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, []);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -209,10 +209,11 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         setAudioBlob(null);
         setAudioUrl(null);
       }
+      const userId = localStorage.getItem('userId');
 
       const message: Message = {
         messageId: `${Date.now()}`,
-        sender: 'self',
+        sender: userId || '',
         content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
         time: new Date().toLocaleTimeString(),
         mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
@@ -224,7 +225,6 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       setImage(null);
       setImagePreview(null);
 
-      const userId = localStorage.getItem('userId');
       if (!userId) {
         setError('User is not authenticated!');
         return;
@@ -269,7 +269,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         },
       });
       const fetchedMessages = response.data.map((message: any) => ({
-        sender: message.senderModel === 'Instructor' ? 'self' : 'other',
+        sender: message.sender,
         content: message.content || '',
         status: message.status,
         time: new Date(message.createdAt).toLocaleTimeString(),
@@ -426,8 +426,8 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             <div className="flex-1 overflow-y-auto p-4 max-h-[570px]">
               <div className="space-y-4">
                 {messages.map((message, index) => (
-                  <div key={index} className={`flex ${message.sender === 'self' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-lg ${message.sender === 'self' ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
+                  <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
+              <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                       <Typography>{message.content}</Typography>
                       {message.mediaUrl && (
                         <>

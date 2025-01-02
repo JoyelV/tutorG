@@ -17,7 +17,7 @@ interface User {
 
 interface Message {
   messageId: string;
-  sender: 'self' | 'other';
+  sender: string;
   content: string;
   time: string;
   status: string;
@@ -82,7 +82,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                   }
       }
     
-      // Emit read receipt for any received message
       if (message.messageId) {
         socket.current?.emit('message_read', message.messageId);
       }
@@ -141,7 +140,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, []);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -199,10 +198,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         setAudioBlob(null);
         setAudioUrl(null);
       }
+      const userId = localStorage.getItem('userId');
 
       const message: Message = {
         messageId: `${Date.now()}`,
-        sender: 'self',
+        sender: userId || '',
         content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
         time: new Date().toLocaleTimeString(),
         mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
@@ -214,7 +214,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       setImage(null);
       setImagePreview(null);
 
-      const userId = localStorage.getItem('userId');
       if (!userId) {
         toast.error('User is not authenticated!');
         return;
@@ -261,7 +260,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         },
       });
       const fetchedMessages = response.data.map((message: any) => ({
-        sender: message.senderModel === 'User' ? 'self' : 'other',
+        sender: message.sender,
         content: message.content || '',
         status: message.status,
         time: new Date(message.createdAt).toLocaleTimeString(),
@@ -410,8 +409,8 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           style={{ maxHeight: 'calc(100vh - 200px)' }}
         >
           {messages.map((message, index) => (
-            <div key={index} className={`flex ${message.sender === 'self' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-lg ${message.sender === 'self' ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
+            <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
+              <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                 <Typography>{message.content}</Typography>
                 {message.mediaUrl && (
                   <>
