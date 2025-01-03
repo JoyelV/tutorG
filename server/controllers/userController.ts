@@ -132,7 +132,7 @@ export const googleSignIn = async (req: Request, res: Response, next: NextFuncti
   } catch (error:any) {
     console.error('Google Sign-In error:', error.message || error);
     res.status(500).json({
-      message: 'Google Sign-In failed. Please try again.',
+      message: 'Google Sign-In failed. Please check credentials.',
     });
   }
 };
@@ -155,7 +155,7 @@ export const refreshAccessToken = async (req: Request, res: Response, next: Next
       res.status(200).json({ token: newToken });
   } catch (error) {
       console.error('Error refreshing token:', error);
-      res.status(403).json({ message: 'Invalid or expired refresh token' });
+      res.status(401).json({ message: 'Invalid or expired refresh token' });
   }
 };
 

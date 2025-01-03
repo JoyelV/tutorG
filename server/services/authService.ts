@@ -108,6 +108,10 @@ export const googleLoginService = async (googleToken: string) => {
       password:hashedPassword,
       role: 'user',
     });
+  }else{
+    if(user?.isBlocked){
+      throw new Error('User Blocked');
+    }
   }
 
   if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {

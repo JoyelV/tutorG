@@ -287,10 +287,17 @@ export const getIndividualCourseData = async (
   try {
     const { courseId } = req.params; 
     const studentId = req.userId; 
-
+    console.log(studentId,"student in enroll");
+    
     const course = await Course.findById(courseId).lean();
     if (!course) {
       res.status(400).json({ message: "Course not found" });
+      return;
+    }
+
+    const order = await orderModel.findOne({ studentId, courseId });
+    if (!order) {
+      res.status(403).json({ message: "You have not purchased this course" });
       return;
     }
 

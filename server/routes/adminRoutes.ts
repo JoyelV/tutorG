@@ -15,7 +15,7 @@ from '../controllers/adminController';
 import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { addTutors, toggleTutorStatus } from '../controllers/instructorController';
-import { deleteCategory, getCategories, getCategoriesPagination, saveCategory } from '../controllers/categoryController';
+import { deleteCategory, getCategoriesPagination, saveCategory } from '../controllers/categoryController';
 import { courseStatus, getCourseDatas, getInstructorData, getViewCourses, publishCourse, rejectCourse } from '../controllers/courseController';
 import { addReview, getReviews } from '../controllers/reviewController';
 import { verifyToken } from '../utils/VerifyToken';
@@ -36,30 +36,30 @@ router.put('/update-password',verifyToken, editPassword);
 router.put('/upload-image', upload.single('image'), verifyToken,uploadImage);
 
 //Student,QA & Tutor Management
-router.get('/users',getAllUsers);
-router.get('/instructors',getAllInstructors);
-router.patch('/users/:userId', toggleUserStatus);
-router.patch('/instructors/:tutorId',toggleTutorStatus);
+router.get('/users',verifyToken,getAllUsers);
+router.get('/instructors',verifyToken,getAllInstructors);
+router.patch('/users/:userId', verifyToken,toggleUserStatus);
+router.patch('/instructors/:tutorId',verifyToken,toggleTutorStatus);
 router.post('/add-tutor', upload.single('image'), addTutors);
 
 //Category Management
-router.get('/categories', getCategoriesPagination);
-router.post('/categories',saveCategory);
-router.put('/categories/:id',saveCategory);
-router.patch('/categories/block/:id', deleteCategory);
+router.get('/categories',verifyToken, getCategoriesPagination);
+router.post('/categories',verifyToken,saveCategory);
+router.put('/categories/:id',verifyToken,saveCategory);
+router.patch('/categories/block/:id', verifyToken,deleteCategory);
 
 //Course Management
-router.patch('/course-status/:courseId',courseStatus);
-router.get('/courseData',getCourseDatas);
-router.get('/courseDetailview/:courseId',getViewCourses);
-router.put('/publish/:courseId',publishCourse);
-router.put('/reject/:courseId',rejectCourse);
-router.post('/courses/:courseId', addReview);
-router.get('/reviews/:courseId',getReviews);
-router.get('/instructorProfile/:instructorId',getInstructorData);
+router.patch('/course-status/:courseId',verifyToken,courseStatus);
+router.get('/courseData',verifyToken,getCourseDatas);
+router.get('/courseDetailview/:courseId',verifyToken,getViewCourses);
+router.put('/publish/:courseId',verifyToken,publishCourse);
+router.put('/reject/:courseId',verifyToken,rejectCourse);
+router.post('/courses/:courseId',verifyToken,addReview);
+router.get('/reviews/:courseId',verifyToken,getReviews);
+router.get('/instructorProfile/:instructorId',verifyToken,getInstructorData);
 
 //Order Management
-router.get("/orders", getOrders);
-router.get("/order-view/:orderId", getOrderDetail);
+router.get("/orders", verifyToken,getOrders);
+router.get("/order-view/:orderId", verifyToken,getOrderDetail);
 
 export default router;

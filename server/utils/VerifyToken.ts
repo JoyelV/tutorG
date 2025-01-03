@@ -1,5 +1,8 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import User from '../models/User';
+import { decode } from 'punycode';
+import Instructor from '../models/Instructor';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -31,11 +34,11 @@ export const refreshAccessToken = async (req: Request, res: Response, next: Next
   }
 };
 
-export const verifyToken = (
+export const verifyToken = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader) {
@@ -52,15 +55,42 @@ export const verifyToken = (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    console.log(decoded,"decoded");
     
     if (!decoded || typeof decoded !== 'object' || !decoded.id) {
       res.status(403).json({ message: 'Invalid token payload' });
       return;
     }
     req.userId = decoded.id as string; 
+
+    if(decoded.role==='user'){
+      const user = await User.findById(decoded.id);
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    if (user.isBlocked) {
+      res.status(403).json({ message: 'User is blocked' });
+      return;
+    }
+    }else if(decoded.role==='instructor'){
+      const instructor = await Instructor.findById(decoded.id);
+
+      if (!instructor) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+  
+      if (instructor.isBlocked) {
+        res.status(403).json({ message: 'User is blocked' });
+        return;
+      }
+    }
     next();
   } catch (error) {
-    res.status(403).json({ message: 'Invalid or expired token' });
+    res.status(401).json({ message: 'Invalid or expired token' });
     return;
   }
 };
