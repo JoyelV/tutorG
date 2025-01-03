@@ -6,9 +6,10 @@ function Room() {
   const navigate = useNavigate();
 
   const myMeeting = async (element: HTMLDivElement) => {
-        const appID = 691585062;
-        const serverSecret = "15384d67f8449451e44ea9b4e2682878";
-        if(roomId){
+    const appID = Number(process.env.REACT_APP_ZEGO_APP_ID);
+    const serverSecret = process.env.REACT_APP_ZEGO_SERVER_SECRET;
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    if (roomId && appID && serverSecret && baseUrl) {
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomId, Date.now().toString(),'Joyel');
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
@@ -16,7 +17,7 @@ function Room() {
           sharedLinks: [
             {
               name: 'Copy Link',
-              url: `https://tutorg.vercel.app/chat/${roomId}`
+              url: `${baseUrl}/chat/${roomId}`
             }
           ],
           scenario: {
