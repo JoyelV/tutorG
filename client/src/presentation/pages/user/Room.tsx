@@ -16,7 +16,7 @@ function Room() {
           sharedLinks: [
             {
               name: 'Copy Link',
-              url: `http://localhost:3000/chat/${roomId}`
+              url: `https://tutorg.vercel.app/chat/${roomId}`
             }
           ],
           scenario: {
