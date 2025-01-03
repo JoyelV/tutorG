@@ -7,17 +7,16 @@ function Room() {
   const navigate = useNavigate();
 
   const myMeeting = async (element: HTMLDivElement) => {
-    const appID = Number(process.env.REACT_APP_ZEGO_APP_ID);
-    const serverSecret = process.env.REACT_APP_ZEGO_SERVER_SECRET;
-    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const appID = 691585062;
+    const serverSecret = "15384d67f8449451e44ea9b4e2682878";
 
-    if (roomId && appID && serverSecret && baseUrl) {
+    if (roomId) {
       const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
         appID,
         serverSecret,
         roomId,
         Date.now().toString(),
-        'Joyel'
+        'TutorG'
       );
 
       const zp = ZegoUIKitPrebuilt.create(kitToken);
@@ -26,7 +25,7 @@ function Room() {
         sharedLinks: [
           {
             name: 'Copy Link',
-            url: `${baseUrl}/chat/${roomId}`,
+            url: `http://localhost:3000/chat/${roomId}`,
           },
         ],
         scenario: {
