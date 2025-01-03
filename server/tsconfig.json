@@ -5,9 +5,16 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "strictNullChecks": true,  
+    "strictNullChecks": true,
     "skipLibCheck": false,
-    "allowSyntheticDefaultImports": true   
-  }
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist", // Output directory for compiled JS files
+    "baseUrl": "./",
+    "rootDir": "./",  // Specify the root directory of your TypeScript files
+    "paths": {
+      "*": ["*"] // Map paths for modules
+    }
+  },
+  "include": ["*.ts"], // Include all TS files in the src folder
+  "exclude": ["node_modules","dist"] // Exclude node_modules
 }
-
