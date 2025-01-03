@@ -1,2 +1,2 @@
-const BaseUrl="http://localhost:5000";
+const BaseUrl=`${process.env.REACT_APP_SOCKET_URL}`;
 export default BaseUrl;
