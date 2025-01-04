@@ -118,14 +118,14 @@ const AccountSettings: React.FC = () => {
   const fetchUserData = useCallback(async () => {
     try {
       const userId = localStorage.getItem('userId');
-      console.log(userId,"user nte id")
+      console.log(userId, "user nte id")
       if (!userId) {
         toast.error('User not logged in');
         return;
       }
       const response = await api.get<UserProfileData>(`/user/profile`);
       const data = response.data;
-      console.log(data,"data");
+      console.log(data, "data");
 
       setUsername(data.username || '');
       setEmail(data.email || '');
@@ -135,7 +135,7 @@ const AccountSettings: React.FC = () => {
       setGender(data.gender || '');
       const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
       setDob(formattedDob);
-      setImage(data.image||'');
+      setImage(data.image || '');
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error('Error fetching user data');
@@ -145,8 +145,8 @@ const AccountSettings: React.FC = () => {
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file && file.size <= 1 * 1024 * 1024) {
-      setImage(URL.createObjectURL(file)); 
-      uploadImage(file);  
+      setImage(URL.createObjectURL(file));
+      uploadImage(file);
     } else {
       toast.error('Image size should be under 1MB');
     }
@@ -171,6 +171,7 @@ const AccountSettings: React.FC = () => {
 
       if (response.data.success) {
         toast.success('Image uploaded successfully!');
+        setImage(response.data.imageUrl);
       } else {
         toast.error('Failed to upload image');
       }
@@ -265,7 +266,7 @@ const AccountSettings: React.FC = () => {
             />
             <label htmlFor="profile-image-upload">
               <Avatar
-                src={`${process.env.REACT_APP_SOCKET_URL}/${image}` || assets.Instructor3}
+                src={image || assets.Instructor3}
                 sx={{ width: 250, height: 250, cursor: 'pointer' }}
               />
             </label>
@@ -291,7 +292,7 @@ const AccountSettings: React.FC = () => {
               type="email"
               required
               InputProps={{
-                readOnly: true, 
+                readOnly: true,
               }}
             />
             <TextField

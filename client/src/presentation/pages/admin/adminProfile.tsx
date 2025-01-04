@@ -170,6 +170,7 @@ const AccountSettings = () => {
             console.log(response.data, "image uploaded details");
             if (response.data.success) {
                 toast.success('Image uploaded successfully!');
+                setImage(response.data.imageUrl);
             } else {
                 toast.error('Failed to upload image');
             }
@@ -272,7 +273,7 @@ const AccountSettings = () => {
                                 />
                                 <label htmlFor="profile-image-upload">
                                     <Avatar
-                                        src={`${process.env.REACT_APP_SOCKET_URL}/${image}` || assets.Instructor3}
+                                        src={image || assets.Instructor3}
                                         sx={{ width: 250, height: 250, cursor: 'pointer', borderRadius: 2 }}
                                     />
                                 </label>

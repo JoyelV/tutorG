@@ -115,7 +115,7 @@ const InstructorProfile = () => {
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
-            setImage(data.image || null); 
+            setImage(data.image || null);
             console.log(data.image, "image in fetchUser");
             console.log(image, "image from state");
 
@@ -127,8 +127,8 @@ const InstructorProfile = () => {
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
-        if (file && file.size <= 1 * 1024 * 1024) {  
-            setImage(URL.createObjectURL(file));  
+        if (file && file.size <= 1 * 1024 * 1024) {
+            setImage(URL.createObjectURL(file));
             uploadImage(file);
         } else {
             toast.error('Image size should be under 1MB');
@@ -158,6 +158,7 @@ const InstructorProfile = () => {
             console.log(response.data, "image uploaded details");
             if (response.data.success) {
                 toast.success('Image uploaded successfully!');
+                setImage(response.data.imageUrl);
             } else {
                 toast.error('Failed to upload image');
             }
@@ -260,7 +261,7 @@ const InstructorProfile = () => {
                                 />
                                 <label htmlFor="profile-image-upload">
                                     <Avatar
-                                        src={`${process.env.REACT_APP_SOCKET_URL}/${image}` || assets.Instructor3}
+                                        src={image || assets.Instructor3}
                                         sx={{ width: 250, height: 250, cursor: 'pointer', borderRadius: 2 }}
                                     />
                                 </label>
@@ -297,8 +298,8 @@ const InstructorProfile = () => {
                                             type="email"
                                             value={email}
                                             InputProps={{
-                                                readOnly: true, 
-                                              }}
+                                                readOnly: true,
+                                            }}
                                             onChange={(e) => setEmail(e.target.value)}
                                         />
                                     </Grid>
