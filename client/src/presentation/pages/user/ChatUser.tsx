@@ -111,7 +111,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         const data = response.data.map((item: any) => ({
           id: item.tutorId._id,
           name: item.tutorId.username,
-          image: `${process.env.REACT_APP_SOCKET_URL}/${item.tutorId.image}`,
+          image: item.tutorId.image,
         }));
         setUsers(data);
         if (data.length > 0) {
