@@ -143,7 +143,7 @@ const TutorsTable: React.FC = () => {
                     <Button
                       onClick={() => toggleBlockStatus(tutor._id)}
                       variant="contained"
-                      color={tutor.isBlocked ? 'success' : 'error'}
+                      color={tutor.isBlocked ? 'error' : 'success'}
                     >
                       {tutor.isBlocked ? 'Unblock' : 'Block-?'}
                     </Button>
