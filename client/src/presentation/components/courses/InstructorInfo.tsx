@@ -63,7 +63,7 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
       <h2 className="text-2xl font-semibold">Course Instructor</h2>
       <div className="flex items-center mt-4">
         <img
-          src={`${BaseUrl}/${instructorData.image}`}
+          src={instructorData.image}
           alt={instructorData.username}
           className="w-16 h-16 rounded-full mr-4"
         />
