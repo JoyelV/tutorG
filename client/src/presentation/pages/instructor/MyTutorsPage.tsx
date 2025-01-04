@@ -24,7 +24,7 @@ const MyTutorsPage: React.FC = () => {
 
         const tutorsList = orders.map((order: any) => ({
           username: order.tutorId.username,
-          image: `${process.env.REACT_APP_SOCKET_URL}/${order.tutorId.image}`,  
+          image: order.tutorId.image,  
           title: 'Instructor',
         }));
 
@@ -50,7 +50,7 @@ const MyTutorsPage: React.FC = () => {
               {/* Tutor Image */}
               <div
                 className="h-60 bg-cover bg-center rounded-t-xl"
-                style={{ backgroundImage: `url(${tutor.image?.replace(/\\/g, '/')} )` }}
+                style={{ backgroundImage:tutor.image }}
               ></div>
               <div className="p-3">
                 {/* Tutor Name */}
