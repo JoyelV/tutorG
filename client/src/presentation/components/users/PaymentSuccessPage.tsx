@@ -61,9 +61,6 @@ const CheckoutSuccess = () => {
   return (
     <div className="mt-10">
       {/* Logo Section */}
-      <div className="text-center mb-10">
-        <img src="/tutorg-logo.png" alt="TutorG Logo" className="mx-auto w-40" />
-      </div>
 
       <div className="min-h-screen bg-gray-100 py-10">
         <div className="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-lg">
@@ -78,7 +75,7 @@ const CheckoutSuccess = () => {
                   <p className="text-lg font-semibold">Student Details:</p>
                   <div className="flex items-center mt-2">
                     <img
-                      src={`${process.env.REACT_APP_SOCKET_URL}/${order.studentId.image}`}
+                      src={order.studentId.image}
                       alt={order.studentId.username}
                       className="w-16 h-16 rounded-full shadow-md mr-4"
                     />
@@ -128,7 +125,7 @@ const CheckoutSuccess = () => {
                     <tr>
                       <td className="py-4">
                         <img
-                          src={`${process.env.REACT_APP_SOCKET_URL}/${order.tutorId.image}`}
+                          src={order.tutorId.image}
                           alt={order.tutorId.username}
                           className="w-16 h-16 object-cover rounded-md"
                         />
