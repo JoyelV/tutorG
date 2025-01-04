@@ -4,12 +4,12 @@ import api from '../../../infrastructure/api/api';
 interface Tutor {
   username: string;
   image: string;
-  title: string; 
+  title: string;
 }
 
 const MyTutorsPage: React.FC = () => {
   const [tutors, setTutors] = useState<Tutor[]>([]);
-  const studentId = localStorage.getItem('userId'); 
+  const studentId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchTutors = async () => {
@@ -20,11 +20,11 @@ const MyTutorsPage: React.FC = () => {
 
       try {
         const response = await api.get(`/user/my-tutors`);
-        const orders = response.data; 
+        const orders = response.data;
 
         const tutorsList = orders.map((order: any) => ({
           username: order.tutorId.username,
-          image: order.tutorId.image,  
+          image: order.tutorId.image,
           title: 'Instructor',
         }));
 
@@ -50,8 +50,9 @@ const MyTutorsPage: React.FC = () => {
               {/* Tutor Image */}
               <div
                 className="h-60 bg-cover bg-center rounded-t-xl"
-                style={{ backgroundImage:tutor.image }}
+                style={{ backgroundImage: `url(${tutor.image})` }}
               ></div>
+
               <div className="p-3">
                 {/* Tutor Name */}
                 <h2 className="text-center px-2 py-1 rounded-full text-xs font-semibold uppercase text-gray-800 leading-tight">
