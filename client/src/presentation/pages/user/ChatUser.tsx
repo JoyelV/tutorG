@@ -72,12 +72,13 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
             ...prevCounts,
             [message.sender]: (prevCounts[message.sender] || 0) + 1,
           }));
-        } 
+        } else{
         setMessages((prevMessages) =>
             prevMessages.some((msg) => msg.messageId === message.messageId)
               ? prevMessages
               : [...prevMessages, message]
           );
+        }
       }
     
       if (message.messageId) {

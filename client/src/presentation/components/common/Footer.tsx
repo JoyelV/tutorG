@@ -5,21 +5,21 @@ import { Facebook, Instagram, LinkedIn, Twitter, YouTube } from '@mui/icons-mate
 
 const Footer: React.FC = () => {
   return (
-    <Box sx={{ backgroundColor: '#1D2026', color: grey[300], p: 4 }}>
+    <Box sx={{ backgroundColor: '#1D2026', color: grey[300], p: 4, minHeight: '20vh' }}>
       <Grid container spacing={4} justifyContent="center">
         {/* Logo and Description */}
         <Grid item xs={12} md={3}>
           <Box display="flex" alignItems="center" gap={1} mb={2}>
             {/* Logo Image */}
             <img
-              src={assets.logo} 
+              src={assets.logo}
               alt="TutorG Logo"
               style={{ width: 36, height: 36, borderRadius: 4 }}
             />
-            <Typography 
-              variant="h5" 
-              color="#F29D38" 
-              sx={{ fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center' }} 
+            <Typography
+              variant="h5"
+              color="#F29D38"
+              sx={{ fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
               Tutor
               <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
