@@ -131,7 +131,7 @@ const UserTable: React.FC = () => {
                       variant="contained"
                       color={user.isBlocked ? 'success' : 'error'}
                     >
-                      {user.isBlocked ? 'Unblock' : 'Blocked'}
+                      {user.isBlocked ? 'Unblock' : 'Block-?'}
                     </Button>
                   </TableCell>
                   <TableCell>

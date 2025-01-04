@@ -193,7 +193,7 @@ const CourseTable: React.FC = () => {
                             : "bg-green-500 hover:bg-green-700"
                             } text-white`}
                         >
-                          {course.isApproved ? "Blocked" : "Unblock"}
+                          {course.isApproved ? "Unblock" : "Block-?"}
                         </button>
                         <button
                           onClick={() => navigate(`/admin/viewCoursePage/${course._id}`)}
