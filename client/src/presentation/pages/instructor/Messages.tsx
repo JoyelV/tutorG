@@ -119,7 +119,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             studentsMap[studentId] = {
               id: studentId,
               name: item.studentId.username,
-              image: `${process.env.REACT_APP_SOCKET_URL}/${item.studentId.image}`,
+              image:item.studentId.image,
             };
           }
         });
