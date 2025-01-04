@@ -215,7 +215,7 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(400).json({ success: false, message: 'No file uploaded' });
         return;
     }
-    const imageUrl = req.file ? req.file.path : "";
+    const imageUrl = req.file.path;
     if (!userId) {
         res.status(400).json({ message: 'User ID is missing in the request' });
         return;

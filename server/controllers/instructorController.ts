@@ -210,7 +210,7 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
     res.status(400).json({ success: false, message: 'No file uploaded' });
     return;
   }
-  const imageUrl = req.file ? req.file.path : "";
+  const imageUrl = (req.file as any).path;
 
   if (!userId) {
     res.status(400).json({ message: 'User ID is missing in the request' });

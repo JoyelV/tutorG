@@ -1,17 +1,28 @@
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
-import path from 'path';
 
-const storage = multer.diskStorage({
-  destination: (req: Express.Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, './public'); 
-  },
-  filename: (req: Express.Request, file: Express.Multer.File, cb: Function) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  },
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const upload = multer({ 
-  storage, 
+// Extend the Params type to include 'folder'
+interface ExtendedParams {
+  folder: string;
+  allowed_formats?: string[];
+}
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'uploads', // Specify your Cloudinary folder
+    allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed file formats
+  } as ExtendedParams, // Cast to the extended type
 });
+
+const upload = multer({ storage });
 
 export default upload;

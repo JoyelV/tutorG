@@ -92,7 +92,7 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         const { token, refreshToken, user } = yield (0, authService_1.loginService)(email, password);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true, // Prevent access via JavaScript
-            secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
+            secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
             sameSite: 'strict', // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -123,7 +123,7 @@ const googleSignIn = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const { token, refreshToken, user } = yield (0, authService_1.googleLoginService)(googleToken);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'development',
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -264,7 +264,7 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(400).json({ success: false, message: 'No file uploaded' });
         return;
     }
-    const imageUrl = req.file ? req.file.path : "";
+    const imageUrl = req.file.path;
     if (!userId) {
         res.status(400).json({ message: 'User ID is missing in the request' });
         return;
