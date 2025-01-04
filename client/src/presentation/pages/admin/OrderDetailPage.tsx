@@ -138,7 +138,7 @@ const OrderView: React.FC = () => {
                     <TableRow>
                       <TableCell><strong>Profile Image</strong></TableCell>
                       <TableCell>
-                        <Avatar src={`${process.env.REACT_APP_SOCKET_URL}/${order.studentId.image}`} alt={order.studentId.username} />
+                        <Avatar src={order.studentId.image} alt={order.studentId.username} />
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -170,7 +170,7 @@ const OrderView: React.FC = () => {
                     <TableRow>
                       <TableCell><strong>Profile Image</strong></TableCell>
                       <TableCell>
-                        <Avatar src={`${process.env.REACT_APP_SOCKET_URL}/${order.tutorId.image}`} alt={order.tutorId.username} />
+                        <Avatar src={order.tutorId.image} alt={order.tutorId.username} />
                       </TableCell>
                     </TableRow>
                   </TableBody>
