@@ -3,6 +3,7 @@ import { TextField, Button, Container, Typography, Paper, Box, Alert, Link, Grid
 import api from '../../../infrastructure/api/api';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const AdminLogin: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -14,26 +15,20 @@ const AdminLogin: React.FC = () => {
         e.preventDefault();
         try {
             const response = await api.post('/admin/login', { email, password }, { withCredentials: true });
-
-            const userId = response.data.user.id;
-            const token = response.data.token;
-            const userRole = response.data.user.role;
-            const username = response.data.user.username;
-
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('role', userRole);
-            localStorage.setItem('username', username);
-
-            if (userRole !== 'admin') {
-                setError('Access denied. Only administrators can log in.');
+            const { token, user } = response.data;
+            if (user.role !== 'admin') {
+                setError('Access denied. Enter valid credentials.');
+                toast.error('Access denied. Enter valid credentials.');
                 return;
             }
-
+            localStorage.setItem('token', token);
+            localStorage.setItem('userId', user.id);
+            localStorage.setItem('role', user.role);
+            localStorage.setItem('username', user.username);
             navigate('/admin/dashboard');
         } catch (error) {
             setError('Admin login failed. Please check your credentials.');
-            console.error('Admin login error:', error);
+            toast.error('Login failed. Please check your credentials and try again.');
         }
     };
 
@@ -44,7 +39,7 @@ const AdminLogin: React.FC = () => {
     return (
         <Container component="main" maxWidth="md" sx={{ mt: 8 }}>
             <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-            <Grid container>
+                <Grid container>
                     {/* Left Side - Image */}
                     <Grid item xs={12} md={6}>
                         <Box
@@ -66,8 +61,8 @@ const AdminLogin: React.FC = () => {
 
                     {/* Right Side: Login Form Section */}
                     <Grid item xs={12} md={6}>
-                    <Box sx={{ p: 4 }}>
-                    {/* Brand Section */}
+                        <Box sx={{ p: 4 }}>
+                            {/* Brand Section */}
                             <Box textAlign="center" mb={3}>
                                 <Typography
                                     variant="h3"
@@ -86,8 +81,8 @@ const AdminLogin: React.FC = () => {
                                     Welcome to Admin Platform!
                                 </Typography>
                                 <Typography component="h1" variant="h5" gutterBottom>
-                                Admin Sign In
-                            </Typography>
+                                    Admin Sign In
+                                </Typography>
                             </Box>
 
                             {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}

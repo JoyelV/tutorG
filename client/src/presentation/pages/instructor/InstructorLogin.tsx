@@ -3,6 +3,7 @@ import { TextField, Button, Container, Typography, Paper, Box, Alert, Link, Grid
 import api from '../../../infrastructure/api/api';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const InstructorLogin: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -14,26 +15,20 @@ const InstructorLogin: React.FC = () => {
         e.preventDefault();
         try {
             const response = await api.post('/instructor/login', { email, password }, { withCredentials: true });
-
-            const userId = response.data.user.id;
-            const token = response.data.token;
-            const userRole = response.data.user.role;
-            const username = response.data.user.username;
-
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('role', userRole);
-            localStorage.setItem('username', username);
-
-            if (userRole !== 'instructor') {
-                setError('Access denied. Only Instructors can log in.');
+            const { token, user } = response.data;
+            if (user.role !== 'instructor') {
+                setError('Access denied. Enter valid credentials.');
+                toast.error('Access denied. Enter valid credentials.');
                 return;
             }
-            console.log("userRole in instructor", userRole);
+            localStorage.setItem('token', token);
+            localStorage.setItem('userId', user.id);
+            localStorage.setItem('role', user.role);
+            localStorage.setItem('username', user.username);
             navigate('/instructor/instructor-dashboard');
         } catch (error) {
             setError('Instructor login failed. Please check your credentials.');
-            console.error('Instructor login error:', error);
+            toast.error('Login failed. Please check your credentials and try again.');
         }
     };
 
@@ -85,8 +80,8 @@ const InstructorLogin: React.FC = () => {
                                     Welcome to Your Instructor's Platform!
                                 </Typography>
                                 <Typography component="h1" variant="h5" gutterBottom>
-                                Instructor Sign In
-                            </Typography>
+                                    Instructor Sign In
+                                </Typography>
                             </Box>
                             {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
                             <Box component="form" onSubmit={handleInstructorLogin} sx={{ mt: 1 }}>

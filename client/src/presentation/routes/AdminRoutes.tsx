@@ -8,7 +8,6 @@ import { PasswordReset } from '../pages/admin/PasswordReset';
 import AddForm from '../pages/admin/AddTutor';
 import CategoryPage from '../pages/admin/CategoryPage';
 import CoursesList from '../pages/admin/coursesList';
-import ErrorBoundary from '../../utils/ErrorBoundary';
 import CourseViewPage from '../pages/admin/ViewCourse';
 import AddReviewForm from '../pages/admin/AddReview';
 import Pagenotfound from '../components/common/PageNotFound';
@@ -16,10 +15,9 @@ import OrdersTable from '../pages/admin/OrderTableList';
 import OrderView from '../pages/admin/OrderDetailPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 
-const AdminRoutes = () => {
-    const values = localStorage.getItem('role');
-    const isAdmin = values === 'admin';
+const isAdmin = localStorage.getItem('role') === 'admin';
 
+const AdminRoutes = () => {
     return (
         <Routes>
             {/* Admin login route */}

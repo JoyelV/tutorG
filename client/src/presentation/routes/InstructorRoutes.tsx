@@ -28,11 +28,9 @@ if (!stripePublicKey) {
 }
 
 const stripePromise = loadStripe(stripePublicKey);
+const isInstructor = localStorage.getItem('role') === 'instructor';
 
 const InstructorRoutes = () => {
-    const value = localStorage.getItem('role');
-    const isInstructor = value === 'instructor';
-
     return (
         <Routes>
             <Route path="/" element={<InstructorLogin />} />

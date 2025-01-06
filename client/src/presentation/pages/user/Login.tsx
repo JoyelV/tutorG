@@ -40,13 +40,10 @@ const Login: React.FC = () => {
             localStorage.setItem('userId', user.id);
             localStorage.setItem('role', user.role);
             localStorage.setItem('username', user.username);
-
-            toast.success('Login successful!');
             navigate('/');
         } catch (error) {
             setError('Login failed. Please check your credentials and try again.');
             toast.error('Login failed. Please check your credentials and try again.');
-            console.error('Login failed:', error);
         }
     };
 
