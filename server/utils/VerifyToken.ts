@@ -55,7 +55,6 @@ export const verifyToken = async (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    console.log(decoded,"decoded");
     
     if (!decoded || typeof decoded !== 'object' || !decoded.id) {
       res.status(403).json({ message: 'Invalid token payload' });

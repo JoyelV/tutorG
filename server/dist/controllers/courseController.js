@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNotifications = exports.getWithdrawalHistory = exports.getEarningDetails = exports.getMyEarnings = exports.getMyStudents = exports.getMyCourses = exports.getEnrolledMyCourses = exports.updateProgress = exports.rejectCourse = exports.publishCourse = exports.deleteCourse = exports.editCourse = exports.updateChapter = exports.getViewChapter = exports.getViewChapters = exports.deleteLesson = exports.addLesson = exports.getViewCourses = exports.getMyTutorCourses = exports.getTutorCourses = exports.courseStatus = exports.getIndividualCourseData = exports.getCompletionCertificate = exports.getIndividualCourses = exports.getInstructorData = exports.getCourseWithFeedbacks = exports.updateCourseRating = exports.getCourseDatas = exports.getCourses = exports.createCourse = void 0;
+exports.getNotifications = exports.getWithdrawalHistory = exports.getEarningDetails = exports.getMyEarnings = exports.getMyStudents = exports.getMyCourses = exports.getEnrolledMyCourses = exports.updateProgress = exports.rejectCourse = exports.publishCourse = exports.deleteCourse = exports.editCourse = exports.updateChapter = exports.getViewChapter = exports.getViewChapters = exports.deleteLesson = exports.addLesson = exports.getViewCourses = exports.getMyTutorCourses = exports.getTutorCourses = exports.courseStatus = exports.getIndividualCourseData = exports.getStudentCourseSummary = exports.getCompletionCertificate = exports.getIndividualCourses = exports.getInstructorData = exports.getCourseWithFeedbacks = exports.updateCourseRating = exports.getCourseDatas = exports.getInstructorCourses = exports.getRecentlyAddedCourses = exports.getRelatedCourses = exports.getCourses = exports.createCourse = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const Course_1 = __importDefault(require("../models/Course"));
 const Category_1 = __importDefault(require("../models/Category"));
@@ -104,6 +104,55 @@ const getCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getCourses = getCourses;
+const getRelatedCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { courseId } = req.params;
+    try {
+        const course = yield Course_1.default.findById(courseId);
+        if (!course) {
+            res.status(404).json({ message: "Course not found" });
+            return;
+        }
+        const relatedCourses = yield Course_1.default.find({
+            category: course.category,
+            _id: { $ne: courseId },
+        }).limit(5);
+        res.status(200).json(relatedCourses);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Failed to fetch related courses", error });
+    }
+});
+exports.getRelatedCourses = getRelatedCourses;
+const getRecentlyAddedCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const courses = yield Course_1.default.find()
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .select('title category courseFee thumbnail averageRating students');
+        res.status(200).json(courses);
+    }
+    catch (error) {
+        console.error('Error fetching recently added courses:', error);
+        res.status(500).json({ message: 'Server error. Could not fetch courses.' });
+    }
+});
+exports.getRecentlyAddedCourses = getRecentlyAddedCourses;
+const getInstructorCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { instructorId } = req.params;
+    if (!instructorId) {
+        res.status(400).json({ message: "Instructor ID is required." });
+        return;
+    }
+    try {
+        const courses = yield Course_1.default.find({ instructorId }).select('title category courseFee thumbnail averageRating students');
+        res.status(200).json(courses);
+    }
+    catch (error) {
+        console.error('Error fetching recently added courses:', error);
+        res.status(500).json({ message: 'Server error. Could not fetch courses.' });
+    }
+});
+exports.getInstructorCourses = getInstructorCourses;
 const getCourseDatas = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
@@ -261,11 +310,46 @@ const getCompletionCertificate = (req, res, next) => __awaiter(void 0, void 0, v
     }
 });
 exports.getCompletionCertificate = getCompletionCertificate;
+const getStudentCourseSummary = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const studentId = req.userId;
+    try {
+        const enrolledCourses = yield Orders_1.default
+            .find({ studentId })
+            .populate('courseId', 'title thumbnail courseFee level')
+            .lean();
+        const completedCourses = yield Progress_1.default.find({
+            studentId,
+            isCompleted: true,
+        })
+            .populate('courseId', 'title thumbnail courseFee level')
+            .lean()
+            .exec();
+        const ongoingCourses = yield Progress_1.default.find({ studentId, isCompleted: false })
+            .populate('courseId', 'title thumbnail courseFee level progressPercentage')
+            .lean();
+        const uniqueTutors = [
+            ...new Set(enrolledCourses.map((order) => order.tutorId.toString())),
+        ];
+        res.status(200).json({
+            enrolledCourses,
+            totalEnrolled: enrolledCourses.length,
+            completedCourses,
+            totalCompleted: completedCourses.length,
+            ongoingCourses,
+            totalOngoing: ongoingCourses.length,
+            uniqueTutors: uniqueTutors.length,
+        });
+    }
+    catch (error) {
+        console.error('Error fetching student summary:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.getStudentCourseSummary = getStudentCourseSummary;
 const getIndividualCourseData = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { courseId } = req.params;
         const studentId = req.userId;
-        console.log(studentId, "student in enroll");
         const course = yield Course_1.default.findById(courseId).lean();
         if (!course) {
             res.status(400).json({ message: "Course not found" });
@@ -481,7 +565,6 @@ const editCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     var _a;
     try {
         const { courseId } = req.params;
-        console.log(courseId, "id");
         const { title, subtitle, category, language, level, duration, courseFee, description, requirements, learningPoints, targetAudience, thumbnail, trailer, } = req.body;
         const categoryData = yield Category_1.default.findOne({ categoryName: category });
         if (!categoryData) {
@@ -587,21 +670,51 @@ const rejectCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.rejectCourse = rejectCourse;
 const updateProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { completedLesson } = req.body;
-    const { id } = req.params;
+    const { completedLesson, videoSource } = req.body;
+    const { id } = req.params; // Course ID
     const studentId = req.userId;
     try {
-        const progress = yield Progress_1.default.findOne({ courseId: id, studentId });
+        const course = yield Course_1.default.findById(id);
+        if (!course) {
+            res.status(404).json({ message: 'Course not found' });
+            return;
+        }
+        if (videoSource === course.trailer) {
+            res.status(200).json({ message: 'Trailer viewed successfully' });
+            return;
+        }
+        const totalLessons = yield Lesson_1.default.countDocuments({ courseId: id });
+        let progress = yield Progress_1.default.findOne({ courseId: id, studentId });
         if (!progress) {
-            yield Progress_1.default.create({ courseId: id, studentId, completedLessons: [completedLesson], completionDate: new Date() });
+            // Create a new progress record if it doesn't exist
+            progress = yield Progress_1.default.create({
+                courseId: id,
+                studentId,
+                completedLessons: [completedLesson],
+                progressPercentage: (1 / totalLessons) * 100,
+            });
         }
         else {
+            // Add the completed lesson if not already added
             if (!progress.completedLessons.includes(completedLesson)) {
                 progress.completedLessons.push(completedLesson);
+                progress.progressPercentage = (progress.completedLessons.length / totalLessons) * 100;
                 yield progress.save();
             }
         }
-        res.status(200).json({ message: 'Progress updated successfully' });
+        // Check if the course is completed
+        if (progress.completedLessons.length === totalLessons) {
+            progress.isCompleted = true;
+            progress.completionDate = new Date();
+            yield progress.save();
+            res.status(201).json({ message: 'Course completed successfully!' });
+        }
+        else {
+            res.status(201).json({
+                message: 'Progress updated successfully',
+                progressPercentage: progress.progressPercentage
+            });
+        }
     }
     catch (err) {
         console.error(err);

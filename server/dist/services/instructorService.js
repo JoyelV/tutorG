@@ -71,11 +71,11 @@ const resetPasswordService = (token, newPassword) => __awaiter(void 0, void 0, v
     try {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
         const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
-        const user = yield instructorRepository_1.instructorRepository.findUserByEmail(decoded.email);
+        const user = yield instructorRepository_1.instructorRepository.findUserByEmail(decoded.email.toLowerCase());
         if (!user) {
             throw new Error('User not found');
         }
-        const updatedUser = yield instructorRepository_1.instructorRepository.updateUserPassword(decoded.email, hashedPassword);
+        const updatedUser = yield instructorRepository_1.instructorRepository.updateUserPassword(decoded.email.toLowerCase(), hashedPassword);
         if (!updatedUser) {
             throw new Error('Failed to update password');
         }

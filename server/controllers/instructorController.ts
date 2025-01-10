@@ -11,42 +11,25 @@ import Instructor from '../models/Instructor';
 import orderModel from '../models/Orders';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
 import RateInstructor from '../models/RateInstructor';
+import Course from '../models/Course';
 
 dotenv.config();
-
-export const register = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-      res.status(400).json({ message: 'All fields are required' });
-      return;
-    }
-
-    const otp = generateOTP();
-    otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-    await sendOTPEmail(email, otp);
-
-    res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
 
 /**
  * Resend OTP to the student email for registration.
  */
 export const resendOtp = async (req:Request, res:Response,next: NextFunction) => {
   const { username, email, password } = req.body;
+  const emailLowerCase = email.toLowerCase();
+
   try {
     if (!email) {
       res.status(400).json({ message: 'Email is required' });
       return;
     }
     const otp = generateOTP();
-    otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-    await sendOTPEmail(email, otp);
+    otpRepository.saveOtp(emailLowerCase, { otp, username, password, createdAt: new Date() });
+    await sendOTPEmail(emailLowerCase, otp);
     
     res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
   } catch (error) {
@@ -55,31 +38,12 @@ export const resendOtp = async (req:Request, res:Response,next: NextFunction) =>
   }
 };
 
-export const verifyRegisterOTP = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email, otp } = req.body;
-    if (!email || !otp) {
-      res.status(400).json({ message: 'Email and OTP are required' });
-      return;
-    }
-
-    const message = await verifyOTP(email, otp);
-    res.status(201).json({ message });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error:', error.message);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error('Unknown error:', error);
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-}
-
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, password } = req.body;
   try {
-    const { token, refreshToken ,user } = await loginService(email, password);
+    const emailLowerCase = email.toLowerCase();
+
+    const { token, refreshToken ,user } = await loginService(emailLowerCase, password);
 
     // Send the refresh token as an HttpOnly cookie
     res.cookie('refreshToken', refreshToken, {
@@ -95,24 +59,29 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       user: {
         id: user._id,
         username: user.username,
-        email: user.email,
         role: user.role,
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'An unknown error occurred' });
+    res.status(400).json({ message: 'An unknown error occurred' });
   }
 };
 
 export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email } = req.body;
+  const emailLowerCase = email.toLowerCase();
+  const user = await Instructor.findOne({ email: emailLowerCase });
+  if (!user) {
+    res.status(404).json({ error: 'Email address not found in the system.' });
+    return;
+  }
+
   try {
     if (!email) {
       res.status(400).json({ message: 'Email is required' });
       return;
     }
-    await otpService.generateAndSendOtp(email);
+    await otpService.generateAndSendOtp(emailLowerCase);
     res.status(200).send('OTP sent to email');
   } catch (error) {
     console.error('Error sending OTP:', error);
@@ -122,14 +91,15 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction): 
 
 export const verifyPasswordOtp = (req: Request, res: Response, next: NextFunction): void => {
   const { email, otp } = req.body;
-
   try {
+    const emailLowerCase = email.toLowerCase();
+
     if (!email || !otp) {
       res.status(400).json({ message: 'Email and OTP are required' });
       return;
     }
 
-    const token = otpService.verifyOtpAndGenerateToken(email, otp);
+    const token = otpService.verifyOtpAndGenerateToken(emailLowerCase, otp);
 
     res.status(200).json({ token });
   } catch (error) {
@@ -329,6 +299,20 @@ export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Pro
   }
 }
 
+export const getTopTutors = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const instructors = await Instructor.find()
+      .sort({ averageRating: -1 }) 
+      .limit(5) 
+      .select('username headline areasOfExpertise image averageRating numberOfRatings'); 
+
+    res.status(200).json(instructors);
+  } catch (error) {
+    console.error('Error fetching top instructors:', error);
+    res.status(500).json({ message: 'Failed to fetch instructors' });
+  }
+};
+
 const stripe = require('stripe')(process.env.STRIPE_KEY); 
 
 export const getStripePayment = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -382,6 +366,12 @@ export const addInstructorRating = async (req: AuthenticatedRequest, res: Respon
   const { rating, comment } = req.body; 
   const { instructorId } = req.params;   
   const userId = req.userId; 
+  
+  if (comment && comment.length < 5) {
+    res.status(400).json({ message: 'Comment must be at least 5 characters long.' });
+    return;
+  }
+
   try {
     const instructor = await Instructor.findById(instructorId);
     if (!instructor) {
@@ -409,9 +399,72 @@ export const addInstructorRating = async (req: AuthenticatedRequest, res: Respon
     instructor.averageRating = newAverageRating;
     instructor.numberOfRatings = totalRatings.length;
     await instructor.save();
+
     res.status(201).json({ message: 'Rating submitted successfully!' });
   } catch (error) {
     console.error('Error updating instructor rating:', error);
     res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+
+export const getInstructorById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { instructorId } = req.params;
+    const instructor = await Instructor.findById(instructorId);
+
+    if (!instructor) {
+      res.status(404).json({ message: "Instructor not found" });
+      return ;
+    }
+
+    const courses = await Course.find({ instructorId: instructorId });
+    const totalCourses = courses.length;
+
+    const uniqueStudentIds = new Set<string>();
+    courses.forEach((course) => {
+      course.students.forEach((studentId) => {
+        uniqueStudentIds.add(studentId.toString());
+      });
+    });
+
+    const totalStudents = uniqueStudentIds.size;
+
+    res.status(200).json({
+      username: instructor.username,
+      image: instructor.image,
+      bio: instructor.bio,
+      about:instructor.about,
+      headline: instructor.headline,
+      areasOfExpertise:instructor.areasOfExpertise,
+      highestQualification:instructor.highestQualification,
+      averageRating: instructor.averageRating,
+      numberOfRatings: instructor.numberOfRatings,
+      totalStudents,
+      totalCourses,
+    });
+  } catch (error) {
+    console.error("Error fetching instructor data:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getInstructorFeedback = async (req: Request, res: Response, next: NextFunction) => {
+  const { instructorId } = req.params;
+
+  if (!instructorId) {
+    res.status(400).json({ message: "Instructor ID is required." });
+    return;
+  }
+
+  try {
+    const feedback = await RateInstructor.find({instructorId}).populate({
+      path: 'userId',
+      select: 'username image', 
+    });
+    res.status(200).json(feedback);
+  } catch (error) {
+    console.error("Error fetching instructor feedback:", error);
+    res.status(500).json({ message: "Server error. Could not fetch feedback." });
   }
 };

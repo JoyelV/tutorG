@@ -57,7 +57,7 @@ exports.saveCategory = saveCategory;
  */
 const getCategories = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categories = yield Category_1.default.find();
+        const categories = yield Category_1.default.find({ status: false });
         res.status(200).json(categories);
     }
     catch (error) {

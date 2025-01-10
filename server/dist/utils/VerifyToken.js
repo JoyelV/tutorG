@@ -48,7 +48,6 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-        console.log(decoded, "decoded");
         if (!decoded || typeof decoded !== 'object' || !decoded.id) {
             res.status(403).json({ message: 'Invalid token payload' });
             return;

@@ -14,8 +14,6 @@ const VerifyToken_1 = require("../utils/VerifyToken");
 const router = (0, express_1.Router)();
 // AUTHENTICATION
 router.post('/login', instructorController_1.login);
-router.post('/register', instructorController_1.register);
-router.post('/verify-registerotp', instructorController_1.verifyRegisterOTP);
 router.post('/send-otp', instructorController_1.sendOtp);
 router.post('/resend-otp', instructorController_1.resendOtp);
 router.post('/verify-otp', instructorController_1.verifyPasswordOtp);

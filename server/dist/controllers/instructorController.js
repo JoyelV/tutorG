@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addInstructorRating = exports.getStripePayment = exports.getMyTutors = exports.addTutors = exports.toggleTutorStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.login = exports.verifyRegisterOTP = exports.resendOtp = exports.register = void 0;
+exports.getInstructorFeedback = exports.getInstructorById = exports.addInstructorRating = exports.getStripePayment = exports.getTopTutors = exports.getMyTutors = exports.addTutors = exports.toggleTutorStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.login = exports.resendOtp = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const emailService_1 = require("../utils/emailService");
 const otpGenerator_1 = require("../utils/otpGenerator");
@@ -24,38 +24,22 @@ const instructorService_2 = require("../services/instructorService");
 const Instructor_1 = __importDefault(require("../models/Instructor"));
 const Orders_1 = __importDefault(require("../models/Orders"));
 const RateInstructor_1 = __importDefault(require("../models/RateInstructor"));
+const Course_1 = __importDefault(require("../models/Course"));
 dotenv_1.default.config();
-const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { username, email, password } = req.body;
-        if (!username || !email || !password) {
-            res.status(400).json({ message: 'All fields are required' });
-            return;
-        }
-        const otp = (0, otpGenerator_1.generateOTP)();
-        otpRepository_1.otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-        yield (0, emailService_1.sendOTPEmail)(email, otp);
-        res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-exports.register = register;
 /**
  * Resend OTP to the student email for registration.
  */
 const resendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = req.body;
+    const emailLowerCase = email.toLowerCase();
     try {
         if (!email) {
             res.status(400).json({ message: 'Email is required' });
             return;
         }
         const otp = (0, otpGenerator_1.generateOTP)();
-        otpRepository_1.otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-        yield (0, emailService_1.sendOTPEmail)(email, otp);
+        otpRepository_1.otpRepository.saveOtp(emailLowerCase, { otp, username, password, createdAt: new Date() });
+        yield (0, emailService_1.sendOTPEmail)(emailLowerCase, otp);
         res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
     }
     catch (error) {
@@ -64,32 +48,11 @@ const resendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.resendOtp = resendOtp;
-const verifyRegisterOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { email, otp } = req.body;
-        if (!email || !otp) {
-            res.status(400).json({ message: 'Email and OTP are required' });
-            return;
-        }
-        const message = yield (0, instructorService_1.verifyOTP)(email, otp);
-        res.status(201).json({ message });
-    }
-    catch (error) {
-        if (error instanceof Error) {
-            console.error('Error:', error.message);
-            res.status(500).json({ message: error.message });
-        }
-        else {
-            console.error('Unknown error:', error);
-            res.status(500).json({ message: 'An unknown error occurred' });
-        }
-    }
-});
-exports.verifyRegisterOTP = verifyRegisterOTP;
 const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
-        const { token, refreshToken, user } = yield (0, instructorService_1.loginService)(email, password);
+        const emailLowerCase = email.toLowerCase();
+        const { token, refreshToken, user } = yield (0, instructorService_1.loginService)(emailLowerCase, password);
         // Send the refresh token as an HttpOnly cookie
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
@@ -103,25 +66,29 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email,
                 role: user.role,
             },
         });
     }
     catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'An unknown error occurred' });
+        res.status(400).json({ message: 'An unknown error occurred' });
     }
 });
 exports.login = login;
 const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;
+    const emailLowerCase = email.toLowerCase();
+    const user = yield Instructor_1.default.findOne({ email: emailLowerCase });
+    if (!user) {
+        res.status(404).json({ error: 'Email address not found in the system.' });
+        return;
+    }
     try {
         if (!email) {
             res.status(400).json({ message: 'Email is required' });
             return;
         }
-        yield otpService_1.otpService.generateAndSendOtp(email);
+        yield otpService_1.otpService.generateAndSendOtp(emailLowerCase);
         res.status(200).send('OTP sent to email');
     }
     catch (error) {
@@ -133,11 +100,12 @@ exports.sendOtp = sendOtp;
 const verifyPasswordOtp = (req, res, next) => {
     const { email, otp } = req.body;
     try {
+        const emailLowerCase = email.toLowerCase();
         if (!email || !otp) {
             res.status(400).json({ message: 'Email and OTP are required' });
             return;
         }
-        const token = otpService_1.otpService.verifyOtpAndGenerateToken(email, otp);
+        const token = otpService_1.otpService.verifyOtpAndGenerateToken(emailLowerCase, otp);
         res.status(200).json({ token });
     }
     catch (error) {
@@ -305,6 +273,20 @@ const getMyTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getMyTutors = getMyTutors;
+const getTopTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const instructors = yield Instructor_1.default.find()
+            .sort({ averageRating: -1 })
+            .limit(5)
+            .select('username headline areasOfExpertise image averageRating numberOfRatings');
+        res.status(200).json(instructors);
+    }
+    catch (error) {
+        console.error('Error fetching top instructors:', error);
+        res.status(500).json({ message: 'Failed to fetch instructors' });
+    }
+});
+exports.getTopTutors = getTopTutors;
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const getStripePayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { amount } = req.body;
@@ -353,6 +335,10 @@ const addInstructorRating = (req, res) => __awaiter(void 0, void 0, void 0, func
     const { rating, comment } = req.body;
     const { instructorId } = req.params;
     const userId = req.userId;
+    if (comment && comment.length < 5) {
+        res.status(400).json({ message: 'Comment must be at least 5 characters long.' });
+        return;
+    }
     try {
         const instructor = yield Instructor_1.default.findById(instructorId);
         if (!instructor) {
@@ -384,3 +370,59 @@ const addInstructorRating = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.addInstructorRating = addInstructorRating;
+const getInstructorById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { instructorId } = req.params;
+        const instructor = yield Instructor_1.default.findById(instructorId);
+        if (!instructor) {
+            res.status(404).json({ message: "Instructor not found" });
+            return;
+        }
+        const courses = yield Course_1.default.find({ instructorId: instructorId });
+        const totalCourses = courses.length;
+        const uniqueStudentIds = new Set();
+        courses.forEach((course) => {
+            course.students.forEach((studentId) => {
+                uniqueStudentIds.add(studentId.toString());
+            });
+        });
+        const totalStudents = uniqueStudentIds.size;
+        res.status(200).json({
+            username: instructor.username,
+            image: instructor.image,
+            bio: instructor.bio,
+            about: instructor.about,
+            headline: instructor.headline,
+            areasOfExpertise: instructor.areasOfExpertise,
+            highestQualification: instructor.highestQualification,
+            averageRating: instructor.averageRating,
+            numberOfRatings: instructor.numberOfRatings,
+            totalStudents,
+            totalCourses,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching instructor data:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+exports.getInstructorById = getInstructorById;
+const getInstructorFeedback = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { instructorId } = req.params;
+    if (!instructorId) {
+        res.status(400).json({ message: "Instructor ID is required." });
+        return;
+    }
+    try {
+        const feedback = yield RateInstructor_1.default.find({ instructorId }).populate({
+            path: 'userId',
+            select: 'username image',
+        });
+        res.status(200).json(feedback);
+    }
+    catch (error) {
+        console.error("Error fetching instructor feedback:", error);
+        res.status(500).json({ message: "Server error. Could not fetch feedback." });
+    }
+});
+exports.getInstructorFeedback = getInstructorFeedback;

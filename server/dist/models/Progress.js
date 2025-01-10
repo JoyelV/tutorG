@@ -29,6 +29,8 @@ const ProgressSchema = new mongoose_1.Schema({
     studentId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true },
     completedLessons: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Lesson' }],
     completionDate: { type: Date },
+    isCompleted: { type: Boolean, default: false },
+    progressPercentage: { type: Number, default: 0 },
 });
 const Progress = mongoose_1.default.model('Progress', ProgressSchema);
 exports.default = Progress;

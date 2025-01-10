@@ -5,6 +5,8 @@ export interface IProgress extends Document {
   studentId: mongoose.Schema.Types.ObjectId;
   completedLessons: mongoose.Schema.Types.ObjectId[];
   completionDate?: Date;
+  isCompleted: boolean;
+  progressPercentage: Number,
 }
 
 const ProgressSchema = new Schema<IProgress>({
@@ -12,6 +14,8 @@ const ProgressSchema = new Schema<IProgress>({
   studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   completedLessons: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' }],
   completionDate: { type: Date },
+  isCompleted: { type: Boolean, default: false },
+  progressPercentage: { type: Number, default: 0 },
 });
 
 const Progress = mongoose.model<IProgress>('Progress', ProgressSchema);

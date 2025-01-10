@@ -11,11 +11,14 @@ import { AuthenticatedRequest } from '../utils/VerifyToken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
 import User from '../models/User'
 import Message from '../models/Message';
+import Course from '../models/Course';
+import Instructor from '../models/Instructor';
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
+    const emailLowerCase = email.toLowerCase();
 
     if (!username || !email || !password) {
       res.status(400).json({ message: 'All fields are required' });
@@ -23,8 +26,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     const otp = generateOTP();
-    otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-    await sendOTPEmail(email, otp);
+    otpRepository.saveOtp(emailLowerCase, { otp, username, password, createdAt: new Date() });
+    await sendOTPEmail(emailLowerCase, otp);
 
     res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
   } catch (error) {
@@ -38,14 +41,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
  */
 export const resendOtp = async (req:Request, res:Response,next: NextFunction) => {
   const { username, email, password } = req.body;
+  const emailLowerCase = email.toLowerCase();
+
   try {
     if (!email) {
       res.status(400).json({ message: 'Email is required' });
       return;
     }
     const otp = generateOTP();
-    otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-    await sendOTPEmail(email, otp);
+    otpRepository.saveOtp(emailLowerCase, { otp, username, password, createdAt: new Date() });
+    await sendOTPEmail(emailLowerCase, otp);
     
     res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
   } catch (error) {
@@ -57,12 +62,14 @@ export const resendOtp = async (req:Request, res:Response,next: NextFunction) =>
 export const verifyRegisterOTP = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, otp } = req.body;
+    const emailLowerCase = email.toLowerCase();
+
     if (!email || !otp) {
       res.status(400).json({ message: 'Email and OTP are required' });
       return;
     }
 
-    const message = await verifyOTP(email, otp);
+    const message = await verifyOTP(emailLowerCase, otp);
     res.status(201).json({ message });
   } catch (error) {
     if (error instanceof Error) {
@@ -77,12 +84,14 @@ export const verifyRegisterOTP = async (req: Request, res: Response): Promise<vo
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, password } = req.body;
+  const emailLowerCase = email.toLowerCase();
+
   try {
-    const { token, refreshToken ,user } = await loginService(email, password);
+    const { token, refreshToken ,user } = await loginService(emailLowerCase, password);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // Prevent access via JavaScript
-      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+      secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
       sameSite: 'strict', // Prevent CSRF
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
@@ -93,13 +102,11 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       user: {
         id: user.id,
         username: user.username,
-        email: user.email,
         role: user.role,
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'An unknown error occurred' });
+    res.status(400).json({ message: 'An unknown error occurred' });
   }
 };
 
@@ -114,7 +121,7 @@ export const googleSignIn = async (req: Request, res: Response, next: NextFuncti
     const { token, refreshToken, user } = await googleLoginService(googleToken);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
+      secure: process.env.NODE_ENV === 'development', 
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, 
   });  
@@ -159,15 +166,18 @@ export const refreshAccessToken = async (req: Request, res: Response, next: Next
   }
 };
 
-export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { email } = req.body;
+export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {  
   try {
-    if (!email) {
-      res.status(400).json({ message: 'Email is required' });
+    const { email } = req.body;
+    const emailLowerCase = email.toLowerCase();
+    const user = await User.findOne({ email: emailLowerCase });
+
+    if (!user) {
+      res.status(404).json({ error: 'Email address not found in the system.' });
       return;
     }
     await otpService.generateAndSendOtp(email);
-    res.status(200).send('OTP sent to email');
+    res.status(201).send('OTP sent to email');
   } catch (error) {
     console.error('Error sending OTP:', error);
     next(error);
@@ -199,6 +209,17 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     res.status(200).json({ message });
   } catch (error: unknown) {
     res.status(400).json({ message: 'Registered Email is required' });
+    return;
+  }
+}
+
+export const fetchImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.userId;  
+  try {
+    const user = await User.findById(userId);
+    res.status(200).json({imageUrl:user?.image});
+  } catch (error) {
+    res.status(400).json({message:'Image not found'});
     return;
   }
 }
@@ -381,5 +402,24 @@ export const getMyMessages = async (req: AuthenticatedRequest, res: Response): P
     res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch messages' });
+  }
+}
+
+export const getStatsCounts = async(req:Request,res:Response):Promise<void>=>{
+  try {
+    const [studentCount, courseCount, tutorCount] = await Promise.all([
+      User.countDocuments(),
+      Course.countDocuments(),
+      Instructor.countDocuments(),
+    ]);
+
+    res.status(200).json({
+      students: studentCount,
+      courses: courseCount,
+      tutors: tutorCount,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 }

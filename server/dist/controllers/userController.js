@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyMessages = exports.getStudentsChat = exports.getStudentsByInstructor = exports.toggleUserStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.refreshAccessToken = exports.googleSignIn = exports.login = exports.verifyRegisterOTP = exports.resendOtp = exports.register = void 0;
+exports.getStatsCounts = exports.getMyMessages = exports.getStudentsChat = exports.getStudentsByInstructor = exports.toggleUserStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.fetchImage = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.refreshAccessToken = exports.googleSignIn = exports.login = exports.verifyRegisterOTP = exports.resendOtp = exports.register = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const emailService_1 = require("../utils/emailService");
 const otpGenerator_1 = require("../utils/otpGenerator");
@@ -24,17 +24,20 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const userService_1 = require("../services/userService");
 const User_1 = __importDefault(require("../models/User"));
 const Message_1 = __importDefault(require("../models/Message"));
+const Course_1 = __importDefault(require("../models/Course"));
+const Instructor_1 = __importDefault(require("../models/Instructor"));
 dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, email, password } = req.body;
+        const emailLowerCase = email.toLowerCase();
         if (!username || !email || !password) {
             res.status(400).json({ message: 'All fields are required' });
             return;
         }
         const otp = (0, otpGenerator_1.generateOTP)();
-        otpRepository_1.otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-        yield (0, emailService_1.sendOTPEmail)(email, otp);
+        otpRepository_1.otpRepository.saveOtp(emailLowerCase, { otp, username, password, createdAt: new Date() });
+        yield (0, emailService_1.sendOTPEmail)(emailLowerCase, otp);
         res.status(200).json({ message: 'OTP sent to your email. Please verify.' });
     }
     catch (error) {
@@ -48,14 +51,15 @@ exports.register = register;
  */
 const resendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = req.body;
+    const emailLowerCase = email.toLowerCase();
     try {
         if (!email) {
             res.status(400).json({ message: 'Email is required' });
             return;
         }
         const otp = (0, otpGenerator_1.generateOTP)();
-        otpRepository_1.otpRepository.saveOtp(email, { otp, username, password, createdAt: new Date() });
-        yield (0, emailService_1.sendOTPEmail)(email, otp);
+        otpRepository_1.otpRepository.saveOtp(emailLowerCase, { otp, username, password, createdAt: new Date() });
+        yield (0, emailService_1.sendOTPEmail)(emailLowerCase, otp);
         res.status(200).json({ message: 'OTP resend to your email. Please verify.' });
     }
     catch (error) {
@@ -67,11 +71,12 @@ exports.resendOtp = resendOtp;
 const verifyRegisterOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, otp } = req.body;
+        const emailLowerCase = email.toLowerCase();
         if (!email || !otp) {
             res.status(400).json({ message: 'Email and OTP are required' });
             return;
         }
-        const message = yield (0, authService_1.verifyOTP)(email, otp);
+        const message = yield (0, authService_1.verifyOTP)(emailLowerCase, otp);
         res.status(201).json({ message });
     }
     catch (error) {
@@ -88,11 +93,12 @@ const verifyRegisterOTP = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.verifyRegisterOTP = verifyRegisterOTP;
 const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
+    const emailLowerCase = email.toLowerCase();
     try {
-        const { token, refreshToken, user } = yield (0, authService_1.loginService)(email, password);
+        const { token, refreshToken, user } = yield (0, authService_1.loginService)(emailLowerCase, password);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true, // Prevent access via JavaScript
-            secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+            secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
             sameSite: 'strict', // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -102,14 +108,12 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             user: {
                 id: user.id,
                 username: user.username,
-                email: user.email,
                 role: user.role,
             },
         });
     }
     catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'An unknown error occurred' });
+        res.status(400).json({ message: 'An unknown error occurred' });
     }
 });
 exports.login = login;
@@ -123,7 +127,7 @@ const googleSignIn = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const { token, refreshToken, user } = yield (0, authService_1.googleLoginService)(googleToken);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'development',
             sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -164,14 +168,16 @@ const refreshAccessToken = (req, res, next) => __awaiter(void 0, void 0, void 0,
 });
 exports.refreshAccessToken = refreshAccessToken;
 const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = req.body;
     try {
-        if (!email) {
-            res.status(400).json({ message: 'Email is required' });
+        const { email } = req.body;
+        const emailLowerCase = email.toLowerCase();
+        const user = yield User_1.default.findOne({ email: emailLowerCase });
+        if (!user) {
+            res.status(404).json({ error: 'Email address not found in the system.' });
             return;
         }
         yield otpService_1.otpService.generateAndSendOtp(email);
-        res.status(200).send('OTP sent to email');
+        res.status(201).send('OTP sent to email');
     }
     catch (error) {
         console.error('Error sending OTP:', error);
@@ -207,6 +213,18 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.resetPassword = resetPassword;
+const fetchImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    try {
+        const user = yield User_1.default.findById(userId);
+        res.status(200).json({ imageUrl: user === null || user === void 0 ? void 0 : user.image });
+    }
+    catch (error) {
+        res.status(400).json({ message: 'Image not found' });
+        return;
+    }
+});
+exports.fetchImage = fetchImage;
 const fetchUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     if (!userId) {
@@ -372,3 +390,22 @@ const getMyMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getMyMessages = getMyMessages;
+const getStatsCounts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const [studentCount, courseCount, tutorCount] = yield Promise.all([
+            User_1.default.countDocuments(),
+            Course_1.default.countDocuments(),
+            Instructor_1.default.countDocuments(),
+        ]);
+        res.status(200).json({
+            students: studentCount,
+            courses: courseCount,
+            tutors: tutorCount,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch statistics' });
+    }
+});
+exports.getStatsCounts = getStatsCounts;

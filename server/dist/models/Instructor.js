@@ -15,6 +15,7 @@ const instructorSchema = new mongoose_1.Schema({
     gender: { type: String },
     dob: { type: String },
     bio: { type: String },
+    about: { type: String },
     headline: { type: String },
     areasOfExpertise: { type: String },
     highestQualification: { type: String },

@@ -26,18 +26,29 @@ router.post('/resend-otp', userController_1.resendOtp);
 router.post('/verify-otp', userController_1.verifyPasswordOtp);
 router.post('/reset-password', userController_1.resetPassword);
 //USER PROFILE 
+router.get('/image', VerifyToken_1.verifyToken, userController_1.fetchImage);
 router.get('/profile', VerifyToken_1.verifyToken, userController_1.fetchUserProfile);
 router.put('/update', VerifyToken_1.verifyToken, userController_1.editUserProfile);
 router.put('/update-password', VerifyToken_1.verifyToken, userController_1.editPassword);
 router.put('/upload-image', multerConfig_1.default.single('image'), VerifyToken_1.verifyToken, userController_1.uploadImage);
 router.get('/my-tutors', VerifyToken_1.verifyToken, instructorController_1.getMyTutors);
+//Home page
+router.get('/top-tutors', instructorController_1.getTopTutors);
+router.get('/stats', userController_1.getStatsCounts);
+//InstructorProfile Display
+router.get('/instructors/:instructorId', instructorController_1.getInstructorById);
+router.get('/course-instructors/:instructorId', courseController_1.getInstructorCourses);
+router.get('/instructor-feedback/:instructorId', instructorController_1.getInstructorFeedback);
 //CHAT MANAGEMENT
 router.get('/messages', VerifyToken_1.verifyToken, userController_1.getMyMessages);
 //COURSE MANAGEMENT
 router.get('/courses', courseController_1.getCourses);
+router.get('/related/:courseId', courseController_1.getRelatedCourses);
+router.get('/courses/recent', courseController_1.getRecentlyAddedCourses);
 router.get('/categories', categoryController_1.getCategories);
 router.get('/courses/:courseId', courseController_1.getIndividualCourses);
 router.get('/view-lessons/:courseId', courseController_1.getViewChapters);
+router.get('/dashboard-courseData', VerifyToken_1.verifyToken, courseController_1.getStudentCourseSummary);
 router.get('/courses-enrolled/:courseId', VerifyToken_1.verifyToken, courseController_1.getIndividualCourseData);
 router.get('/courses-complete/:courseId', VerifyToken_1.verifyToken, courseController_1.getCompletionCertificate);
 router.patch('/rating/:courseId', VerifyToken_1.verifyToken, courseController_1.updateCourseRating);

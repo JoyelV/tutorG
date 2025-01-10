@@ -24,6 +24,7 @@ export interface IInstructor extends Document {
     gender?: string;
     dob?: string;
     bio?: string;
+    about?:string;
     headline?: string;
     areasOfExpertise?: string;
     highestQualification?: string;

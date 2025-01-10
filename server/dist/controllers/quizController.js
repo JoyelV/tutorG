@@ -58,7 +58,7 @@ const getQuizzesByCourse = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .populate('courseId', 'title description')
             .exec();
         if (!quizzes || quizzes.length === 0) {
-            res.status(404).json({ message: 'No quizzes found for this course.' });
+            res.status(200).json({ message: 'No quizzes found for this course.' });
             return;
         }
         res.status(200).json(quizzes);

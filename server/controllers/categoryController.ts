@@ -44,7 +44,7 @@ export const saveCategory = async (req: Request, res: Response, next: NextFuncti
  */
 export const getCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find({status:false});
     res.status(200).json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);

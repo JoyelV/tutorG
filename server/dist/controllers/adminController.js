@@ -22,6 +22,7 @@ const otpRepository_1 = require("../repositories/otpRepository");
 const adminService_2 = require("../services/adminService");
 const userRepository_1 = require("../repositories/userRepository");
 const instructorRepository_1 = require("../repositories/instructorRepository");
+const Admin_1 = __importDefault(require("../models/Admin"));
 dotenv_1.default.config();
 /**
  * Resend OTP to the student email for registration.
@@ -47,7 +48,8 @@ exports.resendOtp = resendOtp;
 const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
-        const { token, refreshToken, user } = yield (0, adminService_1.loginService)(email, password);
+        const emailLowerCase = email.toLowerCase();
+        const { token, refreshToken, user } = yield (0, adminService_1.loginService)(emailLowerCase, password);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true, // Prevent access via JavaScript
             secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
@@ -60,25 +62,29 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email,
                 role: user.role,
             },
         });
     }
     catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'An unknown error occurred' });
+        res.status(400).json({ message: 'An unknown error occurred' });
     }
 });
 exports.login = login;
 const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;
     try {
+        const emailLowerCase = email.toLowerCase();
+        const user = yield Admin_1.default.findOne({ email: emailLowerCase });
+        if (!user) {
+            res.status(400).json({ message: 'Email is not in database' });
+            return;
+        }
         if (!email) {
             res.status(400).json({ message: 'Email is required' });
             return;
         }
-        yield otpService_1.otpService.generateAndSendOtp(email);
+        yield otpService_1.otpService.generateAndSendOtp(emailLowerCase);
         res.status(200).send('OTP sent to email');
     }
     catch (error) {
@@ -90,11 +96,12 @@ exports.sendOtp = sendOtp;
 const verifyPasswordOtp = (req, res, next) => {
     const { email, otp } = req.body;
     try {
+        const emailLowerCase = email.toLowerCase();
         if (!email || !otp) {
             res.status(400).json({ message: 'Email and OTP are required' });
             return;
         }
-        const token = otpService_1.otpService.verifyOtpAndGenerateToken(email, otp);
+        const token = otpService_1.otpService.verifyOtpAndGenerateToken(emailLowerCase, otp);
         res.status(200).json({ token });
     }
     catch (error) {

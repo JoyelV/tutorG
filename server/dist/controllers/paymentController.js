@@ -40,7 +40,6 @@ const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     product_data: {
                         name: title,
                         images: thumbnail ? [thumbnail] : [],
-                        description: title,
                         metadata: {
                             courseId,
                         },
@@ -54,7 +53,7 @@ const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             payment_method_types: ["card"],
             line_items: lineItems,
             mode: "payment",
-            billing_address_collection: "required",
+            billing_address_collection: 'auto',
             success_url: `${process.env.CLIENT_URL}/paymentSuccess?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.CLIENT_URL}/cart`,
             metadata: {
@@ -62,6 +61,7 @@ const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 cartItems: JSON.stringify(cartItems),
             }
         });
+        console.log(session, "session");
         res.json({
             status: true,
             url: session.url,

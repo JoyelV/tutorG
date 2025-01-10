@@ -82,12 +82,12 @@ export const resetPasswordService = async (token: string, newPassword: string): 
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    const user = await instructorRepository.findUserByEmail(decoded.email);
+    const user = await instructorRepository.findUserByEmail(decoded.email.toLowerCase());
     if (!user) {
       throw new Error('User not found');
     }
 
-    const updatedUser = await instructorRepository.updateUserPassword(decoded.email, hashedPassword);
+    const updatedUser = await instructorRepository.updateUserPassword(decoded.email.toLowerCase(), hashedPassword);
     if (!updatedUser) {
       throw new Error('Failed to update password');
     }

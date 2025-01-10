@@ -3,10 +3,8 @@ import {
     login, 
     sendOtp, 
     resetPassword,
-    register,
     fetchUserProfile,
     verifyPasswordOtp,
-    verifyRegisterOTP,
     resendOtp,
     editUserProfile,
     editPassword,
@@ -24,8 +22,6 @@ const router = Router();
 
 // AUTHENTICATION
 router.post('/login', login); 
-router.post('/register', register); 
-router.post('/verify-registerotp',verifyRegisterOTP);
 router.post('/send-otp', sendOtp);
 router.post('/resend-otp',resendOtp );
 router.post('/verify-otp', verifyPasswordOtp);
