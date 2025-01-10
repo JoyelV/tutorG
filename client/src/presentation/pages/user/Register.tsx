@@ -20,7 +20,6 @@ const Register: React.FC = () => {
 
     const navigate = useNavigate();
 
-    // Helper functions for validation
     const isValidEmail = (email: string): boolean =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -28,7 +27,7 @@ const Register: React.FC = () => {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
 
      const validateUsername = (username: string) => {
-        const usernameRegex = /^[a-zA-Z]{3}[a-zA-Z0-9_]{0,17}$/;
+        const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_ ]{2,19}$/;
         return usernameRegex.test(username);
     };
 

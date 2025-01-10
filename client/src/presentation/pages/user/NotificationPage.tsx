@@ -49,10 +49,10 @@ const NotificationPage = () => {
                             {notifications.map((notification) => (
                                 <li
                                     key={notification.tutorId}
-                                    className={`p-4 ${notification.isRead ? 'bg-gray-100' : 'bg-white'
+                                    className={`p-5 ${notification.isRead ? 'bg-gray-100' : 'bg-white'
                                         } flex justify-between items-center`}
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-5">
                                         <img
                                             src={notification.thumbnail}
                                             alt={notification.title}

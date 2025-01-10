@@ -16,12 +16,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
 import api from '../../../infrastructure/api/api';
+import { useAuth } from '../../../infrastructure/context/AuthContext'
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,11 +37,13 @@ const Login: React.FC = () => {
                 toast.error('Access denied. Enter valid credentials.');
                 return;
             }
-
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', user.id);
-            localStorage.setItem('role', user.role);
-            localStorage.setItem('username', user.username);
+            // Update context state
+            login({
+                token,
+                userId: user.id,
+                role: user.role,
+                username: user.username,
+            });
             navigate('/');
         } catch (error) {
             setError('Login failed. Please check your credentials and try again.');
@@ -52,10 +56,17 @@ const Login: React.FC = () => {
             const res = await api.post('/user/google-login', { token: response.credential });
             const { token, user } = res.data;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', user.id);
-            localStorage.setItem('role', user.role);
-            localStorage.setItem('username', user.username);
+            // localStorage.setItem('token', token);
+            // localStorage.setItem('userId', user.id);
+            // localStorage.setItem('role', user.role);
+            // localStorage.setItem('username', user.username);
+
+            login({
+                token,
+                userId: user.id,
+                role: user.role,
+                username: user.username,
+            });
 
             toast.success('Google Sign-In successful!');
             navigate('/');

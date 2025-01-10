@@ -55,11 +55,9 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
 
   return (
     <div className="flex flex-col items-center p-8 bg-gray-50 rounded-lg shadow-md">
-      <h2 className="text-md font-semibold text-gray-800 mb-4">Course Rating</h2>
-
+      <h2 className="text-md font-semibold text-gray-800 mb-2">Course Feedback</h2>
       {/* User rating section */}
-      <div className="mt-8">
-        <p className="text-gray-600 mb-2">Your Rating</p>
+      <div className="mt-4">
         <div className="flex space-x-2">
           {[...Array(5)].map((_, i) => (
             <svg
@@ -77,7 +75,6 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
 
       {/* Feedback input */}
       <div className="mt-6 w-full">
-        <label htmlFor="feedback" className="text-gray-600 mb-2 block">Your Feedback</label>
         <input
           type="text"
           id="feedback"
@@ -91,7 +88,7 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
 
       {/* Submit button */}
       <button
-        className="mt-6 bg-orange-500 text-white p-2 rounded-md"
+        className="mt-6 bg-blue-500 text-white p-2 rounded-md"
         onClick={() => {
           if (userRating && !isSubmitted) {
             submitRating(userRating, feedback);
@@ -99,7 +96,7 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
         }}
         disabled={isSubmitting || !userRating || !feedback || isSubmitted} 
       >
-        {isSubmitted ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit Rating and Feedback'}
+        {isSubmitted ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit Feedback'}
       </button>
     </div>
   );

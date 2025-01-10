@@ -38,7 +38,7 @@ const ViewCoursesListing: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex items-center justify-between px-6 py-4 bg-white space-x-4 relative">
+      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-white space-y-4 sm:space-y-0 sm:space-x-4 relative">
         <input
           type="text"
           placeholder="Search course name"
@@ -47,12 +47,12 @@ const ViewCoursesListing: React.FC = () => {
           className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none"
         />
 
-        <div className="flex items-center space-x-2 text-sm">
+        <div className="flex items-center space-x-2 text-sm w-full sm:w-auto">
           <span>Category:</span>
           <select
             value={selectedFilter}
             onChange={handleFilterSelect}
-            className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+            className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none w-full sm:w-auto"
           >
             <option value="All Courses">All Courses</option>
             {categories.map((category) => (
@@ -63,12 +63,12 @@ const ViewCoursesListing: React.FC = () => {
           </select>
         </div>
 
-        <div className="flex items-center space-x-2 text-sm">
+        <div className="flex items-center space-x-2 text-sm w-full sm:w-auto">
           <span>Sort by:</span>
           <select
             value={sortOption}
             onChange={handleSortChange}
-            className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+            className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none w-full sm:w-auto"
           >
             <option>Latest</option>
             <option>Popular</option>
@@ -79,12 +79,12 @@ const ViewCoursesListing: React.FC = () => {
       </div>
 
       <div className="min-h-[50vh] flex flex-col items-center justify-center">
-      <ImageCard
-        searchTerm={searchTerm}
-        selectedFilter={selectedFilter}
-        sortOption={sortOption}
-      />
-     </div>
+        <ImageCard
+          searchTerm={searchTerm}
+          selectedFilter={selectedFilter}
+          sortOption={sortOption}
+        />
+      </div>
     </div>
   );
 };

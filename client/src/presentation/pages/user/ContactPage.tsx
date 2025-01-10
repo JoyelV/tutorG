@@ -7,19 +7,17 @@ import Navbar from "../../components/common/Navbar";
 const ContactPage = () => {
   return (
     <div className="font-sans bg-white">
-      <Navbar/>
+      <Navbar />
       {/* Hero Section */}
       <HeroSection />
 
       {/* Branches Section */}
       <section className="container mx-auto px-4 my-12 bg-white">
-        <h2 className="text-center text-3xl font-extrabold text-gray-800 mb-10">
+        <h2 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-800 mb-10">
           Our Branches All Over the World
         </h2>
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Cards */}
-          {[
-            {
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[{
               title: "Los Angeles",
               subtitle: "California",
               address: "Santa Monica, CA 90404",
@@ -42,11 +40,10 @@ const ContactPage = () => {
               subtitle: "India",
               address: "Gateway of India",
               image: assets.Branches4,
-            },
-          ].map((branch, index) => (
+            }].map((branch, index) => (
             <div
               key={index}
-              className="relative rounded-lg overflow-hidden shadow-lg group h-64 cursor-pointer"
+              className="relative rounded-lg overflow-hidden shadow-lg group h-48 sm:h-64 cursor-pointer"
             >
               {/* Background Image */}
               <div
@@ -59,7 +56,9 @@ const ContactPage = () => {
 
               {/* Text Content */}
               <div className="absolute bottom-4 left-0 w-full text-center text-white px-4">
-                <h3 className="text-xl font-bold drop-shadow-md">{branch.title}</h3>
+                <h3 className="text-lg sm:text-xl font-bold drop-shadow-md">
+                  {branch.title}
+                </h3>
                 <p className="text-sm">{branch.subtitle}</p>
                 <p className="text-xs mt-1">{branch.address}</p>
               </div>
@@ -69,34 +68,35 @@ const ContactPage = () => {
       </section>
 
       {/* Contact Form Section */}
-      <section className="flex justify-center items-center w-full min-h-[60vh] bg-white px-6 py-12">
-        <div className="container max-w-6xl mx-auto bg-white rounded-lg overflow-hidden p-10">
-          <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">Contact Us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            
+      <section className="flex justify-center items-center w-full min-h-[60vh] bg-white px-4 sm:px-6 py-8">
+        <div className="container max-w-4xl mx-auto bg-white rounded-lg overflow-hidden p-6 sm:p-10">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 mb-6 sm:mb-8">
+            Contact Us
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {/* Address Section */}
-            <div className="space-y-6">
-              <p className="text-gray-600 leading-relaxed text-center md:text-left">
+            <div className="space-y-4 sm:space-y-6 text-center md:text-left">
+              <p className="text-gray-600 leading-relaxed">
                 Will you be in Ernakulam or any other branches any time soon? 
                 Stop by the office! We’d love to meet.
               </p>
-              <div className="text-center md:text-left">
+              <div>
                 <p className="text-lg font-semibold text-gray-800">ADDRESS</p>
-                <p className="text-gray-600">PRA 74,Komoroth House,Pattath Road,Chalikkavattom</p>
+                <p className="text-gray-600">PRA 74, Komoroth House, Pattath Road, Chalikkavattom</p>
               </div>
-              <div className="text-center md:text-left">
+              <div>
                 <p className="text-lg font-semibold text-gray-800">PHONE</p>
                 <p className="text-gray-600">(+91) 8921504778</p>
               </div>
-              <div className="text-center md:text-left">
+              <div>
                 <p className="text-lg font-semibold text-gray-800">EMAIL</p>
                 <p className="text-gray-600">Varghesejoyel71@gmail.com</p>
               </div>
             </div>
 
             {/* Form Section */}
-            <form className="space-y-6 bg-gray-50 p-6 rounded-md shadow-md">
-              <div className="flex space-x-4">
+            <form className="space-y-4 bg-gray-50 p-4 sm:p-6 rounded-md shadow-md">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <TextField 
                   label="First Name" 
                   fullWidth 
@@ -143,7 +143,6 @@ const ContactPage = () => {
           </div>
         </div>
       </section>
-
     </div>
   );
 };

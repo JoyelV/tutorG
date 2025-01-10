@@ -20,6 +20,7 @@ import Earnings from '../pages/instructor/MyEarnings';
 import ChatApp from '../pages/instructor/Messages';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
+import { useAuth } from '../../infrastructure/context/AuthContext';
 
 const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
 
@@ -28,7 +29,11 @@ if (!stripePublicKey) {
 }
 
 const stripePromise = loadStripe(stripePublicKey);
-const isInstructor = localStorage.getItem('role') === 'instructor';
+
+const PrivateRoute = ({ element }: { element: JSX.Element }) => {
+    const { auth } = useAuth();
+    return auth?.role === 'instructor' ? element : <Navigate to="/instructor/" />;
+};
 
 const InstructorRoutes = () => {
     return (
@@ -39,48 +44,54 @@ const InstructorRoutes = () => {
             <Route path="/reset-password" element={<PasswordReset />} />
             <Route
                 path="/instructor-dashboard"
-                element={isInstructor ?<InstructorDashboard />: <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<InstructorDashboard />} />}
             />
             <Route
                 path="/instructor-createCourse"
-                element={isInstructor ? <CreateCourse /> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<CreateCourse />} />}
             />
             <Route
                 path="/add-lesson/:courseId"
-                element={isInstructor ? <AddLesson/> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<AddLesson/>} />}
             />     
              <Route
                 path="/edit-lesson/:lessonId"
-                element={isInstructor ? <EditLesson/> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<EditLesson/>} />}
             />     
             <Route
                 path="/my-courses"
-                element={isInstructor ? <MyCourses /> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={ <MyCourses />} />}
             />    
              <Route
                 path="/messages"
-                element={isInstructor ? <ChatApp /> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<ChatApp />} />}
             /> 
             <Route
                 path="/my-students"
-                element={isInstructor ? <StudentsList /> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<StudentsList />} />}
             />
             <Route
                 path="/my-earnings"
-                element={isInstructor ?  <Elements stripe={stripePromise}>
-                <Earnings />
-              </Elements> : <Navigate to="/instructor" />}
-            />     
-            <Route path="/course-view/:courseId" element={isInstructor ? <ErrorBoundary>< CourseView /></ErrorBoundary>: <Navigate to="/instructor" />}
+                element={
+                    <PrivateRoute
+                        element={
+                            <Elements stripe={stripePromise}>
+                                <Earnings />
+                            </Elements>
+                        }
+                    />
+                }
+            />   
+            <Route path="/course-view/:courseId" element={<PrivateRoute element={<ErrorBoundary>< CourseView /></ErrorBoundary>}/>}
             />
-            <Route path="/course-edit/:courseId" element={isInstructor ? <EditCourse />: <Navigate to="/instructor" />} 
+            <Route path="/course-edit/:courseId" element={<PrivateRoute element={<EditCourse />} />} 
             />
             
-            <Route path="/addQuiz/:courseId" element={isInstructor ?<AddQuizForm />: <Navigate to="/instructor" />}/>
-            <Route path="/quizzes/:courseId/edit/:quizId" element={isInstructor ?<EditQuizForm />: <Navigate to="/instructor" />}/>
+            <Route path="/addQuiz/:courseId" element={<PrivateRoute element={<AddQuizForm />} />}/>
+            <Route path="/quizzes/:courseId/edit/:quizId" element={<PrivateRoute element={<EditQuizForm />} />}/>
             <Route
                 path="/instructor-Profile"
-                element={isInstructor ? <InstructorProfile /> : <Navigate to="/instructor" />}
+                element={<PrivateRoute element={<InstructorProfile />}/>}
             />
             <Route path="*" element={<Pagenotfound />} />
         </Routes>

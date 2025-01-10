@@ -23,7 +23,7 @@ const CourseVideo = ({ videoUrl, id,lesson }: CourseVideoProps) => {
           showError('Invalid course ID.');
           return;
         }
-        const response = await api.get(`/instructor/course-view/${id}`);
+        const response = await api.get(`/user/courses/${id}`);
         
         if (response.status === 200) {
           const data = response.data;
@@ -59,8 +59,9 @@ const CourseVideo = ({ videoUrl, id,lesson }: CourseVideoProps) => {
     try {
       const response = await api.put(`/user/progress/${id}`, {
         completedLesson: lesson, 
+        videoSource:videoSource
       });
-      if (response.status === 200) {
+      if (response.status === 201) {
         Swal.fire({
           icon: 'success',
           title: 'Progress Updated',

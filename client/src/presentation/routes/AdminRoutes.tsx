@@ -14,8 +14,12 @@ import Pagenotfound from '../components/common/PageNotFound';
 import OrdersTable from '../pages/admin/OrderTableList';
 import OrderView from '../pages/admin/OrderDetailPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import { useAuth } from '../../infrastructure/context/AuthContext';
 
-const isAdmin = localStorage.getItem('role') === 'admin';
+const PrivateRoute = ({ element }: { element: JSX.Element }) => {
+    const { auth } = useAuth();
+    return auth?.role === 'admin' ? element : <Navigate to="/admin/" />;
+};
 
 const AdminRoutes = () => {
     return (
@@ -29,40 +33,33 @@ const AdminRoutes = () => {
             {/* Protected admin route */}
             <Route
                 path="/dashboard"
-                element={isAdmin ? <AdminDashboard />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={<AdminDashboard /> }/>} />
 
             <Route
                 path="/category"
-                element={isAdmin ? <CategoryPage />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={ <CategoryPage />} />} />
 
             <Route
                 path="/courses"
-                element={isAdmin ? <CoursesList />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={<CoursesList />} />} />
              <Route
                 path="/orders"
-                element={isAdmin ? <OrdersTable />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={<OrdersTable />} />} />
             <Route
                 path="/orderDetail/:orderId"
-                element={isAdmin ? <OrderView />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={<OrderView />} />} />
             <Route
                 path="/users"
-                element={isAdmin ? <UsersPage />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={<UsersPage />} />} />
             <Route
-                path="/viewCoursePage/:courseId" element={isAdmin ? < CourseViewPage /> : <Navigate to="/admin" />} />
-            <Route path="/addReview/:courseId" element={isAdmin ? <AddReviewForm /> : <Navigate to="/admin" />} />
+                path="/viewCoursePage/:courseId" element={<PrivateRoute element={< CourseViewPage />} />} />
+            <Route path="/addReview/:courseId" element={<PrivateRoute element={<AddReviewForm />} />} />
             <Route
                 path="/adminProfile"
-                element={isAdmin ? <AdminProfile />
-                    : <Navigate to="/admin" />} />
+                element={<PrivateRoute element={<AdminProfile />} />} />
             <Route
                 path="/add-tutor"
-                element={isAdmin ? <AddForm /> : <Navigate to="/admin" />}
+                element={<PrivateRoute element={<AddForm />} />}
             />
             <Route path="*" element={<Pagenotfound />} />
         </Routes>

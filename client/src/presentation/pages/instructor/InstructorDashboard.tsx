@@ -6,8 +6,12 @@ import ActivityFeed from '../../components/instructor/ActivityFeed';
 import api from '../../../infrastructure/api/api';
 import EarningsVsCoursesChart from '../../components/instructor/RevenueChart';
 import EnrolledVsCoursesChart from '../../components/instructor/EnrolledVsCoursesChart';
+import { useAuth } from '../../../infrastructure/context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const InstructorDashboard = () => {
+  const { auth } = useAuth(); 
+
   const [stats, setStats] = useState({
     enrolledCourses: 0,
     myCourses: 0,
@@ -15,19 +19,25 @@ const InstructorDashboard = () => {
     myEarnings: 0,
   });
 
+  if (!auth || auth.role !== 'instructor') {
+    return <Navigate to="/instructor" />;
+  }
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const coursesResponse = await api.get('/instructor/coursesCount');
-        const myCoursesResponse = await api.get('/instructor/my-courses/coursesCount');
-        const studentsResponse = await api.get('/instructor/studentsCount');
-        const earningsResponse = await api.get('/instructor/earningsCount');
+        const [coursesResponse, myCoursesResponse, studentsResponse, earningsResponse] = await Promise.all([
+          api.get('/instructor/coursesCount'),
+          api.get('/instructor/my-courses/coursesCount'),
+          api.get('/instructor/studentsCount'),
+          api.get('/instructor/earningsCount'),
+        ]);  
 
         setStats({
-          enrolledCourses: coursesResponse.data.count,
-          myCourses: myCoursesResponse.data.count,
-          myStudents: studentsResponse.data.count,
-          myEarnings: Math.floor(earningsResponse.data.totalEarnings),
+          enrolledCourses: coursesResponse.data.count || 0,
+          myCourses: myCoursesResponse.data.count || 0,
+          myStudents: studentsResponse.data.count || 0,
+          myEarnings: Math.floor(earningsResponse.data.totalEarnings || 0),
         });
       } catch (error) {
         console.error('Error fetching instructor stats:', error);

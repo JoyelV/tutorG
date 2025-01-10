@@ -21,12 +21,15 @@ import { useState } from 'react';
 import { assets } from '../../../assets/assets_user/assets';
 import { Link } from 'react-router-dom';
 import { useTheme, useMediaQuery } from '@mui/material';
+import { useAuth } from '../../../infrastructure/context/AuthContext';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const isLoggedIn = localStorage.getItem('role') === 'user';
+    const username = localStorage.getItem('username') || 'Guest';
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const { logout } = useAuth();
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -39,7 +42,7 @@ const Navbar: React.FC = () => {
     };
 
     const handleLogout = async () => {
-        localStorage.clear();
+        logout();
         navigate('/login');
     };
 
@@ -69,6 +72,24 @@ const Navbar: React.FC = () => {
                         <span style={{ color: '#0163FD', fontWeight: 'bold' }}>G</span>
                     </Typography>
                 </Box>
+
+                {/* Welcome Message */}
+                <Typography
+                    variant="h6"
+                    sx={{
+                        display: { xs: 'none', sm: 'block' },
+                        fontWeight: 'bold',
+                        fontSize: '1.25rem',
+                        background: 'linear-gradient(to right, #0163FD, #F29D38)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        textTransform: 'capitalize',
+                        letterSpacing: 1.2,
+                        marginLeft: 2,
+                    }}
+                >
+                    Welcome, {isLoggedIn ? username : 'Guest'}!
+                </Typography>
 
                 {/* Search Bar (Hidden on Mobile) */}
                 {!isMobile && (

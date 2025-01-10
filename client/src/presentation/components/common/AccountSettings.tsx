@@ -118,14 +118,12 @@ const AccountSettings: React.FC = () => {
   const fetchUserData = useCallback(async () => {
     try {
       const userId = localStorage.getItem('userId');
-      console.log(userId, "user nte id")
       if (!userId) {
         toast.error('User not logged in');
         return;
       }
       const response = await api.get<UserProfileData>(`/user/profile`);
       const data = response.data;
-      console.log(data, "data");
 
       setUsername(data.username || '');
       setEmail(data.email || '');

@@ -40,9 +40,12 @@ const VerifyOtp: React.FC = () => {
       setResendTimer(30); 
       await api.post('/instructor/send-otp', { email: state.email });
       setError(''); 
-    } catch (error) {
-      setError('Failed to resend OTP. Please try again later.');
-      console.error('Error:', error);
+    } catch (error:any) {
+      if (error.response.status === 404) {
+        setError('Email address not found in the system. Please check and try again.');
+      } else {
+        setError('Error sending OTP. Please try again later.');
+      }
     }
   };
 

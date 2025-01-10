@@ -4,12 +4,14 @@ import api from '../../../infrastructure/api/api';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../../infrastructure/context/AuthContext';
 
 const AdminLogin: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,10 +23,13 @@ const AdminLogin: React.FC = () => {
                 toast.error('Access denied. Enter valid credentials.');
                 return;
             }
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', user.id);
-            localStorage.setItem('role', user.role);
-            localStorage.setItem('username', user.username);
+
+            login({
+                token,
+                userId: user.id,
+                role: user.role,
+                username: user.username,
+            });
             navigate('/admin/dashboard');
         } catch (error) {
             setError('Admin login failed. Please check your credentials.');
@@ -39,7 +44,7 @@ const AdminLogin: React.FC = () => {
     return (
         <Container component="main" maxWidth="md" sx={{ mt: 8 }}>
             <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-                <Grid container>
+                <Grid container spacing={2}>
                     {/* Left Side - Image */}
                     <Grid item xs={12} md={6}>
                         <Box
@@ -54,7 +59,12 @@ const AdminLogin: React.FC = () => {
                             <img
                                 src={assets.appointment_img}
                                 alt="Instructor Login"
-                                style={{ width: '100%', objectFit: 'cover' }}
+                                style={{
+                                    width: '100%',
+                                    objectFit: 'cover',
+                                    height: 'auto',
+                                    maxHeight: '400px', // Limit height on smaller screens
+                                }}
                             />
                         </Box>
                     </Grid>
@@ -65,7 +75,7 @@ const AdminLogin: React.FC = () => {
                             {/* Brand Section */}
                             <Box textAlign="center" mb={3}>
                                 <Typography
-                                    variant="h3"
+                                    variant="h4"
                                     color="#F29D38"
                                     sx={{
                                         fontWeight: 'bold',
@@ -95,6 +105,9 @@ const AdminLogin: React.FC = () => {
                                     onChange={(e) => setEmail(e.target.value)}
                                     margin="normal"
                                     variant="outlined"
+                                    sx={{
+                                        fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive font size
+                                    }}
                                 />
                                 <TextField
                                     label="Password"
@@ -105,6 +118,9 @@ const AdminLogin: React.FC = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     margin="normal"
                                     variant="outlined"
+                                    sx={{
+                                        fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive font size
+                                    }}
                                 />
                                 <Button
                                     type="submit"
@@ -115,7 +131,8 @@ const AdminLogin: React.FC = () => {
                                         mt: 3, mb: 2,
                                         py: 1.5,
                                         background: 'linear-gradient(to right, #ff5e5e, #ff0077)',
-                                        fontWeight: 'bold'
+                                        fontWeight: 'bold',
+                                        fontSize: { xs: '1rem', sm: '1.125rem' }, // Responsive font size
                                     }}
                                 >
                                     Admin Login

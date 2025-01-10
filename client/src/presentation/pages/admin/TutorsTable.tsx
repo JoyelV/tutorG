@@ -145,7 +145,7 @@ const TutorsTable: React.FC = () => {
                       variant="contained"
                       color={tutor.isBlocked ? 'error' : 'success'}
                     >
-                      {tutor.isBlocked ? 'Unblock' : 'Block-?'}
+                      {tutor.isBlocked ? 'Blocked!!' : 'Unblocked'}
                     </Button>
                   </TableCell>
                 </TableRow>

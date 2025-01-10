@@ -56,7 +56,7 @@ const CoursePage = () => {
     const fetchQuizData = async () => {
       try {
         const { data } = await api.get(`/user/quizzes/${courseId}`);
- 
+
         setQuizData(Array.isArray(data) ? data : []);
       } catch (err: any) {
         setQuizError(err.message || 'Failed to fetch quiz data.');
@@ -135,20 +135,23 @@ const CoursePage = () => {
             )}
           </div>
 
-          <div className="flex border-b border-gray-200 mb-6">
-            {['Description', 'Requirements', 'Instructor', 'Rating', 'Feedback', 'Quiz'].map((section) => (
-              <button
-                key={section}
-                className={`text-lg py-2 px-4 transition-all duration-300 ${currentSection === section
-                  ? 'font-bold border-b-4 border-blue-500 text-blue-500'
-                  : 'text-gray-600 hover:text-blue-500'}`}
-                onClick={() => handleSectionChange(section as Section)}
-              >
-                {section}
-              </button>
-            ))}
+          <div className="border-b border-gray-200 mb-6 overflow-x-auto">
+            <div className="flex space-x-4">
+              {['Description', 'Requirements', 'Instructor', 'Rating', 'Feedback', 'Quiz'].map((section) => (
+                <button
+                  key={section}
+                  className={`text-lg py-2 px-4 transition-all duration-300 whitespace-nowrap ${currentSection === section
+                      ? 'font-bold border-b-4 border-blue-500 text-blue-500'
+                      : 'text-gray-600 hover:text-blue-500'
+                    }`}
+                  onClick={() => handleSectionChange(section as Section)}
+                >
+                  {section}
+                </button>
+              ))}
+            </div>
           </div>
-
+          
           <div style={{ minHeight: '300px' }}>
             {currentSection === 'Description' && <CourseDescription {...courseData} />}
             {currentSection === 'Requirements' && <CourseRequirements requirements={courseData.requirements} />}
@@ -188,7 +191,6 @@ const CoursePage = () => {
                       >
                         {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
                       </button>
-
                     </div>
                   ))
                 ) : (
@@ -218,7 +220,7 @@ const CoursePage = () => {
           <CurriculumBox onLessonSelect={setSelectedVideoUrl} onlessonId={setLessonId} />
         </div>
       </div>
-      <RelatedCourses />
+      <RelatedCourses courseId={courseId!} />
     </div>
   );
 };

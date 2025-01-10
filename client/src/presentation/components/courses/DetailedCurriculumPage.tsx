@@ -31,8 +31,6 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
         if (!courseId) throw new Error('Invalid Course ID.');
 
         const response = await api.get(`/user/view-lessons/${courseId}`);
-        console.log(response.data, 'Curriculum data');
-
         if (response.status === 200) {
           setCurriculum(response.data);
           setExpandedSections(new Array(response.data.length).fill(false));
@@ -85,11 +83,11 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
     title: lesson.lessonTitle,
     description: lesson.lessonDescription,
     lectures: 1,
-    duration: '5m 20s', 
+    duration: '5m 20s',
     topics: [
       {
         name: `Watch video: ${lesson.lessonTitle}`,
-        duration: '5m 20s', 
+        duration: '5m 20s',
         link: lesson.lessonVideo,
         type: 'video',
       },
@@ -105,10 +103,10 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 sm:p-6">
         <div className="py-4">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Curriculum</h2>
-          <div className="flex justify-between text-sm text-gray-600 mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Curriculum</h2>
+          <div className="flex flex-wrap justify-between text-sm text-gray-600 mb-4 sm:mb-6">
             <span>{sections.length} Sections</span>
             <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>
             <span>~{sections.length * 5} mins</span>
@@ -121,8 +119,8 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
                   onClick={() => toggleSection(index)}
                 >
                   <div>
-                    <h3 className="font-semibold text-gray-800 text-lg">{section.title}</h3>
-                    <div className="text-sm text-gray-500">
+                    <h3 className="font-semibold text-gray-800 text-base sm:text-lg">{section.title}</h3>
+                    <div className="text-xs sm:text-sm text-gray-500">
                       {section.lectures} lectures • {section.duration}
                     </div>
                   </div>
@@ -133,7 +131,7 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
                 {expandedSections[index] && section.topics.length > 0 && (
                   <ul className="mt-2 p-4 space-y-2 bg-white">
                     {section.topics.map((topic, i) => (
-                      <li key={i} className="flex justify-between text-sm text-gray-600">
+                      <li key={i} className="flex justify-between text-xs sm:text-sm text-gray-600">
                         {topic.type === 'pdf' ? (
                           <button
                             onClick={() =>

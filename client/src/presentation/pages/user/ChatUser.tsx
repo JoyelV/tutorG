@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Badge, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress } from '@mui/material';
+import { Avatar, TextField, IconButton, Typography, Badge, ListItem, List, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Box } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
 import api from '../../../infrastructure/api/api';
@@ -51,6 +51,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const [fileSizeError, setFileSizeError] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [lastMessages, setLastMessages] = useState<{ [userId: string]: { content: string; time: string } }>({});
 
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -66,24 +67,27 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
     socket.current.on('receive_message', (message: Message) => {
       if (message.sender !== userId) {
-        // Update unread counts if message is not from the selected user
-        if (!selectedUser || selectedUser.id !== message.sender) {
-          setUnreadCounts((prevCounts) => ({
-            ...prevCounts,
-            [message.sender]: (prevCounts[message.sender] || 0) + 1,
-          }));
-        } 
-        setMessages((prevMessages) =>
-            prevMessages.some((msg) => msg.messageId === message.messageId)
-              ? prevMessages
-              : [...prevMessages, message]
-          );
+        setUnreadCounts((prevCounts) => ({
+          ...prevCounts,
+          [message.sender]: (prevCounts[message.sender] || 0) + 1,
+        }));
+        setLastMessages((prevLastMessages) => ({
+        ...prevLastMessages,
+        [message.sender]: { content: message.content, time: message.time },
+      }));
       }
-    
+
+      setMessages((prevMessages) =>
+        prevMessages.some((msg) => msg.messageId === message.messageId)
+          ? prevMessages
+          : [...prevMessages, message]
+      );
+
       if (message.messageId) {
         socket.current?.emit('message_read', message.messageId);
       }
-    });    
+    });
+
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
@@ -115,14 +119,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         }));
         setUsers(data);
         if (data.length > 0) {
-          setSelectedUser(data[0]);
-          setMessages([{
-            messageId: `${Date.now()}`,
-            sender: 'other',
-            content: `Hi! I'm ${data[0].name}, how can I assist you today?`,
-            time: new Date().toLocaleTimeString(),
-            status: 'sent'
-          }]);
+          const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
+          data.forEach((user: User) => {
+            lastMessagesMap[user.id] = { content: '', time: '' };
+          });
+          setLastMessages(lastMessagesMap);
         }
       } catch (err) {
         toast.error('Unable to fetch the list of tutors. Please try again later.');
@@ -139,6 +140,16 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  useEffect(() => {
+    setLastMessages((prev) => {
+      const sorted = { ...prev };
+      Object.keys(sorted).forEach((key) => {
+        if (!sorted[key].time) sorted[key].time = new Date(0).toLocaleTimeString(); 
+      });
+      return sorted;
+    });
+  }, [users, lastMessages]);  
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -265,6 +276,24 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         mediaUrl: message.mediaUrl,
       }));
       setMessages(fetchedMessages);
+
+      if (fetchedMessages.length > 0) {
+        const sortedMessages = fetchedMessages.sort((a: any, b: any) => {
+          const aTime = new Date(a.createdAt).getTime();
+          const bTime = new Date(b.createdAt).getTime();
+          return bTime - aTime; 
+        });
+
+        const lastMessage =  sortedMessages[sortedMessages.length - 1];
+
+        setLastMessages((prevLastMessages) => ({
+          ...prevLastMessages,
+          [user.id]: {
+            content: lastMessage.content,
+            time: lastMessage.time, 
+          },
+        }));
+      }
     } catch (err) {
       setError('Failed to fetch messages. Please try again later.');
     } finally {
@@ -275,6 +304,12 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const timeA = lastMessages[a.id]?.time ? new Date(lastMessages[a.id]?.time).getTime() : 0; 
+    const timeB = lastMessages[b.id]?.time ? new Date(lastMessages[b.id]?.time).getTime() : 0; 
+    return timeA - timeB; 
+  });  
 
   const validateFileSize = (file: File) => {
     const sizeInMB = file.size / (1024 * 1024);
@@ -345,48 +380,118 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-indigo-100 to-purple-200">
       {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-b from-blue-600 to-green-800 text-white flex flex-col p-4 space-y-4">
-        <Typography variant="h6" className="font-bold text-white">
-          {userType === 'User' ? 'User' : 'Instructor'}
-        </Typography>
-        <TextField
-          fullWidth
-          placeholder={`Search ${userType === 'User' ? 'Instructor' : 'User'}...`}
-          variant="outlined"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <div className="overflow-y-auto space-y-2">
-          {filteredUsers.map((user) => (
-            <ListItem key={user.id} button onClick={() => handleUserSelect(user)} selected={selectedUser?.id === user.id}>
-              <ListItemAvatar>
-                <Badge
-                  badgeContent={unreadCounts[user.id] || 0}
-                  color="error"
-                >
-                  <Avatar src={user.image} alt={user.name} />
-                </Badge>
-              </ListItemAvatar>
-              <ListItemText primary={user.name} />
-              <Tooltip title="Video Call">
-                <IconButton onClick={() => handleVideoCallClick(user)}>
-                  <VideoCall />
-                </IconButton>
-              </Tooltip>
-            </ListItem>
-          ))}
-        </div>
+      <aside
+    className="bg-gradient-to-b from-yellow-400 to-blue-300 text-white flex flex-col p-4 space-y-4"
+    style={{
+      width: '300px', 
+      height: '100vh', 
+      overflowY: 'auto', 
+    }}
+  >
+    <Box
+      sx={{
+        width: '300px', 
+        height: '100vh', 
+        overflowY: 'auto', 
+      }}
+    >
+          <Typography variant="h6" className="font-bold text-white">
+            {userType === 'User' ? 'User' : 'Instructor'}
+          </Typography>
+          <TextField
+            fullWidth
+            placeholder={`Search ${userType === 'User' ? 'Instructor' : 'User'}...`}
+            variant="outlined"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <List style={{ maxHeight: '100%', overflowY: 'auto', padding: '0 10px' }}>
+            {sortedUsers.map((user) => (
+              <ListItem
+                key={user.id}
+                button
+                selected={selectedUser?.id === user.id}
+                onClick={() => handleUserSelect(user)}
+                style={{
+                  borderBottom: '1px solid #f0f0f0',
+                  padding: '10px',
+                }}
+              >
+                <ListItemAvatar>
+                  <Avatar src={user.image} style={{ width: '50px', height: '50px' }} />
+                </ListItemAvatar>
+
+                <ListItemText
+                  primary={
+                    <div>
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        style={{ marginBottom: '4px' }}
+                      >
+                        <Typography style={{ fontWeight: 'bold', fontSize: '16px' }}>{user.name}</Typography>
+                        <Tooltip title="Video Call">
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVideoCallClick(user);
+                            }}
+                            style={{ marginLeft: '10px' }}
+                          >
+                            <VideoCall style={{ color: '#4caf50' }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography
+                          variant="body2"
+                          noWrap
+                          style={{
+                            color: '#FFFFFF',
+                            maxWidth: '70%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {lastMessages[user.id]?.content || 'No message yet'}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          style={{
+                            color: '#FFFFFF',
+                            whiteSpace: 'nowrap',
+                            marginLeft: '10px',
+                          }}
+                        >
+                          {lastMessages[user.id]?.time}
+                        </Typography>
+                        <Badge
+        badgeContent={unreadCounts[user.id] || 0}
+        color="secondary"
+        invisible={unreadCounts[user.id] === 0}
+      />
+                      </Box>
+                    </div>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </aside>
 
       {/* Main chat area */}
       <main className="flex-1 p-4 flex flex-col">
-        <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 flex items-center border-b">
+        <div className="bg-gradient-to-r from-blue-700 to-green-700 p-4 flex items-center border-b">
           {selectedUser ? (
             <>
               <Avatar src={selectedUser.image} />
@@ -407,8 +512,8 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           style={{ maxHeight: 'calc(100vh - 200px)' }}
         >
           {messages.map((message, index) => (
-            <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
-              <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
+            <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start' : '')}`}>
+              <div className={`max-w-lg ${message.sender === userId ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                 <Typography>{message.content}</Typography>
                 {message.mediaUrl && (
                   <>

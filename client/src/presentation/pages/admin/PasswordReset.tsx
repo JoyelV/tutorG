@@ -20,6 +20,14 @@ export const PasswordReset: React.FC = () => {
       return;
     }
 
+    const isStrongPassword = (newPassword: string): boolean =>
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword);
+
+    if (!isStrongPassword(newPassword)) {
+      setError('Password must have at least 8 characters, one lowercase letter, one uppercase letter, one number, and one special character.');
+      return;
+    }
+
     try {
       const response = await api.post('/admin/reset-password', {
         token: state.token,

@@ -1,22 +1,21 @@
-import { assets } from '../../../assets/assets_user/assets';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../../infrastructure/api/api";
 
-interface Course {
-  name: string;
-  category: string;
-  price: string;
-  image: string;
-  rating: string;
-  students: string;
+interface RelatedCoursesProps {
+  courseId: string; 
 }
 
-const courses: Course[] = [
-  { name: "Machine Learning A-Z From Zero To Hero™", category: "DESIGN", price: "₹499", image: assets.DESIGN, rating: "4.0", students: "26" },
-  { name: "How to Learn HTML and CSS With Zero Experience", category: "WEB DEVELOPMENT", price: "₹700", image: assets.LIFESTYLE, rating: "4.5", students: "18" },
-  { name: "Advanced SQL - All in 1 SERIES", category: "DATABASE", price: "₹800", image: assets.BUSINESS, rating: "4.8", students: "10" },
-  { name: "The Complete Digital Marketing Course", category: "MARKETING", price: "₹800", image: assets.Marketing, rating: "3.8", students: "20" },
-  { name: "Reiki Level I, II and Master/Teacher Program", category: "IT & SOFTWARE", price: "₹800", image: assets.Health, rating: "3.8", students: "15" },
-];
+interface Course {
+  _id:string;
+  title: string;
+  category: string;
+  courseFee: string;
+  thumbnail: string;
+  averageRating: string;
+  students: string;
+  level:string;
+}
 
 const getCategoryColor = (category: string): string => {
   switch (category) {
@@ -37,48 +36,75 @@ const getCategoryColor = (category: string): string => {
   }
 };
 
-const RelatedCourses: React.FC = () => {
+const RelatedCourses: React.FC<RelatedCoursesProps> = ({ courseId }) => {
+  const [relatedCourses, setRelatedCourses] = useState<Course[]>([]);
   const navigate = useNavigate();
 
-  const handleCardClick = (index: number) => {
-    navigate(`/course/details/:${index}`);
+  useEffect(() => {
+    const fetchRelatedCourses = async () => {
+      try {
+        const response = await api.get(`/user/related/${courseId}`);
+        const data = await response.data;
+        setRelatedCourses(data);
+      } catch (error) {
+        console.error("Error fetching related courses:", error);
+      }
+    };
+
+    fetchRelatedCourses();
+  }, [courseId]);
+
+  const handleCardClick = (id: string) => {
+    navigate(`/course/details/${id}`);
   };
+
   return (
-    <>
-      <br />
-      <h3 className="font-bold text-2xl text-left pl-10">Related Courses</h3>
+    <div>
+      <h3 className="font-bold text-3xl text-left pl-10 pt-9">Related Courses</h3>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-10 bg-gradient-to-br from-white to-gray-100">
-      {courses.map((course, index) => (
-        <div
-          key={index}
-          className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
-          onClick={() => handleCardClick(index)} 
-        >
+        {relatedCourses.map((course, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
+            onClick={() => handleCardClick(course._id)}
+          >
             <div
               className="h-48 bg-cover bg-center rounded-t-2xl"
-              style={{ backgroundImage: `url(${course.image})` }}
+              style={{ backgroundImage: `url(${course.thumbnail})` }}
             ></div>
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <div className={`${getCategoryColor(course.category)} px-2 py-1 rounded-full text-xs font-semibold uppercase`}>
+                <div
+                  className={`${getCategoryColor(
+                    course.category
+                  )} px-2 py-1 rounded-full text-xs font-semibold uppercase`}
+                >
                   {course.category}
                 </div>
                 <div className="font-bold text-xl text-green-500">
-                  {course.price}
+                  {course.courseFee}
                 </div>
               </div>
               <h2 className="text-start px-2 py-1 rounded-full text-xs font-semibold uppercase text-gray-800 leading-tight">
-                {course.name}
+                {course.title}
               </h2>
               <div className="flex items-center justify-between mb-3">
-                <div><span className="text-yellow-500 font-semibold mr-1"> ★ {course.rating}</span></div>
-                <div><span className="text-right text-gray-500 font-semibold">{course.students} students</span></div>
+                <div>
+                  <span className="text-yellow-500 font-semibold mr-1">
+                    ★ {course.averageRating}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-right text-gray-500 font-semibold">
+                    {course.students.length} students
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

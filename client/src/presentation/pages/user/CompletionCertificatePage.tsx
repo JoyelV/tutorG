@@ -56,20 +56,20 @@ const CertificateOfCompletion: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full flex flex-col items-center px-4 sm:px-8">
       {/* Certificate Body */}
       <div
         ref={certificateRef}
-        className="w-[800px] mx-auto p-8 bg-white border-8 border-gray-300 rounded-lg shadow-xl"
+        className="w-full max-w-[800px] mx-auto p-6 sm:p-8 bg-white border-8 border-gray-300 rounded-lg shadow-xl"
       >
-        <div className="border-[12px] border-gray-200 rounded-lg p-6">
+        <div className="border-[12px] border-gray-200 rounded-lg p-4 sm:p-6">
           {/* TutorG Logo */}
           <div className="flex justify-center mb-6">
-            <img src={assets.logo} alt="TutorG Logo" className="h-20" />
+            <img src={assets.logo} alt="TutorG Logo" className="h-16 sm:h-20" />
           </div>
 
           {/* Certificate Header */}
-          <h1 className="text-center text-5xl font-serif font-bold mb-4 text-gray-800">
+          <h1 className="text-center text-3xl sm:text-5xl font-serif font-bold mb-4 text-gray-800">
             Certificate of Completion
           </h1>
 
@@ -79,7 +79,7 @@ const CertificateOfCompletion: React.FC = () => {
           </p>
 
           {/* Student Name */}
-          <p className="text-center text-3xl font-bold text-gray-900 mb-4">
+          <p className="text-center text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
             {courseData.studentName}
           </p>
 
@@ -88,7 +88,7 @@ const CertificateOfCompletion: React.FC = () => {
             has successfully completed the professional course requirements for
           </p>
 
-          <p className="text-center text-2xl italic font-semibold text-gray-900 mb-6">
+          <p className="text-center text-xl sm:text-2xl italic font-semibold text-gray-900 mb-6">
             {courseData.courseName}
           </p>
 
@@ -104,17 +104,17 @@ const CertificateOfCompletion: React.FC = () => {
           <hr className="border-t-2 border-gray-300 my-6" />
 
           {/* Signature Section */}
-          <div className="flex justify-between items-center mt-6 px-4">
+          <div className="flex justify-between items-center mt-6 px-4 sm:px-8">
             {/* Placeholder for Signature */}
             <div className="text-center">
-              <img src={assets.signature} alt="Signature" className="h-16 mb-2" />
+              <img src={assets.signature} alt="Signature" className="h-12 sm:h-16 mb-2" />
               <p className="text-gray-800 font-semibold">Dr. Joyel Varghese</p>
               <p className="text-gray-500 text-sm">Director, TutorG</p>
             </div>
 
             {/* Verification Logo */}
             <div className="text-center">
-              <img src={assets.seal} alt="Seal" className="h-20" />
+              <img src={assets.seal} alt="Seal" className="h-16 sm:h-20" />
               <p className="text-gray-700 font-semibold mt-2">Official Seal</p>
             </div>
           </div>

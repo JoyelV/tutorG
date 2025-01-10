@@ -26,7 +26,7 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); 
+  const [itemsPerPage] = useState(5);
   const studentId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -112,66 +112,68 @@ const CartPage = () => {
 
   return (
     <section className="py-8 lg:py-24 relative min-h-screen flex flex-col">
-      <div className="w-full max-w-7xl px-4 md:px-5 lg-6 mx-auto flex-grow">
+      <div className="w-full max-w-7xl px-4 md:px-5 lg:px-6 mx-auto flex-grow">
         <p className="text-2xl font-bold text-center text-sky-500">CART PAGE</p>
         <div className="border-t border-sky-200 py-3">
           {cartItems.length > 0 ? (
             <>
-              <table className="min-w-full table-auto">
-                <thead>
-                  <tr className="border-b">
-                    <th className="px-4 py-2">Course Description</th>
-                    <th className="px-4 py-2">Fee</th>
-                    <th className="px-4 py-2">Remove</th>
-                    <th className="px-4 py-2">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentItems.map((cartItem) => (
-                    <tr key={cartItem._id} className="border-b">
-                      {cartItem.course.map((course) => (
-                        <td key={course._id} className="px-2 py-2">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={course.thumbnail}
-                              alt={course.title}
-                              className="w-16 h-16 rounded-md"
-                            />
-                            <div>
-                              <p className="px-4 py-2 font-semibold text-sky-600">{course.title}</p>
-                              <p className="px-4 py-2 text-sky-500">Category: {course.category}</p>
-                              <p className="px-4 py-2 text-sky-500">Level: {course.level}</p>
-                              <p className="px-4 py-2 text-sky-500">Rating: {course.rating} ⭐</p>
-                            </div>
-                          </div>
-                        </td>
-                      ))}
-                      <td className="px-4 py-2">₹{cartItem.course[0]?.courseFee}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleRemove(cartItem._id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleMoveToWishlist(cartItem._id, cartItem.course[0]._id)}
-                          className="text-blue-500 hover:text-blue-700 ml-2"
-                        >
-                          Move to Wishlist
-                        </button>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto text-sm sm:text-base">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-2 py-2 sm:px-4">Course Description</th>
+                      <th className="px-2 py-2 sm:px-4">Fee</th>
+                      <th className="px-2 py-2 sm:px-4">Remove</th>
+                      <th className="px-2 py-2 sm:px-4">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="flex justify-between mt-6">
+                  </thead>
+                  <tbody>
+                    {currentItems.map((cartItem) => (
+                      <tr key={cartItem._id} className="border-b">
+                        {cartItem.course.map((course) => (
+                          <td key={course._id} className="px-2 py-2 sm:px-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                              <img
+                                src={course.thumbnail}
+                                alt={course.title}
+                                className="w-16 h-16 rounded-md"
+                              />
+                              <div>
+                                <p className="font-semibold text-sky-600">{course.title}</p>
+                                <p className="text-sky-500">Category: {course.category}</p>
+                                <p className="text-sky-500">Level: {course.level}</p>
+                                <p className="text-sky-500">Rating: {course.rating} ⭐</p>
+                              </div>
+                            </div>
+                          </td>
+                        ))}
+                        <td className="px-2 py-2 sm:px-4">₹{cartItem.course[0]?.courseFee}</td>
+                        <td className="px-2 py-2 sm:px-4">
+                          <button
+                            onClick={() => handleRemove(cartItem._id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                        <td className="px-2 py-2 sm:px-4">
+                          <button
+                            onClick={() => handleMoveToWishlist(cartItem._id, cartItem.course[0]._id)}
+                            className="text-blue-500 hover:text-blue-700 ml-2"
+                          >
+                            Move to Wishlist
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-between mt-6">
                 <p className="font-semibold text-lg">Total Amount: ₹{calculateTotalAmount()}</p>
                 <button
                   onClick={handlePaymentSelection}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
                   Proceed to Checkout
                 </button>
@@ -197,9 +199,8 @@ const CartPage = () => {
             <div className="text-center py-16">
               <h2 className="text-2xl font-bold text-sky-600">Your cart is empty!</h2>
               <p className="text-gray-500 mt-4">Looks like you haven’t added anything to your cart yet.</p>
-              <p className="text-gray-500 mt-4">Purchase a course start today learn a new skill.</p>
               <button
-                onClick={() => window.location.href = '/course-listing'}
+                onClick={() => (window.location.href = '/course-listing')}
                 className="mt-6 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
               >
                 Go to Courses

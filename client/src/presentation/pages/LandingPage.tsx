@@ -1,6 +1,5 @@
 import HeroSection from '../components/common/HeroSection';
 import Topics from '../components/common/Topics';
-import ImageCard from '../components/common/ImageCards'
 import RecentlyAddedCourses from '../components/common/RecentlyAddedCourses';
 import BecomeInstructor from '../components/common/BecomeInstructor';
 import TopInstructors from '../components/common/TopInstructors';
@@ -14,7 +13,6 @@ function App() {
         <Navbar />
             <HeroSection />
             <Topics />
-            <ImageCard />
             <RecentlyAddedCourses />
             <BecomeInstructor />
             <TopInstructors />

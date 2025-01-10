@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import { useParams } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -18,12 +18,13 @@ interface CurriculumBoxProps {
   onlessonId: (lessonId: string) => void;
 }
 
-const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId }) => {
+const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect, onlessonId }) => {
   const { courseId } = useParams<{ courseId: string }>();
   const [curriculum, setCurriculum] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedSections, setExpandedSections] = useState<boolean[]>([]);
+  const [videoDurations, setVideoDurations] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchCurriculum = async () => {
@@ -32,8 +33,6 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
         if (!courseId) throw new Error('Invalid Course ID.');
 
         const response = await api.get(`/user/view-lessons/${courseId}`);
-        console.log(response.data, 'Curriculum data');
-
         if (response.status === 200) {
           setCurriculum(response.data);
           setExpandedSections(new Array(response.data.length).fill(false));
@@ -68,7 +67,7 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
     document.body.removeChild(link);
   };
 
-  const handleVideoSelect = (lessonId: string,videoUrl: string) => {
+  const handleVideoSelect = (lessonId: string, videoUrl: string) => {
     if (onLessonSelect) {
       onLessonSelect(videoUrl);
     }
@@ -76,6 +75,24 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
       onlessonId(lessonId);  
     }
   };
+
+  const loadVideoDuration = (videoUrl: string, lessonId: string) => {
+    const video = document.createElement('video');
+    video.src = videoUrl;
+    video.addEventListener('loadedmetadata', () => {
+      const duration = video.duration;
+      const formattedDuration = new Date(duration * 1000).toISOString().substr(11, 8); 
+      setVideoDurations((prev) => ({ ...prev, [lessonId]: formattedDuration }));
+    });
+  };
+
+  useEffect(() => {
+    curriculum.forEach((lesson) => {
+      if (lesson.lessonVideo && !videoDurations[lesson._id]) {
+        loadVideoDuration(lesson.lessonVideo, lesson._id);
+      }
+    });
+  }, [curriculum]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -85,16 +102,16 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
     return <div>Error: {error}</div>;
   }
 
-  const sections = curriculum.map((lesson, index) => ({
-    _id:lesson._id,
+  const sections = curriculum.map((lesson) => ({
+    _id: lesson._id,
     title: lesson.lessonTitle,
     description: lesson.lessonDescription,
     lectures: 1,
-    duration: '5m 20s', 
+    duration: videoDurations[lesson._id] || 'Loading...', 
     topics: [
       {
         name: `Watch video: ${lesson.lessonTitle}`,
-        duration: '5m 20s', 
+        duration: videoDurations[lesson._id] || 'Loading...', 
         link: lesson.lessonVideo,
         type: 'video',
       },
@@ -109,14 +126,12 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Main Content */}
       <div className="flex-1 p-6">
         <div className="py-4">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Curriculum</h2>
           <div className="flex justify-between text-sm text-gray-600 mb-6">
             <span>{sections.length} Sections</span>
             <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>
-            <span>~{sections.length * 5} mins</span>
           </div>
           <ul className="space-y-4">
             {sections.map((section, index) => (
@@ -141,16 +156,14 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect,onlessonId
                       <li key={i} className="flex justify-between text-sm text-gray-600">
                         {topic.type === 'pdf' ? (
                           <button
-                            onClick={() =>
-                              handlePdfDownload(topic.link, `${topic.name}.pdf`)
-                            }
+                            onClick={() => handlePdfDownload(topic.link, `${topic.name}.pdf`)}
                             className="hover:underline text-blue-500"
                           >
                             {topic.name}
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleVideoSelect(section._id,topic.link)}
+                            onClick={() => handleVideoSelect(section._id, topic.link)}
                             className="hover:underline text-blue-500"
                           >
                             {topic.name}

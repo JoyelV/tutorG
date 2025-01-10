@@ -180,8 +180,8 @@ const CategoryPage: React.FC = () => {
         if (response.status === 200) {
           Swal.fire(
             response.data.status
-              ? 'Category Unblocked'
-              : 'Category Blocked',
+              ? 'Category Blocked'
+              : 'Category Unblocked',
             '',
             'success'
           );
@@ -266,7 +266,7 @@ const CategoryPage: React.FC = () => {
                           {category.subCategories.map((sub) => sub.name).join(', ')}
                         </td>
                         <td className="px-6 py-3">
-                          {category.status ? 'False' : 'True'}
+                          {category.status ? 'True' : 'False'}
                         </td>
                         <td className="px-6 py-3 flex space-x-2">
                           <button
@@ -276,7 +276,7 @@ const CategoryPage: React.FC = () => {
                               : 'bg-green-500 hover:bg-green-700'
                               } text-white`}
                           >
-                            {category.status ? 'Blocked' : 'Unblock'}
+                            {category.status ? 'Blocked!!' : 'Unblock'}
                           </button>
                           <button
                             onClick={() => handleEditCategory(category)}

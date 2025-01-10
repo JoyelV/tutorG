@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { assets } from '../../../assets/assets_user/assets';
 import api from '../../../infrastructure/api/api';
+import { useNavigate } from 'react-router-dom';
 
 interface Course {
   _id: string;
@@ -34,6 +34,7 @@ const getCategoryColor = (category: string): string => {
 const RecentlyAddedCourses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -50,6 +51,10 @@ const RecentlyAddedCourses: React.FC = () => {
     fetchCourses();
   }, []);
 
+  const handleCardClick = (courseId: string) => {
+    navigate(`/course/details/${courseId}`);
+  };
+
   return (
     <section className="px-8 py-2 bg-white flex justify-center">
       <div className="text-center">
@@ -61,7 +66,8 @@ const RecentlyAddedCourses: React.FC = () => {
             {courses.map((course) => (
               <div
                 key={course._id}
-                className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl"
+                className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl cursor-pointer"
+                onClick={() => handleCardClick(course._id)} 
               >
                 <div
                   className="h-36 bg-cover bg-center rounded-t-xl"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { assets } from '../../../assets/assets_user/assets';
 import api from '../../../infrastructure/api/api';
+import { useNavigate } from 'react-router-dom';
 
 interface Instructor {
   _id: string;
@@ -15,6 +16,7 @@ interface Instructor {
 const TopInstructors: React.FC = () => {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchInstructors = async () => {
@@ -43,6 +45,7 @@ const TopInstructors: React.FC = () => {
           <div
             key={instructor._id}
             className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl"
+            onClick={() => navigate(`/instructorProfile/${instructor._id}`)} 
           >
             {/* Instructor Image */}
             <div

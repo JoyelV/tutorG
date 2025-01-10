@@ -189,11 +189,11 @@ const CourseTable: React.FC = () => {
                         <button
                           onClick={() => toggleBlockStatus(course._id, course.isApproved)}
                           className={`px-4 py-2 rounded ${course.isApproved
-                            ? "bg-red-500 hover:bg-red-700"
-                            : "bg-green-500 hover:bg-green-700"
+                            ? "bg-green-500 hover:bg-green-700"
+                            : "bg-red-500 hover:bg-red-700"
                             } text-white`}
                         >
-                          {course.isApproved ? "Unblock" : "Block-?"}
+                          {course.isApproved ? "Unblocked" : "Blocked!!"}
                         </button>
                         <button
                           onClick={() => navigate(`/admin/viewCoursePage/${course._id}`)}

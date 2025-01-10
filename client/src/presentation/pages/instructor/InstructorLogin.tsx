@@ -4,12 +4,14 @@ import api from '../../../infrastructure/api/api';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../../infrastructure/context/AuthContext';
 
 const InstructorLogin: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleInstructorLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,10 +23,13 @@ const InstructorLogin: React.FC = () => {
                 toast.error('Access denied. Enter valid credentials.');
                 return;
             }
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', user.id);
-            localStorage.setItem('role', user.role);
-            localStorage.setItem('username', user.username);
+
+            login({
+                token,
+                userId: user.id,
+                role: user.role,
+                username: user.username,
+            });
             navigate('/instructor/instructor-dashboard');
         } catch (error) {
             setError('Instructor login failed. Please check your credentials.');
@@ -61,7 +66,7 @@ const InstructorLogin: React.FC = () => {
 
                     {/* Right Side - Login Form */}
                     <Grid item xs={12} md={6}>
-                        <Box sx={{ p: 4 }}>
+                        <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
                             <Box textAlign="center" mb={3}>
                                 <Typography
                                     variant="h3"
@@ -71,6 +76,7 @@ const InstructorLogin: React.FC = () => {
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
+                                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
                                     }}
                                 >
                                     Tutor
@@ -93,6 +99,7 @@ const InstructorLogin: React.FC = () => {
                                     onChange={(e) => setEmail(e.target.value)}
                                     margin="normal"
                                     variant="outlined"
+                                    sx={{ mb: 2 }}
                                 />
                                 <TextField
                                     label="Password"
@@ -103,6 +110,7 @@ const InstructorLogin: React.FC = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     margin="normal"
                                     variant="outlined"
+                                    sx={{ mb: 2 }}
                                 />
                                 <Button
                                     type="submit"
@@ -111,7 +119,8 @@ const InstructorLogin: React.FC = () => {
                                     color="primary"
                                     sx={{
                                         mt: 3, mb: 2,
-                                        py: 1.5,
+                                        py: { xs: 1, sm: 1.5 },
+                                        fontSize: { xs: '0.875rem', sm: '1rem' },
                                         background: 'linear-gradient(to right, #ff5e5e, #ff0077)',
                                         fontWeight: 'bold',
                                     }}

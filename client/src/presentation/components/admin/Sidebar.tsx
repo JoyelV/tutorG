@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Dashboard, School, Group, AccountCircle, ExitToApp, Menu } from '@mui/icons-material';
+import { useAuth } from '../../../infrastructure/context/AuthContext';
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     const baseLinkClasses = "flex items-center py-2 px-4 rounded transition-colors duration-300";
     const activeLinkClasses = "bg-orange-500";
 
     const handleLogout = async () => {
         try {
-            localStorage.clear();
-            navigate('/admin');
+            logout();
+            navigate("/admin");
         } catch (error) {
             console.error("Logout failed", error);
         }

@@ -15,8 +15,17 @@ export const PasswordReset: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    const isStrongPassword = (newPassword: string): boolean =>
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword);
+
+    if (!isStrongPassword(newPassword)) {
+      setError('Password must have at least 8 characters, one lowercase letter, one uppercase letter, one number, and one special character.');
       return;
     }
 

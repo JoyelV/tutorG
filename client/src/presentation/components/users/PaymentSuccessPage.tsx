@@ -12,7 +12,7 @@ interface Order {
     image: string;
   };
   courseId: {
-    _id:string;
+    _id: string;
     title: string;
     subtitle: string;
     subCategory: string;
@@ -70,7 +70,7 @@ const CheckoutSuccess = () => {
           {orders.map((order) => (
             <div key={order._id} className="border-t pt-6">
               {/* Top Section: Student Details and Date */}
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex flex-col md:flex-row justify-between items-start mb-6">
                 <div>
                   <p className="text-lg font-semibold">Student Details:</p>
                   <div className="flex items-center mt-2">
@@ -85,7 +85,7 @@ const CheckoutSuccess = () => {
                     </div>
                   </div>
                 </div>
-                <div>
+                <div className="mt-4 md:mt-0">
                   <p className="text-sm text-gray-500">Date of Purchase:</p>
                   <p className="text-md font-medium text-gray-800">{new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>

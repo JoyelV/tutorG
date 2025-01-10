@@ -85,15 +85,15 @@ function WishList() {
         const response = await api.post(`/user/cart/add`, { userId, courseId });
         const { message } = response.data;
 
-      if (message === "Student is already enrolled in this course") {
-        toast.info(message); 
-        return;
-      }else if(message === "Course already exists in the cart"){
-        toast.info(message); 
-        return;
-      }else{
-        toast.success(message);        
-      }
+        if (message === "Student is already enrolled in this course") {
+          toast.info(message); 
+          return;
+        } else if (message === "Course already exists in the cart") {
+          toast.info(message); 
+          return;
+        } else {
+          toast.success(message);        
+        }
         await api.delete(`/user/removeitem/${wishlistItemId}`);
         setWishlistItems((prev) => prev.filter((item) => item._id !== wishlistItemId));
         Swal.fire('Moved!', 'The item has been added to your cart.', 'success');
@@ -108,36 +108,36 @@ function WishList() {
   return (
     <>
       <section className="py-8 lg:py-24 relative -mt-9">
-        <div className="w-full max-w-7xl px-4 md:px-5 lg-6 mx-auto">
+        <div className="w-full max-w-7xl px-4 md:px-5 mx-auto">
           <div className="border-t border-sky-200 py-3">
             {wishlistItems.length > 0 ? (
               wishlistItems.map((wishlistItem) => (
                 <div
                   key={wishlistItem._id}
-                  className="flex flex-col md:flex-row items-center justify-between gap-3 border-b border-sky-200 py-3"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 border-b border-sky-200 py-4"
                 >
                   {wishlistItem.course.map((course) => (
-                    <div key={course._id} className="flex items-center gap-3">
-                      <img src={course.thumbnail} alt={course.title} className="w-16 h-16 rounded-md" />
+                    <div key={course._id} className="flex items-start sm:items-center gap-4">
+                      <img src={course.thumbnail} alt={course.title} className="w-20 h-20 sm:w-16 sm:h-16 rounded-md" />
                       <div>
                         <h4 className="font-semibold text-sky-600">{course.title}</h4>
-                        <p className="text-sky-500">Duration: {course.duration} hrs</p>
-                        <p className="text-sky-500">Language: {course.language}</p>
-                        <p className="text-sky-500">Level: {course.level}</p>
+                        <p className="text-sky-500 text-sm">Duration: {course.duration} hrs</p>
+                        <p className="text-sky-500 text-sm">Language: {course.language}</p>
+                        <p className="text-sky-500 text-sm">Level: {course.level}</p>
                       </div>
                     </div>
                   ))}
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                     <p className="font-bold text-sky-600">₹{wishlistItem.course[0]?.courseFee}</p>
                     <button
                       onClick={() => handleRemove(wishlistItem._id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 text-sm"
                     >
                       Remove
                     </button>
                     <button
                       onClick={() => handleAddToCart(wishlistItem._id, wishlistItem.course[0]._id)}
-                      className="text-blue-500 hover:text-blue-700"
+                      className="text-blue-500 hover:text-blue-700 text-sm"
                     >
                       Add to Cart
                     </button>

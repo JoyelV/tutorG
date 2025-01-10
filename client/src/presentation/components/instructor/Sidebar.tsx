@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../infrastructure/context/AuthContext";
 
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const baseLinkClasses =
     "block py-2 px-4 rounded transition-colors duration-300";
@@ -11,8 +13,8 @@ const Sidebar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      localStorage.clear();
-      navigate("/instructor");
+      logout(); 
+      navigate("/instructor"); 
     } catch (error) {
       console.error("Logout failed", error);
     }
