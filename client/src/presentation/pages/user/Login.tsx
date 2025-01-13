@@ -37,7 +37,6 @@ const Login: React.FC = () => {
                 toast.error('Access denied. Enter valid credentials.');
                 return;
             }
-            // Update context state
             login({
                 token,
                 userId: user.id,
@@ -55,12 +54,6 @@ const Login: React.FC = () => {
         try {
             const res = await api.post('/user/google-login', { token: response.credential });
             const { token, user } = res.data;
-
-            // localStorage.setItem('token', token);
-            // localStorage.setItem('userId', user.id);
-            // localStorage.setItem('role', user.role);
-            // localStorage.setItem('username', user.username);
-
             login({
                 token,
                 userId: user.id,

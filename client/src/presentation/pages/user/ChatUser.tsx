@@ -13,6 +13,7 @@ interface User {
   id: string;
   name: string;
   image: string;
+  onlineStatus: boolean;
 }
 
 interface Message {
@@ -72,9 +73,9 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           [message.sender]: (prevCounts[message.sender] || 0) + 1,
         }));
         setLastMessages((prevLastMessages) => ({
-        ...prevLastMessages,
-        [message.sender]: { content: message.content, time: message.time },
-      }));
+          ...prevLastMessages,
+          [message.sender]: { content: message.content, time: message.time },
+        }));
       }
 
       setMessages((prevMessages) =>
@@ -87,7 +88,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         socket.current?.emit('message_read', message.messageId);
       }
     });
-
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
@@ -107,6 +107,21 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     };
   }, []);
 
+  const formatMessageTime = (time: string) => {
+    const messageDate = new Date(time);
+    const today = new Date();
+
+    if (
+      messageDate.getDate() === today.getDate() &&
+      messageDate.getMonth() === today.getMonth() &&
+      messageDate.getFullYear() === today.getFullYear()
+    ) {
+      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      return messageDate.toLocaleDateString();
+    }
+  };
+
   useEffect(() => {
     const fetchTutors = async () => {
       try {
@@ -116,6 +131,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           id: item.tutorId._id,
           name: item.tutorId.username,
           image: item.tutorId.image,
+          onlineStatus: item.tutorId.onlineStatus,
         }));
         setUsers(data);
         if (data.length > 0) {
@@ -145,11 +161,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     setLastMessages((prev) => {
       const sorted = { ...prev };
       Object.keys(sorted).forEach((key) => {
-        if (!sorted[key].time) sorted[key].time = new Date(0).toLocaleTimeString(); 
+        if (!sorted[key].time) sorted[key].time = new Date(0).toLocaleTimeString();
       });
       return sorted;
     });
-  }, [users, lastMessages]);  
+  }, [users, lastMessages]);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -272,7 +288,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         sender: message.sender,
         content: message.content || '',
         status: message.status,
-        time: new Date(message.createdAt).toLocaleTimeString(),
+        time: message.createdAt,
         mediaUrl: message.mediaUrl,
       }));
       setMessages(fetchedMessages);
@@ -281,16 +297,16 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         const sortedMessages = fetchedMessages.sort((a: any, b: any) => {
           const aTime = new Date(a.createdAt).getTime();
           const bTime = new Date(b.createdAt).getTime();
-          return bTime - aTime; 
+          return bTime - aTime;
         });
 
-        const lastMessage =  sortedMessages[sortedMessages.length - 1];
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
 
         setLastMessages((prevLastMessages) => ({
           ...prevLastMessages,
           [user.id]: {
             content: lastMessage.content,
-            time: lastMessage.time, 
+            time: lastMessage.time,
           },
         }));
       }
@@ -306,10 +322,10 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   );
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
-    const timeA = lastMessages[a.id]?.time ? new Date(lastMessages[a.id]?.time).getTime() : 0; 
-    const timeB = lastMessages[b.id]?.time ? new Date(lastMessages[b.id]?.time).getTime() : 0; 
-    return timeA - timeB; 
-  });  
+    const timeA = lastMessages[a.id]?.time ? new Date(lastMessages[a.id]?.time).getTime() : 0;
+    const timeB = lastMessages[b.id]?.time ? new Date(lastMessages[b.id]?.time).getTime() : 0;
+    return timeB - timeA;
+  });
 
   const validateFileSize = (file: File) => {
     const sizeInMB = file.size / (1024 * 1024);
@@ -381,20 +397,20 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     <div className="flex min-h-screen bg-gradient-to-r from-indigo-100 to-purple-200">
       {/* Sidebar */}
       <aside
-    className="bg-gradient-to-b from-yellow-400 to-blue-300 text-white flex flex-col p-4 space-y-4"
-    style={{
-      width: '300px', 
-      height: '100vh', 
-      overflowY: 'auto', 
-    }}
-  >
-    <Box
-      sx={{
-        width: '300px', 
-        height: '100vh', 
-        overflowY: 'auto', 
-      }}
-    >
+        className="bg-gradient-to-b from-yellow-400 to-blue-300 text-white flex flex-col p-4 space-y-4"
+        style={{
+          width: '340px',
+          height: '100vh',
+          overflowY: 'auto',
+        }}
+      >
+        <Box
+          sx={{
+            width: '300px',
+            height: '100vh',
+            overflowY: 'auto',
+          }}
+        >
           <Typography variant="h6" className="font-bold text-white">
             {userType === 'User' ? 'User' : 'Instructor'}
           </Typography>
@@ -472,13 +488,13 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                             marginLeft: '10px',
                           }}
                         >
-                          {lastMessages[user.id]?.time}
+                          {formatMessageTime(lastMessages[user.id]?.time)}
                         </Typography>
                         <Badge
-        badgeContent={unreadCounts[user.id] || 0}
-        color="secondary"
-        invisible={unreadCounts[user.id] === 0}
-      />
+                          badgeContent={unreadCounts[user.id] || 0}
+                          color="secondary"
+                          invisible={unreadCounts[user.id] === 0}
+                        />
                       </Box>
                     </div>
                   }
@@ -498,6 +514,21 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
               <div className="ml-3">
                 <Typography variant="h6" className="font-bold">
                   {selectedUser.name}
+                </Typography>
+                <Typography variant="h6" className="font-bold">
+                  <div>
+                    <span
+                      style={{
+                        height: "15px",
+                        width: "15px",
+                        borderRadius: "100%",
+                        display: "inline-block",
+                        backgroundColor: selectedUser.onlineStatus ? "green" : "red",
+                        marginRight: "5px",
+                      }}
+                    ></span>
+                    {selectedUser.onlineStatus === true ? "Online" : "Offline"}
+                  </div>
                 </Typography>
               </div>
             </>

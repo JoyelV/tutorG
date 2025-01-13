@@ -10,7 +10,7 @@ import CurriculumPage from '../../components/courses/CourseCurriculums';
 import EditQuizForm from './QuizListSection';
 import CourseVideo from '../../components/instructor/CourseVideo';
 
-type Section = 'Description' | 'Requirements'|'Quiz' | 'Feedback';
+type Section = 'Description' | 'Requirements' | 'Quiz' | 'Feedback';
 
 const CourseView = () => {
   const [currentSection, setCurrentSection] = useState<Section>('Description');
@@ -52,8 +52,16 @@ const CourseView = () => {
     navigate(`/instructor/add-lesson/${courseId}`);
   };
 
-  const handleAddQuiz = () => {
-    navigate(`/instructor/addQuiz/${courseId}`);
+  const handleAddQuiz = async () => {
+    const response = await api.get(`/user/quizzes/${courseId}`);
+    if (response.status===204) {
+      navigate(`/instructor/addQuiz/${courseId}`);
+    }
+    
+    if (response.status===200) {
+      alert('A quiz has already been added for this course.');
+      return;
+    }
   };
 
   if (isLoading) {
@@ -84,16 +92,16 @@ const CourseView = () => {
         <div className="flex mt-6">
           {/* Left Content */}
           <div className="flex-1 pr-4">
-          <CourseVideo videoUrl={selectedVideoUrl} id={courseId}/>
+            <CourseVideo videoUrl={selectedVideoUrl} id={courseId} />
 
             {/* Section Navigation */}
             <div className="flex border-b border-gray-200 mt-6 mb-6">
-              {['Description', 'Requirements', 'Quiz','Feedback'].map((section) => (
+              {['Description', 'Requirements', 'Quiz', 'Feedback'].map((section) => (
                 <button
                   key={section}
                   className={`text-lg py-2 px-4 transition-all duration-300 ${currentSection === section
-                      ? 'font-bold border-b-4 border-blue-500 text-blue-500'
-                      : 'text-gray-600 hover:text-blue-500'
+                    ? 'font-bold border-b-4 border-blue-500 text-blue-500'
+                    : 'text-gray-600 hover:text-blue-500'
                     }`}
                   onClick={() => handleSectionChange(section as Section)}
                 >
@@ -130,9 +138,13 @@ const CourseView = () => {
               </button>
               <button
                 onClick={handleAddQuiz}
-                className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded"
+                disabled={courseData?.hasQuiz}
+                className={`px-4 py-2 rounded shadow text-white transition ${courseData?.hasQuiz
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-green-500 hover:bg-green-700'
+                  }`}
               >
-                Add Quiz
+                {courseData?.hasQuiz ? 'Quiz Added' : 'Add Quiz'}
               </button>
             </div>
 
@@ -140,7 +152,6 @@ const CourseView = () => {
             <CurriculumPage onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
             />
             {/* Add Lesson Button */}
-
           </div>
         </div>
       </div>

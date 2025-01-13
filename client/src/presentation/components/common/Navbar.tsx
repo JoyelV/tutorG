@@ -22,6 +22,7 @@ import { assets } from '../../../assets/assets_user/assets';
 import { Link } from 'react-router-dom';
 import { useTheme, useMediaQuery } from '@mui/material';
 import { useAuth } from '../../../infrastructure/context/AuthContext';
+import api from '../../../infrastructure/api/api';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -43,7 +44,10 @@ const Navbar: React.FC = () => {
 
     const handleLogout = async () => {
         logout();
+        const response = await api.post('/user/logout', { withCredentials: true });
+        if(response.status===200){
         navigate('/login');
+        }
     };
 
     return (

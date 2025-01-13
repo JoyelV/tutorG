@@ -22,6 +22,12 @@ const MyCourses: React.FC = () => {
   const [limit] = useState<number>(6);
   const navigate = useNavigate();
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -65,20 +71,20 @@ const MyCourses: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      <aside className={`w-64 bg-gray-800 text-white flex flex-col ${isSidebarOpen ? 'block' : 'hidden'} sm:block`}>
         <Sidebar />
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 ml-50 bg-gray-100">
+      <div className="flex-1 ml-0 sm:ml-54 bg-gray-100">
         {/* Fixed Dashboard Header */}
         <div className="fixed top-0 left-0 right-0 z-10 bg-gray-800">
-          <DashboardHeader />
+          <DashboardHeader toggleSidebar={toggleSidebar} />
         </div>
 
         {/* Content below the fixed header */}
-        <div className="pt-24 px-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+        <div className="pt-24 px-8">
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">
             My Courses
           </h2>
           <div className="px-4 sm:px-6 lg:px-8 py-4">

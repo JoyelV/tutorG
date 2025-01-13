@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -80,8 +80,8 @@ const EarningsVsCoursesChart = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-lg shadow-lg">
-      <h3 className="text-2xl font-semibold text-blue-800 mb-4">Earnings vs Total Courses</h3>
+    <div className="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-md shadow-md">
+      <h3 className="text-xl font-semibold text-blue-800 mb-4">Earnings vs Total Courses</h3>
       <p className="text-sm text-gray-700 mb-6">
         This chart compares the earnings with the total number of courses.
       </p>

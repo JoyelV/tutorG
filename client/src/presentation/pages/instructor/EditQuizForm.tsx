@@ -39,7 +39,7 @@ const EditQuizForm: React.FC = () => {
 
   const validateField = (name: string, value: string): string | null => {
     const trimmedValue = value.trim();
-    const isValid = /^[A-Za-z\s]+$/.test(trimmedValue);
+    const isValid = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/.test(trimmedValue);
     if (!trimmedValue) return 'This field is required';
     if (!isValid) return 'Only letters and spaces are allowed';
     return null;
@@ -123,13 +123,13 @@ const EditQuizForm: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
+      <aside className="w-full lg:w-64 bg-gray-800 text-white">
         <Sidebar />
       </aside>
-      <div className="flex flex-1 items-center justify-center">
-        <div className="bg-white shadow-lg rounded-lg p-6 max-w-4xl w-full">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Edit Quiz</h2>
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl md:max-w-4xl">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Edit Quiz</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             {formData.questions.map((q, index) => (
               <div key={index} className="space-y-4">
@@ -185,17 +185,17 @@ const EditQuizForm: React.FC = () => {
                 </div>
               </div>
             ))}
-            <div className="flex justify-between">
+            <div className="flex flex-wrap gap-4 justify-between">
               <button
                 type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
               >
                 Save Changes
               </button>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
+                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
               >
                 Cancel
               </button>

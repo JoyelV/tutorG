@@ -16,6 +16,7 @@ const AddQuizForm: React.FC = () => {
   ]);
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const isValidInput = (value: string) => /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/.test(value);
 
   const handleQuestionChange = (index: number, field: string, value: string) => {
     const updatedQuestions = [...questions];
@@ -42,7 +43,6 @@ const AddQuizForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate questions
     for (const { question, options, answer } of questions) {
       if (!question || options.some((opt) => !opt) || !answer) {
         Swal.fire({
@@ -58,6 +58,35 @@ const AddQuizForm: React.FC = () => {
           icon: 'error',
           title: 'Error',
           text: 'Answer must match one of the options.',
+        });
+        return;
+      }
+
+      if (!isValidInput(question)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Question can only contain letters, numbers, and spaces.',
+        });
+        return;
+      }
+
+      for (const option of options) {
+        if (!isValidInput(option)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Options can only contain letters, numbers, and spaces.',
+          });
+          return;
+        }
+      }
+
+      if (!isValidInput(answer)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Answer can only contain letters, numbers, and spaces.',
         });
         return;
       }
@@ -82,16 +111,18 @@ const AddQuizForm: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      <aside className="w-full md:w-64 bg-gray-800 text-white">
         <Sidebar />
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-1 items-center justify-center">
-        <div className="bg-white shadow-lg rounded-lg p-6 max-w-2xl w-full">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Add Quiz</h2>
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="bg-white shadow-lg rounded-lg p-6 max-w-full md:max-w-2xl w-full">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4 text-center md:text-left">
+            Add Quiz
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {questions.map((question, index) => (
               <div key={index} className="space-y-2 border p-4 rounded-md">
@@ -134,13 +165,13 @@ const AddQuizForm: React.FC = () => {
             <button
               type="button"
               onClick={addQuestion}
-              className="bg-green-500 text-white py-2 px-4 rounded-md"
+              className="bg-green-500 text-white py-2 px-4 rounded-md w-full md:w-auto"
             >
               Add Another Question
             </button>
             <button
               type="submit"
-              className="bg-indigo-600 text-white py-2 px-4 rounded-md mt-4"
+              className="bg-indigo-600 text-white py-2 px-4 rounded-md w-full md:w-auto mt-4"
             >
               Save & Submit
             </button>

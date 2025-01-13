@@ -59,6 +59,12 @@ const Earnings = () => {
     currentPage * rowsPerPage
   );
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const handleOpenModal = () => {
     setOpenModal(true);
   };
@@ -159,13 +165,13 @@ const Earnings = () => {
 
     fetchStats();
     
-   const queryParams = new URLSearchParams(location.search);
-   if (queryParams.get("session_id")) {
-     toast.success("Payment successful! Your withdrawal has been processed.", {
-      position: "top-right", 
-     });
-   }
- }, [location.search]); 
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get("session_id")) {
+      toast.success("Payment successful! Your withdrawal has been processed.", {
+        position: "top-right", 
+      });
+    }
+  }, [location.search]); 
 
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
@@ -174,17 +180,17 @@ const Earnings = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      <aside className={`w-full md:w-64 bg-gray-800 text-white flex flex-col ${isSidebarOpen ? "block" : "hidden md:block"}`}>
         <Sidebar />
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 bg-gray-100 ml-10 pt-20">
+      <div className="flex-1 bg-gray-100 pt-20 md:ml-10">
         {/* Fixed Dashboard Header */}
         <div className="fixed top-0 left-0 right-0 bg-gray-800">
-          <DashboardHeader />
+          <DashboardHeader toggleSidebar={toggleSidebar} />
         </div>
 
         {/* Main Content */}
@@ -194,10 +200,10 @@ const Earnings = () => {
           </Typography>
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {[{ label: "Total Revenue", value: stats.totalRevenue },
-            { label: "Current Balance", value: stats.currentBalance },
-            { label: "Total Withdrawals", value: stats.totalWithdrawals },
+              { label: "Current Balance", value: stats.currentBalance },
+              { label: "Total Withdrawals", value: stats.totalWithdrawals },
             ].map((stat, index) => (
               <Card
                 key={index}
@@ -231,7 +237,7 @@ const Earnings = () => {
             <Typography variant="subtitle1" className="font-semibold mb-4">
               Statistics Overview
             </Typography>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="h-60">
                 <Bar data={chartData.bar} options={{ maintainAspectRatio: false }} />
               </div>
@@ -275,69 +281,45 @@ const Earnings = () => {
               </Button>
             </DialogActions>
           </Dialog>
-        </main>
-        {/* Withdraw History Table */}
-    <div className="bg-white p-4 rounded shadow-md">
-      <Typography variant="subtitle1" className="font-semibold mb-4">
-        Withdraw History
-      </Typography>
-      <table className="w-full text-left">
-        <thead>
-          <tr>
-            <th className="border-b py-2">Date</th>
-            <th className="border-b py-2">Method</th>
-            <th className="border-b py-2">Amount</th>
-            <th className="border-b py-2">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedData.map((transaction, index) => (
-            <tr key={index}>
-              <td className="py-2">{new Date(transaction.date).toLocaleDateString()}</td>
-              <td className="py-2">{transaction.method}</td>
-              <td className="py-2">₹{transaction.amount}</td>
-              <td className="py-2">
-                <span className={`text-${transaction.status === "completed" ? "green" : "red"}-500`}>
-                  {transaction.status}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-end mt-4">
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-          className="mr-2"
-        >
-          Previous
-        </Button>
-        {[...Array(totalPages)].map((_, index) => (
-          <Button
-            key={index}
-            variant="contained"
-            color={currentPage === index + 1 ? "secondary" : "primary"}
-            onClick={() => handlePageChange(index + 1)}
-            className="mx-1"
-          >
-            {index + 1}
-          </Button>
-        ))}
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </Button>
-      </div>
-    </div>
+          {/* Withdrawal History Table */}
+          <div className="mt-8 overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2">Date</th>
+                  <th className="px-4 py-2">Amount</th>
+                  <th className="px-4 py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedData.map((historyItem, index) => (
+                  <tr key={index} className="border-t">
+                    <td className="px-4 py-2">  {new Date(historyItem.date).toLocaleDateString("en-GB")} </td>
+                    <td className="px-4 py-2">${historyItem.amount}</td>
+                    <td className="px-4 py-2">{historyItem.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center mt-4">
+              <Button
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </main>
       </div>
       <ToastContainer />
     </div>

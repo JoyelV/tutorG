@@ -14,8 +14,7 @@ const AddLessonPage: React.FC = () => {
   const navigate = useNavigate();
 
   const validateInput = (input: string): boolean => {
-    const regex =/^[a-zA-Z0-9\s\-:!()&,.]+$/;
-
+    const regex =/^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
     return regex.test(input) && input.trim() !== '';
   };
 

@@ -14,6 +14,7 @@ const InstructorProfile = () => {
     const [phone, setPhone] = useState('');
     const [addressLine1, setAddressLine1] = useState('');
     const [addressLine2, setAddressLine2] = useState('');
+    const [about, setAbout] = useState('');
     const [gender, setGender] = useState('');
     const [dob, setDob] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
@@ -68,9 +69,15 @@ const InstructorProfile = () => {
             return false;
         }
 
-        const addressRegex = /^[A-Za-z0-9\s]+$/;
+        const addressRegex = /^[A-Za-z0-9\s.,]+$/;
         if (!addressRegex.test(addressLine1) || !addressRegex.test(addressLine2)) {
             toast.error('Address should contain only letters,numbers and spaces.');
+            return false;
+        }
+
+        const aboutRegex = /^[A-Za-z0-9\s.,'()\-\n—]+$/;
+        if (!aboutRegex.test(about)) {
+            toast.error('About agfgsfgsafgfsg.');
             return false;
         }
 
@@ -112,13 +119,11 @@ const InstructorProfile = () => {
             setPhone(data.phone || '');
             setAddressLine1(data.address?.line1 || '');
             setAddressLine2(data.address?.line2 || '');
+            setAbout(data.about || '');
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
             setImage(data.image || null);
-            console.log(data.image, "image in fetchUser");
-            console.log(image, "image from state");
-
         } catch (error) {
             console.error('Error fetching user data:', error);
             toast.error('Error fetching user data');
@@ -181,13 +186,13 @@ const InstructorProfile = () => {
                 line1: addressLine1,
                 line2: addressLine2,
             },
+            about,
             gender,
             dob,
             image,
         };
 
         try {
-            const userId = localStorage.getItem('userId');
             await api.put(`/instructor/update`, profileData, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -218,8 +223,6 @@ const InstructorProfile = () => {
         };
 
         try {
-            const userId = localStorage.getItem('userId');
-            console.log("userId password", userId)
             await api.put(`/instructor/update-password`, passwordData, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -331,6 +334,16 @@ const InstructorProfile = () => {
                                             placeholder="Enter your address line 2"
                                             value={addressLine2}
                                             onChange={(e) => setAddressLine2(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="About me"
+                                            variant="outlined"
+                                            placeholder="Enter details about you"
+                                            value={about}
+                                            onChange={(e) => setAbout(e.target.value)}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>

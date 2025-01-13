@@ -24,6 +24,12 @@ const StudentsList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const fetchStudents = async (page: number) => {
     try {
       const response = await api.get(`/instructor/students`, {
@@ -42,9 +48,9 @@ const StudentsList: React.FC = () => {
   }, [currentPage]);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      <aside className={`w-64 bg-gray-800 text-white flex flex-col ${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
         <Sidebar />
       </aside>
 
@@ -52,7 +58,7 @@ const StudentsList: React.FC = () => {
       <div className="flex-1 p-8 bg-gray-50 pt-24">
         {/* Fixed Dashboard Header */}
         <div className="fixed w-full top-0 left-0 z-10 bg-white shadow-md">
-          <DashboardHeader />
+          <DashboardHeader toggleSidebar={toggleSidebar} />
         </div>
 
         <div className="mt-6">

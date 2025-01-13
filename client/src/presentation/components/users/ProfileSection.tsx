@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../../infrastructure/api/api";
+import { CircularProgress } from "@mui/material";
 
 interface InstructorData {
   username: string;
@@ -32,7 +33,7 @@ const ProfileSection: React.FC<{ instructorId: string }> = ({ instructorId }) =>
   }, [instructorId]);
 
   if (!instructorData) {
-    return <div>Loading...</div>;
+    return <CircularProgress />;
   }
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Box, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress,Badge } from '@mui/material';
+import { Avatar, TextField, IconButton, Typography, Box, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Badge } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
 import api from '../../../infrastructure/api/api';
@@ -14,6 +14,7 @@ interface Instructor {
   id: string;
   name: string;
   image: string;
+  onlineStatus: boolean;
 }
 
 interface Message {
@@ -69,25 +70,25 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
     socket.current.on('receive_message', (message: Message) => {
       if (message.sender !== userId) {
-          setUnreadCounts((prevCounts) => ({
-            ...prevCounts,
-            [message.sender]: (prevCounts[message.sender] || 0) + 1,
-          }));
-          setLastMessages((prevLastMessages) => ({
-            ...prevLastMessages,
-            [message.sender]: { content: message.content, time: message.time },
-          }));
+        setUnreadCounts((prevCounts) => ({
+          ...prevCounts,
+          [message.sender]: (prevCounts[message.sender] || 0) + 1,
+        }));
+        setLastMessages((prevLastMessages) => ({
+          ...prevLastMessages,
+          [message.sender]: { content: message.content, time: message.time },
+        }));
       }
-        setMessages((prevMessages) =>
-          prevMessages.some((msg) => msg.messageId === message.messageId)
-            ? prevMessages
-            : [...prevMessages, message]
-        );
-  
-        if (message.messageId) {
-          socket.current?.emit('message_read', message.messageId);
-        }
-      });
+      setMessages((prevMessages) =>
+        prevMessages.some((msg) => msg.messageId === message.messageId)
+          ? prevMessages
+          : [...prevMessages, message]
+      );
+
+      if (message.messageId) {
+        socket.current?.emit('message_read', message.messageId);
+      }
+    });
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
@@ -106,20 +107,36 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     };
   }, []);
 
+  const formatMessageTime = (time: string) => {
+    const messageDate = new Date(time);
+    const today = new Date();
+
+    if (
+      messageDate.getDate() === today.getDate() &&
+      messageDate.getMonth() === today.getMonth() &&
+      messageDate.getFullYear() === today.getFullYear()
+    ) {
+      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      return messageDate.toLocaleDateString();
+    }
+  };
+
   useEffect(() => {
     const fetchTutors = async () => {
       try {
         setLoading(true);
         const response = await api.get('/instructor/students-chat');
         const studentsMap: { [key: string]: Instructor } = {};
-        
+
         response.data.forEach((item: any) => {
           const studentId = item.studentId._id.toString();
           if (!studentsMap[studentId]) {
             studentsMap[studentId] = {
               id: studentId,
               name: item.studentId.username,
-              image:item.studentId.image,
+              image: item.studentId.image,
+              onlineStatus: item.studentId.onlineStatus,
             };
           }
         });
@@ -153,11 +170,11 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     setLastMessages((prev) => {
       const sorted = { ...prev };
       Object.keys(sorted).forEach((key) => {
-        if (!sorted[key].time) sorted[key].time = new Date(0).toLocaleTimeString(); 
+        if (!sorted[key].time) sorted[key].time = new Date(0).toLocaleTimeString();
       });
       return sorted;
     });
-  }, [users, lastMessages]);  
+  }, [users, lastMessages]);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -278,7 +295,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         sender: message.sender,
         content: message.content || '',
         status: message.status,
-        time: new Date(message.createdAt).toLocaleTimeString(),
+        time: message.createdAt,
         mediaUrl: message.mediaUrl,
       }));
       setMessages(fetchedMessages);
@@ -287,16 +304,16 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         const sortedMessages = fetchedMessages.sort((a: any, b: any) => {
           const aTime = new Date(a.createdAt).getTime();
           const bTime = new Date(b.createdAt).getTime();
-          return bTime - aTime; 
+          return bTime - aTime;
         });
 
-        const lastMessage =  sortedMessages[sortedMessages.length - 1];
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
 
         setLastMessages((prevLastMessages) => ({
           ...prevLastMessages,
           [user.id]: {
             content: lastMessage.content,
-            time: lastMessage.time, 
+            time: lastMessage.time,
           },
         }));
       }
@@ -312,9 +329,9 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   );
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
-    const timeA = lastMessages[a.id]?.time ? new Date(lastMessages[a.id]?.time).getTime() : 0; 
-    const timeB = lastMessages[b.id]?.time ? new Date(lastMessages[b.id]?.time).getTime() : 0; 
-    return timeA - timeB; 
+    const timeA = lastMessages[a.id]?.time ? new Date(lastMessages[a.id]?.time).getTime() : 0;
+    const timeB = lastMessages[b.id]?.time ? new Date(lastMessages[b.id]?.time).getTime() : 0;
+    return timeB - timeA;
   });
 
   const validateFileSize = (file: File) => {
@@ -415,90 +432,105 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
               />
             </div>
             <div className="overflow-y-auto space-y-2">
-            {sortedUsers.map((user) => (
-              <ListItem
-                key={user.id}
-                button
-                selected={selectedUser?.id === user.id}
-                onClick={() => handleUserSelect(user)}
-                style={{
-                  borderBottom: '1px solid #f0f0f0',
-                  padding: '10px',
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar src={user.image} style={{ width: '50px', height: '50px' }} />
-                </ListItemAvatar>
+              {sortedUsers.map((user) => (
+                <ListItem
+                  key={user.id}
+                  button
+                  selected={selectedUser?.id === user.id}
+                  onClick={() => handleUserSelect(user)}
+                  style={{
+                    borderBottom: '1px solid #f0f0f0',
+                    padding: '10px',
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar src={user.image} style={{ width: '50px', height: '50px' }} />
+                  </ListItemAvatar>
 
-                <ListItemText
-                  primary={
-                    <div>
-                      <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        style={{ marginBottom: '4px' }}
-                      >
-                        <Typography style={{ fontWeight: 'bold', fontSize: '16px' }}>{user.name}</Typography>
-                        <Tooltip title="Video Call">
-                          <IconButton
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleVideoCallClick(user);
+                  <ListItemText
+                    primary={
+                      <div>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          style={{ marginBottom: '4px' }}
+                        >
+                          <Typography style={{ fontWeight: 'bold', fontSize: '16px' }}>{user.name}</Typography>
+                          <Tooltip title="Video Call">
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleVideoCallClick(user);
+                              }}
+                              style={{ marginLeft: '10px' }}
+                            >
+                              <VideoCall style={{ color: '#4caf50' }} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography
+                            variant="body2"
+                            noWrap
+                            style={{
+                              color: '#FFFFFF',
+                              maxWidth: '70%',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
                             }}
-                            style={{ marginLeft: '10px' }}
                           >
-                            <VideoCall style={{ color: '#4caf50' }} />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography
-                          variant="body2"
-                          noWrap
-                          style={{
-                            color: '#FFFFFF',
-                            maxWidth: '70%',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {lastMessages[user.id]?.content || 'No message yet'}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          style={{
-                            color: '#FFFFFF',
-                            whiteSpace: 'nowrap',
-                            marginLeft: '10px',
-                          }}
-                        >
-                          {lastMessages[user.id]?.time}
-                        </Typography>
-                        <Badge
-        badgeContent={unreadCounts[user.id] || 0}
-        color="secondary"
-        invisible={unreadCounts[user.id] === 0}
-      />
-                      </Box>
-                    </div>
-                  }
-                />
-              </ListItem>
-            ))}
+                            {lastMessages[user.id]?.content || 'No message yet'}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            style={{
+                              color: '#FFFFFF',
+                              whiteSpace: 'nowrap',
+                              marginLeft: '10px',
+                            }}
+                          >
+                            {formatMessageTime(lastMessages[user.id]?.time)}
+                          </Typography>
+                          <Badge
+                            badgeContent={unreadCounts[user.id] || 0}
+                            color="secondary"
+                            invisible={unreadCounts[user.id] === 0}
+                          />
+                        </Box>
+                      </div>
+                    }
+                  />
+                </ListItem>
+              ))}
             </div>
           </aside>
           {/* Chat Area */}
           <div className="flex-1 flex flex-col pl-64">
             {/* Chat Header */}
             <div className="bg-gradient-to-r from-blue-700 to-green-700 p-4 flex items-center border-b">
-            {selectedUser ? (
+              {selectedUser ? (
                 <>
                   <Avatar src={selectedUser.image} />
                   <div className="ml-3">
                     <Typography variant="h6" className="font-bold">
                       {selectedUser.name}
+                    </Typography>
+                    <Typography variant="h6" className="font-bold">
+                      <div>
+                        <span
+                          style={{
+                            height: "15px",
+                            width: "15px",
+                            borderRadius: "100%",
+                            display: "inline-block",
+                            backgroundColor: selectedUser.onlineStatus ? "green" : "red",
+                            marginRight: "5px",
+                          }}
+                        ></span>
+                        {selectedUser.onlineStatus === true ? "Online" : "Offline"}
+                      </div>
                     </Typography>
                   </div>
                 </>
@@ -510,8 +542,8 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
             <div className="flex-1 overflow-y-auto p-4 max-h-[570px]">
               <div className="space-y-4">
                 {messages.map((message, index) => (
-                  <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start':'') }`}>
-              <div className={`max-w-lg ${message.sender === userId  ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
+                  <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start' : '')}`}>
+                    <div className={`max-w-lg ${message.sender === userId ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
                       <Typography>{message.content}</Typography>
                       {message.mediaUrl && (
                         <>

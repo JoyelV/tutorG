@@ -106,8 +106,8 @@ const EditLessonPage: React.FC = () => {
     e.preventDefault();
 
     
-    const titleregex = /^[a-zA-Z ]{3}[a-zA-Z0-9 ?:]*$/;
-    const descriptionRegex = /^[a-zA-Z ]{3}[a-zA-Z0-9 ?:\n]*$/;
+    const titleregex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
+    const descriptionRegex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
 
     if (!title || !description || !lessonId) {
       Swal.fire('Validation Error', 'Title and Description are required!', 'warning');

@@ -42,6 +42,12 @@ function EditCourse() {
     image: "",
     trailer: "",
   });
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const fetchCategories = async () => {
     try {
@@ -226,9 +232,9 @@ function EditCourse() {
       <aside className="w-64 bg-gray-800 text-white flex flex-col">
         <Sidebar />
       </aside>
-      <div className="flex-1 p-6 bg-gray-100 min-h-screen">
-        <DashboardHeader />
-        <section>
+      <div className="flex-1 bg-gray-100 min-h-screen">
+      <DashboardHeader toggleSidebar={toggleSidebar} />
+      <section>
           <div className="p-6">
             <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
               <h1 className="text-2xl font-bold mb-4">Edit Course</h1>

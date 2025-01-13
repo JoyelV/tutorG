@@ -40,47 +40,40 @@ const AccountSettings = () => {
     };
 
     const validateProfile = () => {
-        // Check if any required field is empty
         if (!username || !email || !phone || !addressLine1 || !addressLine2 || !gender || !dob) {
             toast.error('All fields are required.');
             return false;
         }
 
-        // Validate email format
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
         if (!emailRegex.test(email)) {
             toast.error('Invalid email format.');
             return false;
         }
 
-        // Validate phone number (10 digits)
         if (!/^\d{10}$/.test(phone)) {
             toast.error('Phone number should be exactly 10 digits.');
             return false;
         }
 
-        // Gender validation (only male, female, transgender allowed)
         const validGenders = ['male', 'female', 'transgender'];
         if (!validGenders.includes(gender)) {
             toast.error('Please select a valid gender');
             return false;
         }
 
-        // Date of birth validation (check if it's a valid date)
         const dobDate = new Date(dob);
         if (isNaN(dobDate.getTime())) {
             toast.error('Invalid date of birth.');
             return false;
         }
 
-        // Validate that address fields do not contain special characters or numbers (if required)
-        const addressRegex = /^[A-Za-z0-9\s]+$/;
+        const addressRegex = /^[A-Za-z0-9\s,-]+$/;
         if (!addressRegex.test(addressLine1) || !addressRegex.test(addressLine2)) {
             toast.error('Address should contain only letters,numbers and spaces.');
             return false;
         }
 
-        // Validate that username contains only letters and spaces (if required)
         const usernameRegex = /^[A-Za-z\s]+$/;
         if (!usernameRegex.test(username)) {
             toast.error('Username should contain only letters and spaces.');

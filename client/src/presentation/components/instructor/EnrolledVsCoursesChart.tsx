@@ -71,9 +71,9 @@ const EnrolledVsCoursesChart = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-lg">
-      <h3 className="text-2xl font-semibold text-green-800 mb-4">
-        Enrolled Courses vs Total Courses
+    <div className="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-md shadow-md">
+      <h3 className="text-xl font-semibold text-green-800 mb-4">
+        Enrolled vs Total Courses
       </h3>
       <p className="text-sm text-gray-700 mb-6">
         This chart shows the enrolled courses in comparison to your total courses.

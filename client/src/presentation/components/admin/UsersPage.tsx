@@ -8,31 +8,31 @@ const UsersPage: React.FC = () => {
   const [isShowingStudents, setIsShowingStudents] = useState(true);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="w-full lg:w-64 bg-white shadow-lg">
     {/* Sidebar */}
       <Sidebar />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col ml-64">
+      <div className="flex-1 flex flex-col">
       <TopNav/>
         {/* Main Body Content */}
-        <div className="pt-16 p-6 overflow-y-auto h-full">
+        <div className="flex-1 p-4 overflow-y-auto">
           <div>
-            <h1 className="text-2xl font-bold mb-4">USERS & TUTORS MANAGEMENT</h1>
+            <h1 className="text-xl lg:text-2xl font-bold mb-4 text-center">USERS & TUTORS MANAGEMENT</h1>
           </div>
           <div className="flex space-x-4 mb-4">
             <button
               onClick={() => setIsShowingStudents(true)}
-              className={`text-blue-500 ${isShowingStudents ? 'border-b-2 border-blue-500' : ''}`}
+              className={`px-4 py-2 text-blue-500 ${isShowingStudents ? 'border-b-2 border-blue-500' : ''}`}
             >
               Students
             </button>
             <button
               onClick={() => setIsShowingStudents(false)}
-              className={`text-blue-500 ${!isShowingStudents ? 'border-b-2 border-blue-500' : ''}`}
+              className={`px-4 py-2 text-blue-500 ${!isShowingStudents ? 'border-b-2 border-blue-500' : ''}`}
             >
               Tutors
             </button>

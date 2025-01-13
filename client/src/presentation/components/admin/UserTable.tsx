@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
-import { CircularProgress, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button } from '@mui/material';
+import { CircularProgress, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button,useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 type User = {
   _id: string;
@@ -9,6 +10,7 @@ type User = {
   email: string;
   phone: string;
   gender: string;
+  image: string;
   role: string;
   isBlocked: boolean;
 };
@@ -21,6 +23,9 @@ const UserTable: React.FC = () => {
   const [itemsPerPage] = useState<number>(5);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [totalUsers, setTotalUsers] = useState<number>(0);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     api
@@ -37,7 +42,7 @@ const UserTable: React.FC = () => {
   }, []);
 
   const filteredUsers = users.filter((user) =>
-    `${user.username} ${user.email} ${user.phone} ${user.gender} ${user.role}`
+    `${user.image} ${user.username} ${user.email} ${user.phone} ${user.gender} ${user.role}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
@@ -94,7 +99,7 @@ const UserTable: React.FC = () => {
   return (
     <div className="flex flex-col p-6">
       <div className="mb-4 flex justify-between items-center">
-        <Typography variant="h6">User Management</Typography>
+        <Typography variant={isSmallScreen ? 'h6' : 'h5'}>Students</Typography>
         <TextField
           variant="outlined"
           size="small"
@@ -108,7 +113,7 @@ const UserTable: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              {['Name', 'Email Id', 'Phone', 'Gender', 'Role', 'Status'].map((header) => (
+              {['Image', 'Name', 'Email Id', 'Phone', 'Gender', 'Role', 'Status'].map((header) => (
                 <TableCell key={header} align="left" sx={{ fontWeight: 'bold' }}>
                   {header}
                 </TableCell>
@@ -119,7 +124,14 @@ const UserTable: React.FC = () => {
             {filteredUsers
               .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
               .map((user) => (
-                <TableRow key={user._id}>
+                <TableRow key={user._id}>               
+                  <TableCell>
+                    <img
+                      src={user.image}
+                      alt={`${user.username}'s avatar`}
+                      style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                    />
+                  </TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.phone}</TableCell>

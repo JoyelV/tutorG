@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../infrastructure/context/AuthContext";
+import api from "../../../infrastructure/api/api";
 
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,8 +14,11 @@ const Sidebar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      logout(); 
-      navigate("/instructor"); 
+      logout();
+      const response = await api.post("/instructor/logout", { withCredentials: true });
+      if (response.status === 200) {
+        navigate("/instructor");
+      }
     } catch (error) {
       console.error("Logout failed", error);
     }
@@ -37,7 +41,7 @@ const Sidebar: React.FC = () => {
         } lg:translate-x-0 transition-transform duration-300 w-64`}
       >
         <div className="p-5 text-2xl font-bold">TutorG</div>
-        <nav className="flex-1">
+        <nav className="flex-1 overflow-y-auto">
           <ul>
             <li className="my-2">
               <NavLink

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, Button, Grid, FormControlLabel, Checkbox } from '@mui/material';
+import { TextField, Button, Grid, FormControlLabel, Checkbox, IconButton, InputAdornment } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import 'tailwindcss/tailwind.css';
 import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/admin/Sidebar';
@@ -39,10 +40,11 @@ const AddForm: React.FC = () => {
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const validateFields = (): boolean => {
         const newErrors: { [key: string]: string } = {};
-        const nameRegex = /^[a-zA-Z]{3}[a-zA-Z0-9 ]*$/;
+        const nameRegex = /^[a-zA-Z]{1}[a-zA-Z0-9.', ]*$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*$/;
@@ -113,7 +115,7 @@ const AddForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-    
+
         if (validateFields()) {
             try {
                 const formDataToSend = new FormData();
@@ -134,7 +136,7 @@ const AddForm: React.FC = () => {
 
                 // Send the data to the backend
                 const response = await api.post('/admin/add-tutor', formDataToSend);
-       
+
                 if (response.status === 201) {
                     toast.success('Tutor added successfully!');
                     setFormData({
@@ -155,7 +157,7 @@ const AddForm: React.FC = () => {
                 } else {
                     toast.error(`Failed to add tutor: ${response.data.message || 'Unknown error'}`);
                 }
-            } catch (error:any) {
+            } catch (error: any) {
                 console.error('Error while submitting form:', error);
                 const errorMessage = error.response?.data?.message || 'An error occurred. Please try again.';
                 toast.error(errorMessage);
@@ -164,19 +166,19 @@ const AddForm: React.FC = () => {
             toast.error('Please fix the errors before submitting.');
         }
     };
-    
-    
+
+
     return (
-        <div className="h-screen bg-gray-100 flex">
+        <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
             {/* Sidebar */}
-            <div className="fixed inset-y-0 left-0 w-64">
+            <div className="w-full md:w-1/4 bg-white shadow-md fixed md:static">
                 <Sidebar />
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col ml-64">
-                <div className="container mx-auto p-8">
-                    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex-1 p-2 md:ml-1/4">
+                <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+                    <form onSubmit={handleSubmit} className="bg-white p-1 rounded-lg shadow-lg">
                         <h2 className="text-2xl font-bold mb-4">Add New Tutor</h2>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
@@ -225,10 +227,23 @@ const AddForm: React.FC = () => {
                                     fullWidth
                                     required
                                     name="password"
+                                    type={showPassword ? "text" : "password"} 
                                     value={formData.password}
                                     onChange={handleChange}
                                     error={!!errors.password}
                                     helperText={errors.password}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    edge="end"
+                                                >
+                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
                             </Grid>
                             {/* Other fields */}

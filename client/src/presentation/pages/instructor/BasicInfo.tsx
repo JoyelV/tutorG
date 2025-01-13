@@ -114,38 +114,38 @@ function AddCourse() {
 
   const validateForm = () => {
     const newErrors: any = {};
-  
-    const alphanumericRegex = /^[a-zA-Z0-9\s\-:!()&,.]+$/;
-  
+
+    const alphanumericRegex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
+
     if (!courseName.trim()) newErrors.courseName = "Course name cannot be empty.";
     else if (!alphanumericRegex.test(courseName)) newErrors.courseName = "Course name can only contain letters and numbers.";
-    
+
     if (!courseSubtitle.trim()) newErrors.courseSubtitle = "Course subtitle cannot be empty.";
     else if (!alphanumericRegex.test(courseSubtitle)) newErrors.courseSubtitle = "Course subtitle can only contain letters and numbers.";
-    
+
     if (!selectCategory) newErrors.selectCategory = "Please select a course category.";
     if (!courseLanguage) newErrors.courseLanguage = "Please select a course language.";
     if (!courseLevel) newErrors.courseLevel = "Please select a course level.";
-    
+
     if (!courseDuration || isNaN(Number(courseDuration)) || Number(courseDuration) <= 0)
       newErrors.courseDuration = "Please provide a valid course duration (number > 0).";
-    
+
     if (!courseFee || isNaN(Number(courseFee)) || Number(courseFee) < 0)
       newErrors.courseFee = "Please provide a valid course fee (non-negative number).";
-    
+
     if (!alphanumericRegex.test(courseDescription)) newErrors.courseDescription = "Course description can only contain letters and numbers.";
     if (!alphanumericRegex.test(courseRequirements)) newErrors.courseRequirements = "Course requirements can only contain letters and numbers.";
     if (!alphanumericRegex.test(courseLearningPoints)) newErrors.courseLearningPoints = "Course learning points can only contain letters and numbers.";
     if (!alphanumericRegex.test(courseTargetAudience)) newErrors.courseTargetAudience = "Target audience can only contain letters and numbers.";
-    
+
     if (!image) newErrors.image = "Please upload a course thumbnail image.";
     if (!trailer) newErrors.trailer = "Please upload a course trailer video.";
-  
+
     setnewErrors(newErrors);
-  
+
     return Object.keys(newErrors).length === 0;
   };
-  
+
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -239,7 +239,7 @@ function AddCourse() {
           </div>
           {errors.selectCategory && <p className="text-red-500 text-sm">{errors.selectCategory}</p>}
           {/* Language and Level */}
-          <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <select
               value={courseLanguage}
               onChange={(e) => setCourseLanguage(e.target.value)}
@@ -250,10 +250,12 @@ function AddCourse() {
               <option value="Malayalam">Malayalam</option>
               <option value="Hindi">Hindi</option>
             </select>
+
             <select
               value={courseLevel}
               onChange={(e) => setCourseLevel(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg">
+              className="w-full p-3 border border-gray-300 rounded-lg"
+            >
               <option value="" disabled>Select Level</option>
               <option value="Beginner">Beginner</option>
               <option value="Intermediate">Intermediate</option>
@@ -338,8 +340,6 @@ function AddCourse() {
             />
           </div>
           {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
-
-
           {/* Trailer Upload */}
           <div className="mb-4">
             <input
@@ -350,7 +350,6 @@ function AddCourse() {
             />
           </div>
           {errors.trailer && <p className="text-red-500 text-sm">{errors.trailer}</p>}
-
           <div className="text-center">
             <button
               onClick={handleSubmit}

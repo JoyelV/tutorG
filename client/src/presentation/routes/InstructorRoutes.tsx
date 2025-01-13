@@ -86,7 +86,6 @@ const InstructorRoutes = () => {
             />
             <Route path="/course-edit/:courseId" element={<PrivateRoute element={<EditCourse />} />} 
             />
-            
             <Route path="/addQuiz/:courseId" element={<PrivateRoute element={<AddQuizForm />} />}/>
             <Route path="/quizzes/:courseId/edit/:quizId" element={<PrivateRoute element={<EditQuizForm />} />}/>
             <Route

@@ -1,15 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
-import { CircularProgress, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button } from '@mui/material';
+import {
+  CircularProgress,
+  Box,
+  Typography,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Pagination,
+  Button,
+  Grid,
+  useMediaQuery,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 type Tutor = {
   _id: string;
   username: string;
   email: string;
   phone: string;
-  gender: string;
+  image: string;
   role: string;
   isBlocked: boolean;
 };
@@ -21,9 +37,13 @@ const TutorsTable: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage] = useState<number>(5);
+  const [itemsPerPage] = useState<number>(4);
   const [totalTutors, setTotalTutors] = useState<number>(0);
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   useEffect(() => {
     api
       .get('/admin/instructors')
@@ -40,7 +60,7 @@ const TutorsTable: React.FC = () => {
   }, []);
 
   const filteredTutorsList = tutors.filter((tutor) =>
-    `${tutor.username} ${tutor.email} ${tutor.phone} ${tutor.gender} ${tutor.role}`
+    `${tutor.username} ${tutor.email} ${tutor.phone} ${tutor.image} ${tutor.role}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
@@ -84,14 +104,16 @@ const TutorsTable: React.FC = () => {
     }
   };
 
-  if (loading) return (
-    <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f9f9f9">
-      <CircularProgress color="primary" size={50} />
-      <Typography variant="h6" color="textSecondary" mt={2}>
-        Loading, please wait...
-      </Typography>
-    </Box>
-  );
+  if (loading)
+    return (
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f9f9f9">
+        <CircularProgress color="primary" size={50} />
+        <Typography variant="h6" color="textSecondary" mt={2}>
+          Loading, please wait...
+        </Typography>
+      </Box>
+    );
+
   if (error) return <div>{error}</div>;
 
   const handleAddTutor = () => {
@@ -99,31 +121,39 @@ const TutorsTable: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col p-6">
-      <div className="mb-4 flex justify-between items-center">
-        <Typography variant="h6">Tutor Management</Typography>
-        <TextField
-          variant="outlined"
-          size="small"
-          placeholder="Search tutors..."
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-         <button
-        onClick={handleAddTutor}
-        className="bg-blue-500 hover:bg-blue-700 text-white rounded"
-        style={{ padding: '0.5rem 1rem' }}
-      >
-        Add Tutor
-      </button>
-      </div>
-     
-      <TableContainer className="mb-4">
+    <Box p={2}>
+      <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+        <Grid item xs={12} sm={6}>
+          <Typography variant={isSmallScreen ? 'h6' : 'h5'}>Tutors</Typography>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <TextField
+            variant="outlined"
+            size="small"
+            fullWidth
+            placeholder="Search tutors..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <Button
+            onClick={handleAddTutor}
+            variant="contained"
+            color="primary"
+            fullWidth={isSmallScreen}
+          >
+            Add Tutor
+          </Button>
+        </Grid>
+      </Grid>
+
+      <TableContainer sx={{ mt: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
-              {['Name', 'Email Id', 'Phone', 'Gender', 'Role', 'Status'].map((header) => (
-                <TableCell key={header} align="left" sx={{ fontWeight: 'bold' }}>
+              {['Image','Name', 'Email', 'Phone', 'Role', 'Status'].map((header) => (
+                <TableCell key={header} align="left" sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
                   {header}
                 </TableCell>
               ))}
@@ -134,10 +164,16 @@ const TutorsTable: React.FC = () => {
               .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
               .map((tutor) => (
                 <TableRow key={tutor._id}>
+                  <TableCell>
+                    <img
+                      src={tutor.image}
+                      alt={`${tutor.username}'s avatar`}
+                      style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                    />
+                  </TableCell>
                   <TableCell>{tutor.username}</TableCell>
                   <TableCell>{tutor.email}</TableCell>
                   <TableCell>{tutor.phone}</TableCell>
-                  <TableCell>{tutor.gender}</TableCell>
                   <TableCell>{tutor.role}</TableCell>
                   <TableCell>
                     <Button
@@ -154,13 +190,15 @@ const TutorsTable: React.FC = () => {
         </Table>
       </TableContainer>
 
-      <Pagination
-        count={Math.ceil(filteredTutorsList.length / itemsPerPage)}
-        page={currentPage}
-        onChange={handlePageChange}
-        color="primary"
-      />
-    </div>
+      <Box mt={2} display="flex" justifyContent="center">
+        <Pagination
+          count={Math.ceil(filteredTutorsList.length / itemsPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
+    </Box>
   );
 };
 
