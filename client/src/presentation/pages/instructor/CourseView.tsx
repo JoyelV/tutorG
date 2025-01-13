@@ -9,6 +9,7 @@ import Sidebar from '../../components/instructor/Sidebar';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
 import EditQuizForm from './QuizListSection';
 import CourseVideo from '../../components/instructor/CourseVideo';
+import { CircularProgress } from '@mui/material';
 
 type Section = 'Description' | 'Requirements' | 'Quiz' | 'Feedback';
 
@@ -65,7 +66,7 @@ const CourseView = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    <CircularProgress/>
   }
 
   if (error) {
