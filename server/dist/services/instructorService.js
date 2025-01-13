@@ -53,6 +53,7 @@ const loginService = (email, password) => __awaiter(void 0, void 0, void 0, func
     if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
         throw new Error('JWT secrets are not set');
     }
+    yield instructorRepository_1.instructorRepository.updateUser(user._id.toString(), { onlineStatus: true });
     const token = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
     const refreshToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return {

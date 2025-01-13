@@ -21,6 +21,7 @@ router.post('/register', userController_1.register);
 router.post('/verify-registerotp', userController_1.verifyRegisterOTP);
 router.post('/login', userController_1.login);
 router.post('/google-login', userController_1.googleSignIn);
+router.post('/logout', VerifyToken_1.verifyToken, userController_1.logout);
 router.post('/send-otp', userController_1.sendOtp);
 router.post('/resend-otp', userController_1.resendOtp);
 router.post('/verify-otp', userController_1.verifyPasswordOtp);

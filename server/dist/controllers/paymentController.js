@@ -28,7 +28,7 @@ const stripe = new stripe_1.default(stripeSecretKey, {
 const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { cartItems } = req.body;
-        console.log(cartItems, "cartItems");
+        console.log(cartItems, "courseIds");
         if (!Array.isArray(cartItems) || cartItems.length === 0) {
             res.status(400).json({ error: "Cart items are required." });
             return;
@@ -59,7 +59,12 @@ const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             cancel_url: `${process.env.CLIENT_URL}/cart`,
             metadata: {
                 type: 'course_purchase',
-                cartItems: JSON.stringify(cartItems),
+                cartItems: JSON.stringify(cartItems.map(({ courseId, studentId, courseFee, thumbnail }) => ({
+                    courseId,
+                    studentId,
+                    courseFee,
+                    thumbnail,
+                })))
             }
         });
         console.log(session, "session");

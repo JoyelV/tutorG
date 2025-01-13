@@ -125,7 +125,10 @@ const getRelatedCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.getRelatedCourses = getRelatedCourses;
 const getRecentlyAddedCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const courses = yield Course_1.default.find()
+        const courses = yield Course_1.default.find({
+            status: 'published',
+            isApproved: true,
+        })
             .sort({ createdAt: -1 })
             .limit(10)
             .select('title category courseFee thumbnail averageRating students');

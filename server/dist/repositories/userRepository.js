@@ -61,7 +61,7 @@ exports.userRepository = {
     getAllUsers() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield User_1.default.find({}, 'username email phone gender role isBlocked');
+                return yield User_1.default.find({}, 'image username email phone gender role isBlocked');
             }
             catch (error) {
                 throw new Error('Error fetching users');

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInstructorFeedback = exports.getInstructorById = exports.addInstructorRating = exports.getStripePayment = exports.getTopTutors = exports.getMyTutors = exports.addTutors = exports.toggleTutorStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.login = exports.resendOtp = void 0;
+exports.getInstructorFeedback = exports.getInstructorById = exports.addInstructorRating = exports.getStripePayment = exports.getTopTutors = exports.getMyTutors = exports.addTutors = exports.toggleTutorStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.logout = exports.login = exports.resendOtp = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const emailService_1 = require("../utils/emailService");
 const otpGenerator_1 = require("../utils/otpGenerator");
@@ -53,7 +53,6 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         const emailLowerCase = email.toLowerCase();
         const { token, refreshToken, user } = yield (0, instructorService_1.loginService)(emailLowerCase, password);
-        // Send the refresh token as an HttpOnly cookie
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
@@ -75,6 +74,17 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.login = login;
+const logout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let userId = req.userId;
+        yield Instructor_1.default.findByIdAndUpdate(userId, { onlineStatus: false }, { new: true });
+        res.status(200).json({ message: "Logout successfully" });
+    }
+    catch (error) {
+        res.status(400).json({ message: 'An unknown error occurred' });
+    }
+});
+exports.logout = logout;
 const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;
     const emailLowerCase = email.toLowerCase();
@@ -262,7 +272,7 @@ const getMyTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const studentId = req.userId;
     try {
         const orders = yield Orders_1.default.find({ studentId })
-            .populate('tutorId', 'username image')
+            .populate('tutorId', 'username image onlineStatus')
             .exec();
         const uniqueOrders = orders.filter((order, index, self) => index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString()));
         res.status(200).json(uniqueOrders);

@@ -55,6 +55,7 @@ const loginService = (email, password) => __awaiter(void 0, void 0, void 0, func
     if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
         throw new Error('JWT secrets are not set');
     }
+    yield userRepository_1.userRepository.updateUser(user._id.toString(), { onlineStatus: true });
     const token = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
     const refreshToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return {
@@ -100,6 +101,7 @@ const googleLoginService = (googleToken) => __awaiter(void 0, void 0, void 0, fu
     if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
         throw new Error('JWT secrets are not set in environment variables');
     }
+    yield userRepository_1.userRepository.updateUser(user._id.toString(), { onlineStatus: true });
     const token = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
     const refreshToken = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { token, refreshToken, user };

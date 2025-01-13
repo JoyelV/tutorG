@@ -12,12 +12,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCategory = exports.getUnblockedCategories = exports.getCategoriesPagination = exports.getCategories = exports.saveCategory = void 0;
+exports.deleteCategory = exports.getUnblockedCategories = exports.getCategoriesPagination = exports.getCategories = exports.updateCategory = exports.saveCategory = void 0;
 const Category_1 = __importDefault(require("../models/Category"));
 /**
  * Add or Edit a category with subcategories
  */
 const saveCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { categoryName, subCategories = [] } = req.body;
+        if (!categoryName) {
+            res.status(400).json({ message: 'Category name is required' });
+            return;
+        }
+        const newCategory = new Category_1.default({
+            categoryName,
+            subCategories: subCategories.map((name) => ({ name })),
+            createdByAdmin: true,
+        });
+        const savedCategory = yield newCategory.save();
+        res.status(201).json(savedCategory);
+    }
+    catch (error) {
+        console.error('Error saving category:', error);
+        next({ status: 500, message: 'Error saving category', error });
+    }
+});
+exports.saveCategory = saveCategory;
+const updateCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { categoryName, subCategories = [] } = req.body;
@@ -36,22 +57,13 @@ const saveCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             const updatedCategory = yield category.save();
             res.status(200).json(updatedCategory);
         }
-        else {
-            const newCategory = new Category_1.default({
-                categoryName,
-                subCategories: subCategories.map((name) => ({ name })),
-                createdByAdmin: true,
-            });
-            const savedCategory = yield newCategory.save();
-            res.status(201).json(savedCategory);
-        }
     }
     catch (error) {
         console.error('Error saving category:', error);
         next({ status: 500, message: 'Error saving category', error });
     }
 });
-exports.saveCategory = saveCategory;
+exports.updateCategory = updateCategory;
 /**
  * Fetch all categories
  */
@@ -67,18 +79,31 @@ const getCategories = (req, res, next) => __awaiter(void 0, void 0, void 0, func
 });
 exports.getCategories = getCategories;
 const getCategoriesPagination = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 5;
+    if (page < 1 || limit < 1) {
+        res.status(400).json({ error: "Page and limit must be positive integers." });
+        return;
+    }
     try {
         const totalCategories = yield Category_1.default.countDocuments();
+        const totalPages = Math.ceil(totalCategories / limit);
+        if ((page - 1) * limit >= totalCategories) {
+            res.status(200).json({
+                categories: [],
+                totalPages,
+                currentPage: page,
+            });
+            return;
+        }
         const categories = yield Category_1.default.find()
-            .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit);
         res.status(200).json({
             categories,
-            totalPages: Math.ceil(totalCategories / limit),
+            totalPages,
             currentPage: page,
+            totalItems: totalCategories,
         });
     }
     catch (error) {

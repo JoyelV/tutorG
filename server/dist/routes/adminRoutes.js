@@ -33,7 +33,7 @@ router.post('/add-tutor', multerConfig_1.default.single('image'), instructorCont
 //Category Management
 router.get('/categories', VerifyToken_1.verifyToken, categoryController_1.getCategoriesPagination);
 router.post('/categories', VerifyToken_1.verifyToken, categoryController_1.saveCategory);
-router.put('/categories/:id', VerifyToken_1.verifyToken, categoryController_1.saveCategory);
+router.put('/categories/:id', VerifyToken_1.verifyToken, categoryController_1.updateCategory);
 router.patch('/categories/block/:id', VerifyToken_1.verifyToken, categoryController_1.deleteCategory);
 //Course Management
 router.patch('/course-status/:courseId', VerifyToken_1.verifyToken, courseController_1.courseStatus);

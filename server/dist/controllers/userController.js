@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStatsCounts = exports.getMyMessages = exports.getStudentsChat = exports.getStudentsByInstructor = exports.toggleUserStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.fetchImage = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.refreshAccessToken = exports.googleSignIn = exports.login = exports.verifyRegisterOTP = exports.resendOtp = exports.register = void 0;
+exports.getStatsCounts = exports.getMyMessages = exports.getStudentsChat = exports.getStudentsByInstructor = exports.toggleUserStatus = exports.uploadImage = exports.editPassword = exports.editUserProfile = exports.fetchUserProfile = exports.fetchImage = exports.resetPassword = exports.verifyPasswordOtp = exports.sendOtp = exports.refreshAccessToken = exports.googleSignIn = exports.logout = exports.login = exports.verifyRegisterOTP = exports.resendOtp = exports.register = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const emailService_1 = require("../utils/emailService");
 const otpGenerator_1 = require("../utils/otpGenerator");
@@ -97,9 +97,9 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         const { token, refreshToken, user } = yield (0, authService_1.loginService)(emailLowerCase, password);
         res.cookie('refreshToken', refreshToken, {
-            httpOnly: true, // Prevent access via JavaScript
-            secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
-            sameSite: 'strict', // Prevent CSRF
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         res.status(200).json({
@@ -117,6 +117,17 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.login = login;
+const logout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let userId = req.userId;
+        yield User_1.default.findByIdAndUpdate(userId, { onlineStatus: false }, { new: true });
+        res.status(200).json({ message: "Logout successfully" });
+    }
+    catch (error) {
+        res.status(400).json({ message: 'An unknown error occurred' });
+    }
+});
+exports.logout = logout;
 const googleSignIn = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { token: googleToken } = req.body;
     if (!googleToken) {
@@ -127,7 +138,7 @@ const googleSignIn = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const { token, refreshToken, user } = yield (0, authService_1.googleLoginService)(googleToken);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'development',
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -360,7 +371,7 @@ const getStudentsChat = (req, res) => __awaiter(void 0, void 0, void 0, function
             tutorId: instructorId,
             studentId: { $ne: null },
         })
-            .populate("studentId", "username email phone image gender")
+            .populate("studentId", "username email phone image gender onlineStatus")
             .populate("courseId", "title level");
         if (orders.length === 0) {
             res.status(404).json({ message: "No students found for this instructor." });
