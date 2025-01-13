@@ -60,8 +60,8 @@ const RecentlyAddedCourses: React.FC = () => {
       <div className="text-center">
         <h3 className="text-2xl font-bold mb-4">Recently Added Courses</h3>
         {loading ? (
-          <p>Loading...</p>
-        ) : (
+        <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-blue-500"></div>
+      ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 justify-center">
             {courses.map((course) => (
               <div
