@@ -9,7 +9,8 @@ import {
     editUserProfile,
     editPassword,
     uploadImage,
-    getStripePayment} 
+    getStripePayment,
+    logout} 
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
 import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getMyTutorCourses, getViewChapter, getViewChapters, getViewCourses, getWithdrawalHistory, updateChapter } from '../controllers/courseController';
@@ -22,6 +23,7 @@ const router = Router();
 
 // AUTHENTICATION
 router.post('/login', login); 
+router.post('/logout', verifyToken,logout); 
 router.post('/send-otp', sendOtp);
 router.post('/resend-otp',resendOtp );
 router.post('/verify-otp', verifyPasswordOtp);

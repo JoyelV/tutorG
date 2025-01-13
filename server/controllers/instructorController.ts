@@ -12,6 +12,7 @@ import orderModel from '../models/Orders';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
 import RateInstructor from '../models/RateInstructor';
 import Course from '../models/Course';
+import { instructorRepository } from 'repositories/instructorRepository';
 
 dotenv.config();
 
@@ -45,7 +46,6 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
     const { token, refreshToken ,user } = await loginService(emailLowerCase, password);
 
-    // Send the refresh token as an HttpOnly cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, 
       secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
@@ -66,6 +66,20 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     res.status(400).json({ message: 'An unknown error occurred' });
   }
 };
+
+export const logout = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+ try {
+  let userId = req.userId;
+  await Instructor.findByIdAndUpdate(
+    userId, 
+    { onlineStatus: false }, 
+    { new: true } 
+  );
+    res.status(200).json({message:"Logout successfully"});
+ } catch (error) {
+  res.status(400).json({ message: 'An unknown error occurred' });
+ }
+}
 
 export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email } = req.body;
@@ -287,7 +301,7 @@ export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Pro
 
   try {
     const orders = await orderModel.find({ studentId })
-    .populate('tutorId', 'username image') 
+    .populate('tutorId', 'username image onlineStatus') 
     .exec();
   const uniqueOrders = orders.filter((order, index, self) =>
     index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString())

@@ -68,7 +68,7 @@ export const verifyRegisterOTP = async (req: Request, res: Response): Promise<vo
       res.status(400).json({ message: 'Email and OTP are required' });
       return;
     }
-
+    
     const message = await verifyOTP(emailLowerCase, otp);
     res.status(201).json({ message });
   } catch (error) {
@@ -90,9 +90,9 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     const { token, refreshToken ,user } = await loginService(emailLowerCase, password);
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true, // Prevent access via JavaScript
-      secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
-      sameSite: 'strict', // Prevent CSRF
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'development', 
+      sameSite: 'strict', 
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 
@@ -109,6 +109,20 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     res.status(400).json({ message: 'An unknown error occurred' });
   }
 };
+
+export const logout = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+   let userId = req.userId;
+   await User.findByIdAndUpdate(
+     userId, 
+     { onlineStatus: false }, 
+     { new: true } 
+   );
+     res.status(200).json({message:"Logout successfully"});
+  } catch (error) {
+   res.status(400).json({ message: 'An unknown error occurred' });
+  }
+}
 
 export const googleSignIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { token: googleToken } = req.body;
@@ -374,7 +388,7 @@ export const getStudentsChat = async (req: AuthenticatedRequest, res: Response):
       tutorId: instructorId,
       studentId: { $ne: null },  
     })
-    .populate("studentId", "username email phone image gender")
+    .populate("studentId", "username email phone image gender onlineStatus")
     .populate("courseId", "title level"); 
 
     if (orders.length === 0) {

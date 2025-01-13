@@ -121,7 +121,10 @@ export const getRelatedCourses = async (req: Request, res: Response, next: NextF
 
 export const getRecentlyAddedCourses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const courses = await Course.find()
+    const courses = await Course.find({
+      status: 'published',
+      isApproved: true,
+    })
       .sort({ createdAt: -1 })
       .limit(10)
       .select('title category courseFee thumbnail averageRating students');

@@ -28,6 +28,7 @@ const stripe = new stripe_1.default(stripeSecretKey, {
 const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { cartItems } = req.body;
+        console.log(cartItems, "cartItems");
         if (!Array.isArray(cartItems) || cartItems.length === 0) {
             res.status(400).json({ error: "Cart items are required." });
             return;

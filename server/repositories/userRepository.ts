@@ -33,7 +33,7 @@ export const userRepository = {
   },
   async getAllUsers(): Promise<any> {
     try {
-      return await User.find({}, 'username email phone gender role isBlocked');
+      return await User.find({}, 'image username email phone gender role isBlocked');
     } catch (error) {
       throw new Error('Error fetching users');
     }

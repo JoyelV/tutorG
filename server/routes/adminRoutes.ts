@@ -15,7 +15,7 @@ from '../controllers/adminController';
 import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { addTutors, toggleTutorStatus } from '../controllers/instructorController';
-import { deleteCategory, getCategoriesPagination, saveCategory } from '../controllers/categoryController';
+import { deleteCategory, getCategoriesPagination, saveCategory, updateCategory } from '../controllers/categoryController';
 import { courseStatus, getCourseDatas, getInstructorData, getViewCourses, publishCourse, rejectCourse } from '../controllers/courseController';
 import { addReview, getReviews } from '../controllers/reviewController';
 import { verifyToken } from '../utils/VerifyToken';
@@ -45,7 +45,7 @@ router.post('/add-tutor', upload.single('image'), addTutors);
 //Category Management
 router.get('/categories',verifyToken, getCategoriesPagination);
 router.post('/categories',verifyToken,saveCategory);
-router.put('/categories/:id',verifyToken,saveCategory);
+router.put('/categories/:id',verifyToken,updateCategory);
 router.patch('/categories/block/:id', verifyToken,deleteCategory);
 
 //Course Management

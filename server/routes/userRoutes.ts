@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn, getMyMessages, getStatsCounts, fetchImage } from '../controllers/userController';
+import { fetchUserProfile, editPassword, uploadImage, editUserProfile,login, register, resetPassword, sendOtp, verifyPasswordOtp, verifyRegisterOTP, resendOtp, googleSignIn, getMyMessages, getStatsCounts, fetchImage, logout } from '../controllers/userController';
 import upload from '../config/multerConfig';
 import { getCompletionCertificate, getCourses, getCourseWithFeedbacks, getIndividualCourseData, getIndividualCourses, getInstructorCourses, getInstructorData, getNotifications, getRecentlyAddedCourses, getRelatedCourses, getStudentCourseSummary, getViewChapters, updateCourseRating, updateProgress } from '../controllers/courseController';
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
@@ -18,6 +18,7 @@ router.post('/register', register);
 router.post('/verify-registerotp',verifyRegisterOTP)
 router.post('/login', login); 
 router.post('/google-login',googleSignIn);
+router.post('/logout', verifyToken, logout); 
 router.post('/send-otp',sendOtp);
 router.post('/resend-otp',resendOtp );
 router.post('/verify-otp', verifyPasswordOtp);

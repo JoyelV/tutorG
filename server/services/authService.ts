@@ -54,6 +54,7 @@ export const loginService = async (
   if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
       throw new Error('JWT secrets are not set');
   }
+  await userRepository.updateUser(user._id.toString(), { onlineStatus: true });
 
   const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -117,6 +118,7 @@ export const googleLoginService = async (googleToken: string) => {
   if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
     throw new Error('JWT secrets are not set in environment variables');
   }
+  await userRepository.updateUser(user._id.toString(), { onlineStatus: true });
 
   const token = jwt.sign(
     { id: user._id, role: user.role },

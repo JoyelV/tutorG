@@ -54,7 +54,7 @@ export const getQuizzesByCourse = async (req: Request, res: Response): Promise<v
       .exec();
 
     if (!quizzes || quizzes.length === 0) {
-      res.status(200).json({ message: 'No quizzes found for this course.' });
+      res.status(204).json({ message: 'No quizzes found for this course.' });
       return;
     }
     res.status(200).json(quizzes);

@@ -6,6 +6,29 @@ import Category from '../models/Category';
  */
 export const saveCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    const { categoryName, subCategories = [] } = req.body;
+
+    if (!categoryName) {
+      res.status(400).json({ message: 'Category name is required' });
+      return;
+    }
+
+    const newCategory = new Category({
+        categoryName,
+        subCategories: subCategories.map((name: string) => ({ name })),
+        createdByAdmin: true,
+      });
+      const savedCategory = await newCategory.save();
+      res.status(201).json(savedCategory);
+    
+  } catch (error) {
+    console.error('Error saving category:', error);
+    next({ status: 500, message: 'Error saving category', error });
+  }
+};
+
+export const updateCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
     const { id } = req.params; 
     const { categoryName, subCategories = [] } = req.body;
 
@@ -24,15 +47,7 @@ export const saveCategory = async (req: Request, res: Response, next: NextFuncti
       category.subCategories = subCategories.map((name: string) => ({ name }));
       const updatedCategory = await category.save();
       res.status(200).json(updatedCategory);
-    } else {
-      const newCategory = new Category({
-        categoryName,
-        subCategories: subCategories.map((name: string) => ({ name })),
-        createdByAdmin: true,
-      });
-      const savedCategory = await newCategory.save();
-      res.status(201).json(savedCategory);
-    }
+    } 
   } catch (error) {
     console.error('Error saving category:', error);
     next({ status: 500, message: 'Error saving category', error });
@@ -53,20 +68,36 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
 };
 
 export const getCategoriesPagination = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 5;
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const limit = parseInt(req.query.limit as string, 10) || 5;
+
+  if (page < 1 || limit < 1) {
+    res.status(400).json({ error: "Page and limit must be positive integers." });
+    return;
+  }
 
   try {
     const totalCategories = await Category.countDocuments();
+    const totalPages = Math.ceil(totalCategories / limit);
+
+    if ((page - 1) * limit >= totalCategories) {
+      res.status(200).json({
+        categories: [],
+        totalPages,
+        currentPage: page,
+      });
+      return;
+    }
+
     const categories = await Category.find()
-      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
-    
+
     res.status(200).json({
       categories,
-      totalPages: Math.ceil(totalCategories / limit),
+      totalPages,
       currentPage: page,
+      totalItems: totalCategories,
     });
   } catch (error) {
     next(error);

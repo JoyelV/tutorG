@@ -102,7 +102,7 @@ io.on('connection', (socket) => {
         id: message._id,
         sender: message.sender,
         content: message.content,
-        time: message.createdAt.toLocaleTimeString(),
+        time: message.createdAt,
         status: message.status,
         mediaUrl: message.mediaUrl,
         messageId:messageId
