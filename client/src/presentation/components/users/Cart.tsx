@@ -107,7 +107,9 @@ const CartPage = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  if (loading) return <div className="text-center">Loading...</div>;
+  if (loading) 
+  return <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-blue-500"></div>
+
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
   return (
