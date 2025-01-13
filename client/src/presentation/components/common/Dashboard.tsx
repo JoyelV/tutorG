@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
       <div className="mt-8 px-4">
         <h2 className="text-2xl font-semibold mb-4">Ongoing Courses</h2>
         {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-blue-500"></div>
         ) : summary?.ongoingCourses?.length ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {summary.ongoingCourses.map((course, index) => (
