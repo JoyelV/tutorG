@@ -105,9 +105,28 @@ function EnrolledCourseData() {
         ))}
       </div>
       {enrolledCourses.length === 0 && (
-        <div className="text-center py-8">
-          <span className="text-xl text-gray-700">No courses available.</span>
-        </div>
+        <>
+        <svg
+          className="w-16 h-16 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12l2 2l4-4m5 4.5V6a2.5 2.5 0 0 0-2.5-2.5h-11A2.5 2.5 0 0 0 3 6v12a2.5 2.5 0 0 0 2.5 2.5h11A2.5 2.5 0 0 0 19 18.5z"
+          ></path>
+        </svg>
+        <span className="mt-4 text-lg font-semibold text-gray-700">
+          No courses available.
+        </span>
+        <p className="mt-2 text-sm text-gray-500">
+          Start learning by enrolling in your first course!
+        </p>
+        </>
       )}
       <div className="mt-28">
         <ul className="flex space-x-3 justify-center mt-8">
