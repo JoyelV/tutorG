@@ -21,7 +21,7 @@ export const PasswordReset: React.FC = () => {
     }
 
     const isStrongPassword = (newPassword: string): boolean =>
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(newPassword);
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,20}$/.test(newPassword);
 
     if (!isStrongPassword(newPassword)) {
       setError('Password must have at least 8 characters, one lowercase letter, one uppercase letter, one number, and one special character.');
