@@ -15,7 +15,7 @@ const router = Router();
 
 // AUTHENTICATION
 router.post('/register', register);
-router.post('/verify-registerotp',verifyRegisterOTP)
+router.post('/verify-registerotp',verifyRegisterOTP);
 router.post('/login', login); 
 router.post('/google-login',googleSignIn);
 router.post('/logout', verifyToken, logout); 

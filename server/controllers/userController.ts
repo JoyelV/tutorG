@@ -13,15 +13,22 @@ import User from '../models/User'
 import Message from '../models/Message';
 import Course from '../models/Course';
 import Instructor from '../models/Instructor';
+import { userRepository } from 'repositories/userRepository';
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
-    const emailLowerCase = email.toLowerCase();
 
     if (!username || !email || !password) {
       res.status(400).json({ message: 'All fields are required' });
+      return;
+    }
+    const emailLowerCase = email.toLowerCase();
+
+    const existingUser  = await userRepository.findUserByEmail(emailLowerCase);
+    if(existingUser){
+      res.status(409).json({message:'Email already exists'});
       return;
     }
 
