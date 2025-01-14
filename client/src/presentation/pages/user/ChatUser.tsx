@@ -109,6 +109,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
 
   const formatMessageTime = (time: string) => {
     const messageDate = new Date(time);
+
+    if (isNaN(messageDate.getTime())) {
+      return new Date().toLocaleDateString(); 
+    }
+
     const today = new Date();
 
     if (
