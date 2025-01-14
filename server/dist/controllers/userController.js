@@ -26,13 +26,19 @@ const User_1 = __importDefault(require("../models/User"));
 const Message_1 = __importDefault(require("../models/Message"));
 const Course_1 = __importDefault(require("../models/Course"));
 const Instructor_1 = __importDefault(require("../models/Instructor"));
+const userRepository_1 = require("repositories/userRepository");
 dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, email, password } = req.body;
-        const emailLowerCase = email.toLowerCase();
         if (!username || !email || !password) {
             res.status(400).json({ message: 'All fields are required' });
+            return;
+        }
+        const emailLowerCase = email.toLowerCase();
+        const existingUser = yield userRepository_1.userRepository.findUserByEmail(emailLowerCase);
+        if (existingUser) {
+            res.status(409).json({ message: 'Email already exists' });
             return;
         }
         const otp = (0, otpGenerator_1.generateOTP)();
