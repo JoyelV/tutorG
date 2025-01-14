@@ -156,7 +156,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
           setLastMessages(lastMessagesMap);
         }
       } catch (err) {
-        toast.error('Unable to fetch the list of tutors. Please try again later.');
+        toast.error('There is no students enrolled. Please wait for enrollments.');
       } finally {
         setLoading(false);
       }
