@@ -74,17 +74,33 @@ const Register: React.FC = () => {
         setIsSubmitting(true); 
 
         try {
-            await api.post('/user/register', { username, email, password });
-            setOtpSent(true);
-            setResendTimer(60);
-            setCanResend(false);
-            toast.success('OTP sent to your email! Please verify.');
-        } catch (err) {
-            toast.error('Registration failed. Please try again.');
-            console.error('Registration failed:', err);
-        }finally {
-            setIsSubmitting(false); 
-        }
+            const response = await api.post('/user/register', { username, email, password });
+            
+            if (response.status === 200) {
+                setOtpSent(true);
+                setResendTimer(60);
+                setCanResend(false);
+                toast.success('OTP sent to your email! Please verify.');
+            }
+        } catch (err:any) {
+            if (err.response) {
+                switch (err.response.status) {
+                    case 400:
+                        toast.error(err.response.data.message || 'Invalid input. Please check your details.');
+                        break;
+                    case 409:
+                        toast.error('Email already exists.');
+                        break;
+                    default:
+                        toast.error(err.response.data.message || 'Something went wrong. Please try again.');
+                        break;
+                }
+            } else {
+                toast.error('Registration failed. Please check your internet connection and try again.');
+            }
+        } finally {
+            setIsSubmitting(false);
+        }        
     };
 
     const handleResendOtp = async () => {
