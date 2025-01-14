@@ -37,11 +37,24 @@ function EnrolledCourseData() {
         if (response.data && Array.isArray(response.data)) {
           setEnrolledCourses(response.data);
         } else {
-          setEnrolledCourses([]); 
+          setEnrolledCourses([]);
         }
-      } catch (error) {
-        console.error("Error fetching enrolled courses:", error);
-        toast.error("Failed to fetch enrolled courses");
+      } catch (error: any) {
+        if (error.response) {
+          switch (error.response.status) {
+            case 400:
+              toast.error(error.response.data.message || 'Invalid User.');
+              break;
+            case 404:
+              toast.error('No enrolled courses, enroll one and learn.');
+              break;
+            default:
+              toast.error('Failed to fetch enrolled courses. Please check your internet connection and try again');
+              break;
+          }
+        } else {
+          toast.error('Failed to fetch enrolled courses. Please check your internet connection and try again.');
+        }
       }
     };
 
@@ -113,9 +126,8 @@ function EnrolledCourseData() {
         <ul className="flex space-x-3 justify-center mt-8">
           <li
             onClick={handlePrev}
-            className={`flex items-center justify-center shrink-0 cursor-pointer ${
-              currentPage === 1 ? "pointer-events-none opacity-50" : ""
-            } w-9 h-8 rounded`}
+            className={`flex items-center justify-center shrink-0 cursor-pointer ${currentPage === 1 ? "pointer-events-none opacity-50" : ""
+              } w-9 h-8 rounded`}
           >
             Prev
           </li>
@@ -123,20 +135,18 @@ function EnrolledCourseData() {
             <li
               key={i}
               onClick={() => handlePageChange(i + 1)}
-              className={`flex items-center justify-center shrink-0 cursor-pointer text-sm font-bold ${
-                currentPage === i + 1
+              className={`flex items-center justify-center shrink-0 cursor-pointer text-sm font-bold ${currentPage === i + 1
                   ? "bg-sky-600 text-white"
                   : "text-[#333] bg-gray-300"
-              } w-9 h-8 rounded`}
+                } w-9 h-8 rounded`}
             >
               {i + 1}
             </li>
           ))}
           <li
             onClick={handleNext}
-            className={`flex items-center justify-center shrink-0 cursor-pointer ${
-              currentPage === totalPages ? "pointer-events-none opacity-50" : ""
-            } w-9 h-8 rounded`}
+            className={`flex items-center justify-center shrink-0 cursor-pointer ${currentPage === totalPages ? "pointer-events-none opacity-50" : ""
+              } w-9 h-8 rounded`}
           >
             Next
           </li>
