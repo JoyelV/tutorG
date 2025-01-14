@@ -109,6 +109,11 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
   const formatMessageTime = (time: string) => {
     const messageDate = new Date(time);
+
+    if (isNaN(messageDate.getTime())) {
+      return new Date().toLocaleDateString(); 
+    }
+    
     const today = new Date();
 
     if (

@@ -24,7 +24,7 @@ const Register: React.FC = () => {
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const isStrongPassword = (password: string): boolean =>
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,20}$/.test(password);
 
      const validateUsername = (username: string) => {
         const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_ ]{2,19}$/;
