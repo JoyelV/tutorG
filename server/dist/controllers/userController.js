@@ -26,7 +26,7 @@ const User_1 = __importDefault(require("../models/User"));
 const Message_1 = __importDefault(require("../models/Message"));
 const Course_1 = __importDefault(require("../models/Course"));
 const Instructor_1 = __importDefault(require("../models/Instructor"));
-const userRepository_1 = require("repositories/userRepository");
+const userRepository_1 = require("../repositories/userRepository");
 dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

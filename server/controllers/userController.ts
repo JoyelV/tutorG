@@ -13,7 +13,7 @@ import User from '../models/User'
 import Message from '../models/Message';
 import Course from '../models/Course';
 import Instructor from '../models/Instructor';
-import { userRepository } from 'repositories/userRepository';
+import { userRepository } from '../repositories/userRepository';
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
