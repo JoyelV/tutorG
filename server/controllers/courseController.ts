@@ -54,7 +54,7 @@ export const getCourses = async (req: Request, res: Response, next: NextFunction
   try {
     const {
       page = '1',
-      limit = '5',
+      limit = '10',
       searchTerm = '',
       filter = '',
       sortOption = '',
@@ -212,8 +212,9 @@ export const updateCourseRating = async (
     if (existingFeedback) {
       existingFeedback.rating = rating;
       existingFeedback.feedback = feedback;
+      existingFeedback.updatedAt = new Date(); 
     } else {
-      course.ratingsAndFeedback.push({ userId, rating, feedback });
+      course.ratingsAndFeedback.push({ userId, rating, feedback,createdAt: new Date(), updatedAt: new Date(), });
     }
     await course.calculateAverageRating();
 
@@ -230,7 +231,7 @@ export const updateCourseRating = async (
 export const getCourseWithFeedbacks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const course = await Course.findById(req.params.courseId)
-      .populate('ratingsAndFeedback.userId', 'username email')
+      .populate('ratingsAndFeedback.userId', 'username email image')
       .exec();
 
     if (!course) {
@@ -244,8 +245,10 @@ export const getCourseWithFeedbacks = async (req: Request, res: Response, next: 
       feedbacks: course.ratingsAndFeedback.map((feedback) => ({
         username: feedback.userId.username,
         email: feedback.userId.email,
+        image:feedback.userId.image,
         rating: feedback.rating,
         feedback: feedback.feedback,
+        updatedAt:feedback.updatedAt,
       })),
     };
 

@@ -31,6 +31,8 @@ export interface ICourse extends Document {
     userId: IUser;
     rating: number;
     feedback: string;
+    createdAt:Date,
+    updatedAt:Date,
   }[];
   averageRating: number;
   isApproved: boolean;

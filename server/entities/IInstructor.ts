@@ -36,4 +36,10 @@ export interface IInstructor extends Document {
     transactions?: Transaction[]; 
     averageRating:number;
     numberOfRatings:number;
+    website: string;
+    facebook: string;
+    twitter:string;
+    linkedin: string;
+    instagram: string; 
+    github:string;
 }

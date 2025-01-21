@@ -19,7 +19,8 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'uploads', // Specify your Cloudinary folder
-    allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed file formats
+    allowed_formats: ['jpg', 'png', 'jpeg','pdf'], // Allowed file formats
+    resource_type: 'raw',
   } as ExtendedParams, // Cast to the extended type
 });
 

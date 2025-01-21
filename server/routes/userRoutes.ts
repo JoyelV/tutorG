@@ -77,8 +77,8 @@ router.delete("/removeitem/:wishlistItemId",removeWishlistItem);
 router.post('/stripepayment',verifyToken,stripePayment);
 
 //ORDER MANAGEMENT
-router.get('/orders',verifyToken,getUserOrders)
-router.get('/purchase-history',verifyToken,getEnrolledOrders)
+router.get('/orders',verifyToken,getUserOrders);
+router.get('/purchase-history',verifyToken,getEnrolledOrders);
 router.get("/getorders", getOrdersBySessionId);
 
 export default router;

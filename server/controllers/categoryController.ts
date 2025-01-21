@@ -13,6 +13,13 @@ export const saveCategory = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
+    const subCategoryNames = subCategories.map((sub: string) => sub.trim().toLowerCase());
+    const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
+    if (hasDuplicateSubcategories) {
+      res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
+      return;
+    }
+
     const newCategory = new Category({
         categoryName,
         subCategories: subCategories.map((name: string) => ({ name })),
@@ -43,6 +50,13 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
         res.status(404).json({ message: 'Category not found' });
         return;
       }
+
+    const subCategoryNames = subCategories.map((sub: string) => sub.trim().toLowerCase());
+    const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
+    if (hasDuplicateSubcategories) {
+      res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
+      return;
+    }
       category.categoryName = categoryName;
       category.subCategories = subCategories.map((name: string) => ({ name }));
       const updatedCategory = await category.save();

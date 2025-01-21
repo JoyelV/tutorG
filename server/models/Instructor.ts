@@ -34,6 +34,12 @@ const instructorSchema = new Schema<IInstructor>({
     ],
     averageRating: { type: Number, default: 0 }, 
     numberOfRatings: { type: Number, default: 0 },
+    website: { type: String, required: true },  
+    facebook: { type: String, required: true },  
+    twitter: { type: String, required: true },  
+    linkedin: { type: String, required: true },  
+    instagram: { type: String, required: true },  
+    github:{type:String,required:true},
 });
 
 export default model<IInstructor>('Instructor', instructorSchema);

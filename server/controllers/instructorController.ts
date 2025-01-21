@@ -254,7 +254,12 @@ export const addTutors = async (req: Request, res: Response): Promise<void> => {
         areasOfExpertise,
         bio,
         highestQualification,
-        websiteLink,
+        website,
+        facebook,
+        linkedin,
+        twitter,
+        instagram,
+        github,
         isBlocked,
         tutorRequest,
     } = req.body;
@@ -282,7 +287,12 @@ export const addTutors = async (req: Request, res: Response): Promise<void> => {
         areasOfExpertise,
         bio,
         highestQualification,
-        websiteLink,
+        website,
+        facebook,
+        linkedin,
+        twitter,
+        instagram,
+        github,
         isBlocked,
         tutorRequest,
     });
@@ -446,6 +456,7 @@ export const getInstructorById = async (req: AuthenticatedRequest, res: Response
 
     res.status(200).json({
       username: instructor.username,
+      email:instructor.email,
       image: instructor.image,
       bio: instructor.bio,
       about:instructor.about,
@@ -454,6 +465,12 @@ export const getInstructorById = async (req: AuthenticatedRequest, res: Response
       highestQualification:instructor.highestQualification,
       averageRating: instructor.averageRating,
       numberOfRatings: instructor.numberOfRatings,
+      website:instructor.website,
+      facebook:instructor.facebook,
+      twitter:instructor.twitter,
+      linkedin:instructor.linkedin,
+      instagram:instructor.instagram,
+      github:instructor.github,
       totalStudents,
       totalCourses,
     });
