@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaVideo, FaDownload } from 'react-icons/fa';
 
 interface Lesson {
   _id: string;
@@ -14,7 +14,7 @@ interface Lesson {
 }
 
 interface CurriculumBoxProps {
-  onLessonSelect: (videoUrl: string) => void; 
+  onLessonSelect: (videoUrl: string) => void;
 }
 
 const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) => {
@@ -23,6 +23,7 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedSections, setExpandedSections] = useState<boolean[]>([]);
+  const [videoDurations, setVideoDurations] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchCurriculum = async () => {
@@ -71,11 +72,30 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
     }
   };
 
+  const loadVideoDuration = (videoUrl: string, lessonId: string) => {
+    const video = document.createElement('video');
+    video.src = videoUrl;
+    video.addEventListener('loadedmetadata', () => {
+      const duration = video.duration;
+      const formattedDuration = new Date(duration * 1000).toISOString().substr(11, 8); // HH:mm:ss format
+      setVideoDurations((prev) => ({ ...prev, [lessonId]: formattedDuration }));
+    });
+  };
+
+  useEffect(() => {
+    curriculum.forEach((lesson) => {
+      if (lesson.lessonVideo && !videoDurations[lesson._id]) {
+        loadVideoDuration(lesson.lessonVideo, lesson._id);
+      }
+    });
+  }, [curriculum]);
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center bg-gray-100">
+      <div className="flex items-center justify-center bg-gray-100 min-h-screen">
         <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-blue-500"></div>
-        </div>
+        <span className="ml-3 text-xl">Loading Lesson Details...</span>
+      </div>
     );
   }
 
@@ -83,15 +103,16 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
     return <div>Error: {error}</div>;
   }
 
-  const sections = curriculum.map((lesson, index) => ({
+  const sections = curriculum.map((lesson) => ({
+    _id: lesson._id,
     title: lesson.lessonTitle,
     description: lesson.lessonDescription,
     lectures: 1,
-    duration: '5m 20s',
+    duration: videoDurations[lesson._id] || 'Loading...',
     topics: [
       {
         name: `Watch video: ${lesson.lessonTitle}`,
-        duration: '5m 20s',
+        duration: videoDurations[lesson._id] || 'Loading...',
         link: lesson.lessonVideo,
         type: 'video',
       },
@@ -106,14 +127,11 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Main Content */}
-      <div className="flex-1 p-4 sm:p-6">
+      <div className="flex-1 p-6">
         <div className="py-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Curriculum</h2>
-          <div className="flex flex-wrap justify-between text-sm text-gray-600 mb-4 sm:mb-6">
+          <div className="flex justify-between text-sm text-gray-600 mb-6">
             <span>{sections.length} Sections</span>
             <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>
-            <span>~{sections.length * 5} mins</span>
           </div>
           <ul className="space-y-4">
             {sections.map((section, index) => (
@@ -123,8 +141,8 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
                   onClick={() => toggleSection(index)}
                 >
                   <div>
-                    <h3 className="font-semibold text-gray-800 text-base sm:text-lg">{section.title}</h3>
-                    <div className="text-xs sm:text-sm text-gray-500">
+                    <h3 className="font-semibold text-gray-800 text-lg">{section.title}</h3>
+                    <div className="text-sm text-gray-500">
                       {section.lectures} lectures • {section.duration}
                     </div>
                   </div>
@@ -135,22 +153,22 @@ const CurriculumDetailed: React.FC<CurriculumBoxProps> = ({ onLessonSelect }) =>
                 {expandedSections[index] && section.topics.length > 0 && (
                   <ul className="mt-2 p-4 space-y-2 bg-white">
                     {section.topics.map((topic, i) => (
-                      <li key={i} className="flex justify-between text-xs sm:text-sm text-gray-600">
+                      <li key={i} className="flex justify-between text-sm text-gray-600">
                         {topic.type === 'pdf' ? (
                           <button
-                            onClick={() =>
-                              handlePdfDownload(topic.link, `${topic.name}.pdf`)
-                            }
-                            className="hover:underline text-blue-500"
+                            onClick={() => handlePdfDownload(topic.link, `${topic.name}.pdf`)}
+                            className="flex items-center space-x-2 hover:underline text-blue-500"
                           >
-                            {topic.name}
+                            <FaDownload className="text-lg" />
+                            <span>Download PDF</span>
                           </button>
                         ) : (
                           <button
                             onClick={() => handleVideoSelect(topic.link)}
-                            className="hover:underline text-blue-500"
+                            className="flex items-center space-x-2 hover:underline text-blue-500"
                           >
-                            {topic.name}
+                            <FaVideo className="text-lg" />
+                            <span>Watch Video</span>
                           </button>
                         )}
                         <span>{topic.duration}</span>

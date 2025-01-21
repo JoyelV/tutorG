@@ -95,7 +95,12 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect, onlessonI
   }, [curriculum]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center bg-gray-100 min-h-screen">
+        <div className="animate-pulse rounded-full h-6 w-6 bg-blue-500"></div>
+        <span className="ml-3 text-xl">Loading Lesson Details...</span>
+      </div>
+    );
   }
 
   if (error) {
@@ -128,7 +133,6 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect, onlessonI
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1 p-6">
         <div className="py-4">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Curriculum</h2>
           <div className="flex justify-between text-sm text-gray-600 mb-6">
             <span>{sections.length} Sections</span>
             <span>{sections.reduce((acc, sec) => acc + sec.lectures, 0)} lectures</span>

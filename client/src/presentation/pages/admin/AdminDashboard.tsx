@@ -123,7 +123,7 @@ const AdminDashboard: React.FC = () => {
                     Dashboard
                 </h1>
                 <p className="text-sm md:text-base text-gray-600 mb-6">
-                    Good Morning, Mr. Admin. It’s good to see you again.
+                    Hey Admin. It’s good to see you again.
                 </p>
     
                 {/* Overview Cards */}

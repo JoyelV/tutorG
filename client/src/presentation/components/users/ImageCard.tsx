@@ -28,7 +28,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
-  const coursesPerPage = 5;
+  const coursesPerPage = 10;
 
   const fetchCourses = async () => {
     try {

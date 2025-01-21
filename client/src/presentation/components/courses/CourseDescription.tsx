@@ -11,9 +11,9 @@ const CourseDescription: React.FC<CourseDescriptionProps> = ({ description, lear
     <div className="py-4">
       <h2 className="text-xl font-semibold">Description</h2>
       <p className="text-gray-700 my-2">{description}</p>
-      <h3 className="text-lg font-semibold mt-4">What you will learn in this course</h3>
+      <h3 className="text-md font-semibold mt-4">What you will learn in this course</h3>
       <p className="text-gray-700 my-2">{learningPoints}</p>
-      <h3 className="text-lg font-semibold mt-4">Who this course is for</h3>
+      <h3 className="text-md font-semibold mt-4">Who this course is for</h3>
       <p className="text-gray-700 my-2">{targetAudience}</p>
     </div>
   );

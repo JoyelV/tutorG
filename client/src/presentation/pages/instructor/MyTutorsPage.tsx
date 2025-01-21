@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
+import { useNavigate } from 'react-router-dom';
 
 interface Tutor {
+  _id: string;
   username: string;
   image: string;
   title: string;
@@ -10,6 +12,7 @@ interface Tutor {
 const MyTutorsPage: React.FC = () => {
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const studentId = localStorage.getItem('userId');
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchTutors = async () => {
@@ -23,6 +26,7 @@ const MyTutorsPage: React.FC = () => {
         const orders = response.data;
 
         const tutorsList = orders.map((order: any) => ({
+          _id: order.tutorId._id,
           username: order.tutorId.username,
           image: order.tutorId.image,
           title: 'Instructor',
@@ -45,7 +49,8 @@ const MyTutorsPage: React.FC = () => {
           tutors.map((tutor, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl"
+              className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl" onClick={() => navigate(`/instructorProfile/${tutor._id}`)} 
+
             >
               {/* Tutor Image */}
               <div

@@ -17,7 +17,12 @@ interface FormData {
     areasOfExpertise: string;
     bio: string;
     highestQualification: string;
-    websiteLink: string;
+    website:string;
+    facebook: string;
+    twitter: string;
+    linkedin: string;
+    instagram: string;
+    github:string;
     isBlocked: boolean;
     tutorRequest: string | null;
 }
@@ -33,7 +38,12 @@ const AddForm: React.FC = () => {
         areasOfExpertise: '',
         bio: '',
         highestQualification: '',
-        websiteLink: '',
+        website:'',
+        facebook: '',
+        twitter: '',
+        linkedin: '',
+        instagram: '',
+        github:'',
         isBlocked: false,
         tutorRequest: null,
     });
@@ -46,24 +56,37 @@ const AddForm: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
         const nameRegex = /^[a-zA-Z]{1}[a-zA-Z0-9.', ]*$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,20}$/;
         const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*$/;
+        const websiteRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w.-]*)*$/;
+        const facebookRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w.-]*)*$/;
         const phoneRegex = /^\d{10}$/;
 
-        if (!nameRegex.test(formData.username)) {
-            newErrors.firstName = 'Username must contain only letters and spaces.';
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required.';
+        } else if (!nameRegex.test(formData.username)) {
+            newErrors.username = 'Username must start with a letter and contain only letters, spaces, and valid symbols.';
         }
 
-        if (!emailRegex.test(formData.email)) {
-            newErrors.email = 'Invalid email address.';
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required.';
+        } else if (!emailRegex.test(formData.email)) {
+            newErrors.email = 'Invalid email format.';
         }
-        if (!phoneRegex.test(formData.phone)) {
+
+        if (!formData.phone.trim()) {
+            newErrors.phone = 'Phone number is required.';
+        } else if (!phoneRegex.test(formData.phone)) {
             newErrors.phone = 'Phone number must be exactly 10 digits.';
         }
-        if (!passwordRegex.test(formData.password)) {
-            newErrors.password =
-                'Password must be at least 8 characters long, include at least one letter, one number, and one special character.';
+
+        if (!formData.password.trim()) {
+            newErrors.password = 'Password is required.';
+        } else if (!passwordRegex.test(formData.password)) {
+            newErrors.password = 'Password must have at least 8 characters, one letter, one number, and one special character.';
         }
+
+
         if (!nameRegex.test(formData.headline)) {
             newErrors.headline = 'Headline must contain only letters and spaces.';
         }
@@ -76,8 +99,23 @@ const AddForm: React.FC = () => {
         if (!nameRegex.test(formData.highestQualification)) {
             newErrors.highestQualification = 'First name must contain only letters and spaces.';
         }
-        if (formData.websiteLink && !urlRegex.test(formData.websiteLink)) {
-            newErrors.websiteLink = "Invalid website URL.";
+        if (formData.website && !websiteRegex.test(formData.website)) {
+            newErrors.website = "Invalid website URL.";
+        }
+        if (formData.facebook && !facebookRegex.test(formData.facebook)) {
+            newErrors.facebook = "Invalid facebook URL.";
+        }
+        if (formData.linkedin && !urlRegex.test(formData.linkedin)) {
+            newErrors.linkedin = "Invalid linkedin URL.";
+        }
+        if (formData.twitter && !urlRegex.test(formData.twitter)) {
+            newErrors.twitter = "Invalid twitter URL.";
+        }
+        if (formData.instagram && !urlRegex.test(formData.instagram)) {
+            newErrors.instagram = "Invalid instagram URL.";
+        }
+        if (formData.github && !urlRegex.test(formData.github)) {
+            newErrors.github = "Invalid github URL.";
         }
 
         setErrors(newErrors);
@@ -130,7 +168,12 @@ const AddForm: React.FC = () => {
                 formDataToSend.append('areasOfExpertise', formData.areasOfExpertise);
                 formDataToSend.append('bio', formData.bio);
                 formDataToSend.append('highestQualification', formData.highestQualification);
-                formDataToSend.append('websiteLink', formData.websiteLink);
+                formDataToSend.append('website', formData.website);
+                formDataToSend.append('facebook', formData.facebook);
+                formDataToSend.append('twitter', formData.twitter);
+                formDataToSend.append('linkedin', formData.linkedin);
+                formDataToSend.append('instagram', formData.instagram);
+                formDataToSend.append('github', formData.github);
                 formDataToSend.append('isBlocked', String(formData.isBlocked));
                 formDataToSend.append('tutorRequest', formData.tutorRequest || '');
 
@@ -149,7 +192,12 @@ const AddForm: React.FC = () => {
                         areasOfExpertise: '',
                         bio: '',
                         highestQualification: '',
-                        websiteLink: '',
+                        website:'',
+                        facebook: '',
+                        twitter: '',
+                        linkedin: '',
+                        instagram: '',
+                        github:'',
                         isBlocked: false,
                         tutorRequest: null,
                     });
@@ -179,7 +227,7 @@ const AddForm: React.FC = () => {
             <div className="flex-1 p-2 md:ml-1/4">
                 <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
                     <form onSubmit={handleSubmit} className="bg-white p-1 rounded-lg shadow-lg">
-                        <h2 className="text-2xl font-bold mb-4">Add New Tutor</h2>
+                        <h2 className="text-2xl font-bold mb-4">Add Tutor Details</h2>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -315,14 +363,79 @@ const AddForm: React.FC = () => {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    label="Website Link"
+                                    label="website Link"
                                     variant="outlined"
                                     fullWidth
-                                    name="websiteLink"
-                                    value={formData.websiteLink}
+                                    name="website"
+                                    value={formData.website}
                                     onChange={handleChange}
-                                    error={!!errors.websiteLink}
-                                    helperText={errors.websiteLink}
+                                    error={!!errors.website}
+                                    helperText={errors.website}
+                                    className="mb-4"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="facebook Link"
+                                    variant="outlined"
+                                    fullWidth
+                                    name="facebook"
+                                    value={formData.facebook}
+                                    onChange={handleChange}
+                                    error={!!errors.facebook}
+                                    helperText={errors.facebook}
+                                    className="mb-4"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="twitter Link"
+                                    variant="outlined"
+                                    fullWidth
+                                    name="twitter"
+                                    value={formData.twitter}
+                                    onChange={handleChange}
+                                    error={!!errors.twitter}
+                                    helperText={errors.twitter}
+                                    className="mb-4"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="linkedin Link"
+                                    variant="outlined"
+                                    fullWidth
+                                    name="linkedin"
+                                    value={formData.linkedin}
+                                    onChange={handleChange}
+                                    error={!!errors.linkedin}
+                                    helperText={errors.linkedin}
+                                    className="mb-4"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="instagram Link"
+                                    variant="outlined"
+                                    fullWidth
+                                    name="instagram"
+                                    value={formData.instagram}
+                                    onChange={handleChange}
+                                    error={!!errors.instagram}
+                                    helperText={errors.instagram}
+                                    className="mb-4"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="github Link"
+                                    variant="outlined"
+                                    fullWidth
+                                    name="github"
+                                    value={formData.github}
+                                    onChange={handleChange}
+                                    error={!!errors.github}
+                                    helperText={errors.github}
                                     className="mb-4"
                                 />
                             </Grid>

@@ -6,20 +6,20 @@ interface CourseRatingProps {
 }
 
 const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
-  const [userRating, setUserRating] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<string>('');
+  const [userRating, setUserRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [ratingMessage, setRatingMessage] = useState<string | null>(null);
   const userId = localStorage.getItem('userId');
-  
-  const submitRating = async (rating: number, feedback: string) => {
-    if (isSubmitting || isSubmitted) return;
-    setIsSubmitting(true);
 
+  const submitRating = async (rating: number, feedback: string) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       const response = await api.patch(
         `/user/rating/${courseId}`,
-        { userId,rating, feedback },
+        { userId, rating, feedback },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -28,13 +28,14 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
       );
 
       if (response.status === 200) {
-        setIsSubmitted(true); 
-        setUserRating(null); 
-        setFeedback(''); 
+        setRatingMessage('Your feedback has been submitted successfully!');
+        setUserRating(0);
+        setComment('');
       } else {
-        console.error('Error saving rating and feedback');
+        setRatingMessage('Error saving rating and feedback.');
       }
     } catch (error) {
+      setRatingMessage('Network error. Please try again.');
       console.error('Network error:', error);
     } finally {
       setIsSubmitting(false);
@@ -42,62 +43,61 @@ const CourseRating: React.FC<CourseRatingProps> = ({ courseId }) => {
   };
 
   const handleRatingClick = (rating: number) => {
-    if (!isSubmitted) {
-      setUserRating(rating);
-    }
-  };
-
-  const handleFeedbackChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isSubmitted) {
-      setFeedback(e.target.value);
-    }
+    setUserRating(rating);
   };
 
   return (
-    <div className="flex flex-col items-center p-8 bg-gray-50 rounded-lg shadow-md">
-      <h2 className="text-md font-semibold text-gray-800 mb-2">Course Feedback</h2>
-      {/* User rating section */}
-      <div className="mt-4">
-        <div className="flex space-x-2">
-          {[...Array(5)].map((_, i) => (
-            <svg
-              key={i}
-              className={`w-8 h-8 cursor-pointer ${i < (userRating ?? 0) ? 'text-orange-500' : 'text-gray-300'}`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              onClick={() => handleRatingClick(i + 1)}
-            >
-              <path d="M12 .587l3.668 7.573 8.332 1.151-6.001 5.539 1.447 8.15-7.446-4.175-7.446 4.175 1.447-8.15-6.001-5.539 8.332-1.151z" />
-            </svg>
-          ))}
-        </div>
+    <div className="flex flex-col items-center p-1 bg-white rounded-lg">
+    {/* Rating Section */}
+    <div className="flex ml-2 space-x-2">
+         {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`cursor-pointer text-2xl ${userRating >= star ? 'text-yellow-500' : 'text-gray-300'
+              }`}
+            onClick={() => handleRatingClick(star)}
+          >
+            ★
+          </span>
+        ))}
       </div>
 
-      {/* Feedback input */}
-      <div className="mt-6 w-full">
-        <input
-          type="text"
-          id="feedback"
-          value={feedback}
-          onChange={handleFeedbackChange}
-          className="w-full p-2 border border-gray-300 rounded-md"
-          placeholder="Enter your feedback"
-          disabled={isSubmitted} 
+      {/* Comment Input */}
+      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-full">
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Write your comment for course"
+          className="flex-1 resize-none text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          rows={1}
         />
+        <button
+          onClick={() => {
+            if (userRating && comment.length >= 5) {
+              submitRating(userRating, comment);
+            }
+          }}
+          disabled={isSubmitting || !userRating || comment.length < 5}
+          className={`h-full p-2 text-white font-bold transition-all ${
+            isSubmitting
+              ? 'bg-white cursor-not-allowed'
+              : 'bg-orange-500 hover:bg-orange-600'
+          }`}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
       </div>
 
-      {/* Submit button */}
-      <button
-        className="mt-6 bg-blue-500 text-white p-2 rounded-md"
-        onClick={() => {
-          if (userRating && !isSubmitted) {
-            submitRating(userRating, feedback);
-          }
-        }}
-        disabled={isSubmitting || !userRating || !feedback || isSubmitted} 
-      >
-        {isSubmitted ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-      </button>
+      {/* Rating Message */}
+      {ratingMessage && (
+        <p
+          className={`mt-4 ${
+            ratingMessage.includes('success') ? 'text-green-500' : 'text-red-500'
+          }`}
+        >
+          {ratingMessage}
+        </p>
+      )}
     </div>
   );
 };

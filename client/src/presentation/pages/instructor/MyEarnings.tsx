@@ -196,7 +196,7 @@ const Earnings = () => {
         {/* Main Content */}
         <main className="ml-2 p-2">
           <Typography variant="h5" className="mb-4">
-            Good Morning, My Earnings
+            My Earnings
           </Typography>
 
           {/* Statistics Cards */}

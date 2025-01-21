@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import { useParams } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns'; 
 
 interface Feedback {
   username: string; 
   email: string; 
+  image:string;
   feedback: string;
   rating: number;
+  updatedAt: string;
 }
 
 const StudentFeedback: React.FC = () => {
@@ -43,20 +46,33 @@ const StudentFeedback: React.FC = () => {
 
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-semibold">Student Feedback</h2>
+      <h3 className="text-lg font-semibold mt-4">Course Rating</h3>
       {feedbacks.length > 0 ? (
         feedbacks.map((feed, index) => (
-          <div key={index} className="mt-4">
-            <p><strong>{feed.username}</strong> ({feed.email})</p> {/* Display username and email */}
-            <p>{feed.feedback}</p>
-            <p>{'⭐'.repeat(feed.rating)}</p> {/* Display stars based on the rating */}
+          <div
+            key={index}
+            className="flex items-center mt-2 p-2 bg-white rounded-lg shadow-md" 
+          >
+            <img
+              src={feed.image || 'https://via.placeholder.com/64'} 
+              alt={feed.username}
+              className="w-12 h-12 rounded-full shadow-lg mr-4" 
+            />
+            <div className="flex-1">
+              <p className="font-bold">{feed.username}</p>
+              <p className="text-gray-500 text-sm">
+                {formatDistanceToNow(new Date(feed.updatedAt), { addSuffix: true })}
+              </p>
+              <p className="mt-2">{feed.feedback}</p>
+              <p className="mt-1 text-yellow-500">{'⭐'.repeat(feed.rating)}</p>
+            </div>
           </div>
         ))
       ) : (
         <p>No feedback available for this course yet.</p>
       )}
     </div>
-  );
+  );  
 };
 
 export default StudentFeedback;

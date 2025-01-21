@@ -15,6 +15,12 @@ const InstructorProfile = () => {
     const [addressLine1, setAddressLine1] = useState('');
     const [addressLine2, setAddressLine2] = useState('');
     const [about, setAbout] = useState('');
+    const [website, setWebsite] = useState('');
+    const [facebook, setFacebook] = useState('');
+    const [twitter, setTwitter] = useState('');
+    const [linkedin, setLinkedin] = useState('');
+    const [instagram, setInstagram] = useState('');
+    const [github, setGithub] = useState('');
     const [gender, setGender] = useState('');
     const [dob, setDob] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
@@ -77,7 +83,31 @@ const InstructorProfile = () => {
 
         const aboutRegex = /^[A-Za-z0-9\s.,'()\-\n—]+$/;
         if (!aboutRegex.test(about)) {
-            toast.error('About agfgsfgsafgfsg.');
+            toast.error('Enter letters and numbers and special characters like (),.and -.');
+            return false;
+        }
+
+        const facebookRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w.-]*)*$/;
+        if (!facebookRegex.test(facebook)) {
+            toast.error('Enter letters and numbers and special characters like (),.and -.');
+            return false;
+        }
+
+        const twitterRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*(\/[A-Za-z0-9-]*)*$/;
+        if (!twitterRegex.test(twitter)) {
+            toast.error('Enter letters and numbers and special characters like (),.and -.');
+            return false;
+        }
+
+        const linkedinRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*$/;
+        if (!linkedinRegex.test(linkedin)) {
+            toast.error('Enter letters and numbers and special characters like (),.and -.');
+            return false;
+        }
+
+        const instagramRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-]*)*$/;
+        if (!instagramRegex.test(instagram)) {
+            toast.error('Enter letters and numbers and special characters like (),.and -.');
             return false;
         }
 
@@ -120,6 +150,12 @@ const InstructorProfile = () => {
             setAddressLine1(data.address?.line1 || '');
             setAddressLine2(data.address?.line2 || '');
             setAbout(data.about || '');
+            setWebsite(data.website || '');
+            setFacebook(data.facebook || '');
+            setTwitter(data.twitter || '');
+            setLinkedin(data.linkedin || '');
+            setInstagram(data.instagram || '');
+            setGithub(data.github || '');
             setGender(data.gender || '');
             const formattedDob = data.dob ? new Date(data.dob).toISOString().split('T')[0] : '';
             setDob(formattedDob);
@@ -187,6 +223,12 @@ const InstructorProfile = () => {
                 line2: addressLine2,
             },
             about,
+            website,
+            facebook,
+            twitter,
+            linkedin,
+            instagram,
+            github,
             gender,
             dob,
             image,
@@ -344,6 +386,66 @@ const InstructorProfile = () => {
                                             placeholder="Enter details about you"
                                             value={about}
                                             onChange={(e) => setAbout(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="website"
+                                            variant="outlined"
+                                            placeholder="Enter Your website"
+                                            value={website}
+                                            onChange={(e) => setWebsite(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="facebook"
+                                            variant="outlined"
+                                            placeholder="Enter Facebook profile url"
+                                            value={facebook}
+                                            onChange={(e) => setFacebook(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="twitter"
+                                            variant="outlined"
+                                            placeholder="Enter Twitter profile url"
+                                            value={twitter}
+                                            onChange={(e) => setTwitter(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="linkedin"
+                                            variant="outlined"
+                                            placeholder="Enter LinkedIn profile url"
+                                            value={linkedin}
+                                            onChange={(e) => setLinkedin(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="instagram"
+                                            variant="outlined"
+                                            placeholder="Enter Instagram profile url"
+                                            value={instagram}
+                                            onChange={(e) => setInstagram(e.target.value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="github"
+                                            variant="outlined"
+                                            placeholder="Enter github profile url"
+                                            value={github}
+                                            onChange={(e) => setGithub(e.target.value)}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>

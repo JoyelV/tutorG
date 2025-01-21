@@ -92,7 +92,7 @@ const AccountSettings = () => {
         }
 
         // Validate new password strength (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character)
-        const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,20}$/;
         if (!passwordStrengthRegex.test(newPassword)) {
             toast.error('New password must be at least 8 characters long, include uppercase, lowercase, number, and special character.');
             return false;

@@ -7,7 +7,7 @@ interface CourseRequirementsProps {
 const CourseRequirements: React.FC<CourseRequirementsProps> = ({ requirements }) => {
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-semibold">Course Requirements</h2>
+      <h2 className="text-xl font-semibold">Course Requirements</h2>
       <p className="text-gray-700 my-2">{requirements}</p>
     </div>
   );
