@@ -107,26 +107,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     };
   }, []);
 
-  const formatMessageTime = (time: string) => {
-    const messageDate = new Date(time);
-
-    if (isNaN(messageDate.getTime())) {
-      return new Date().toLocaleDateString(); 
-    }
-
-    const today = new Date();
-
-    if (
-      messageDate.getDate() === today.getDate() &&
-      messageDate.getMonth() === today.getMonth() &&
-      messageDate.getFullYear() === today.getFullYear()
-    ) {
-      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else {
-      return messageDate.toLocaleDateString();
-    }
-  };
-
   useEffect(() => {
     const fetchTutors = async () => {
       try {
@@ -139,13 +119,38 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           onlineStatus: item.tutorId.onlineStatus,
         }));
         setUsers(data);
-        if (data.length > 0) {
-          const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
-          data.forEach((user: User) => {
-            lastMessagesMap[user.id] = { content: '', time: '' };
-          });
-          setLastMessages(lastMessagesMap);
-        }
+        // Initialize lastMessages map
+        const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
+        await Promise.all(
+          data.map(async (tutor: User) => {
+            try {
+              const userId = localStorage.getItem('userId');
+              if (!userId) throw new Error('User not logged in');
+
+              // Fetch last messages for the tutor
+              const messageResponse = await api.get('/user/messages', {
+                params: {
+                  senderId: userId,
+                  receiverId: tutor.id,
+                },
+              });
+              const messages = messageResponse.data;
+              if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                lastMessagesMap[tutor.id] = {
+                  content: lastMessage.content || '',
+                  time: lastMessage.createdAt || '',
+                };
+              } else {
+                lastMessagesMap[tutor.id] = { content: '', time: '' };
+              }
+            } catch (error) {
+              lastMessagesMap[tutor.id] = { content: '', time: '' };
+            }
+          })
+        );
+
+        setLastMessages(lastMessagesMap);
       } catch (err) {
         toast.error('Unable to fetch the list of tutors. Please try again later.');
       } finally {
@@ -171,6 +176,21 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       return sorted;
     });
   }, [users, lastMessages]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage) {
+        setLastMessages((prev) => ({
+          ...prev,
+          [selectedUser.id]: {
+            content: lastMessage.content,
+            time: lastMessage.time,
+          },
+        }));
+      }
+    }
+  }, [messages, selectedUser]);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -234,7 +254,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         messageId: `${Date.now()}`,
         sender: userId || '',
         content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toISOString(),
         mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
         status: 'sent',
       };
@@ -275,7 +295,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     setLoading(true);
     try {
       const userId = localStorage.getItem('userId');
-
       if (socket.current && userId) {
         socket.current.emit('joinChatRoom', {
           sender: userId,
@@ -299,13 +318,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       setMessages(fetchedMessages);
 
       if (fetchedMessages.length > 0) {
-        const sortedMessages = fetchedMessages.sort((a: any, b: any) => {
-          const aTime = new Date(a.createdAt).getTime();
-          const bTime = new Date(b.createdAt).getTime();
-          return bTime - aTime;
-        });
-
-        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        const lastMessage = fetchedMessages[fetchedMessages.length - 1];
 
         setLastMessages((prevLastMessages) => ({
           ...prevLastMessages,
@@ -385,6 +398,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   };
 
   const handleVideoCallClick = async (user: User) => {
+    setSelectedUser(user);
     const roomId = [user.id, userId].sort().join("-");
     const videoCallUrl = `/chat/${roomId}`;
     window.open(videoCallUrl, '_blank');
@@ -437,8 +451,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
             {sortedUsers.map((user) => (
               <ListItem
                 key={user.id}
-                button
-                selected={selectedUser?.id === user.id}
                 onClick={() => handleUserSelect(user)}
                 style={{
                   borderBottom: '1px solid #f0f0f0',
@@ -483,7 +495,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                             textOverflow: 'ellipsis',
                           }}
                         >
-                          {lastMessages[user.id]?.content || 'No message yet'}
+                          {lastMessages[user.id]?.content || 'No messages yet'}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -493,7 +505,19 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                             marginLeft: '10px',
                           }}
                         >
-                          {formatMessageTime(lastMessages[user.id]?.time)}
+                          {lastMessages[user.id]?.time && (() => {
+                            const messageTime = new Date(lastMessages[user.id]?.time);
+                            const now = new Date();
+                            const isToday =
+                              messageTime.getDate() === now.getDate() &&
+                              messageTime.getMonth() === now.getMonth() &&
+                              messageTime.getFullYear() === now.getFullYear();
+
+                            return isToday
+                              ? messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                              : messageTime.toLocaleDateString('en-GB');
+                          })()}
+
                         </Typography>
                         <Badge
                           badgeContent={unreadCounts[user.id] || 0}
@@ -565,7 +589,18 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                   </>
                 )}
                 <div className="flex justify-between text-sm mt-1">
-                  <span>{message.time}</span>
+                  <span>
+                    {(() => {
+                      const messageTime = new Date(message.time);
+                      const day = String(messageTime.getDate()).padStart(2, '0');
+                      const month = String(messageTime.getMonth() + 1).padStart(2, '0'); 
+                      const year = String(messageTime.getFullYear()).slice(-2); 
+                      const hours = String(messageTime.getHours()).padStart(2, '0');
+                      const minutes = String(messageTime.getMinutes()).padStart(2, '0');
+                      return `${day}/${month}/${year} ${hours}:${minutes}`;
+                    })()}
+                  </span>
+
                   {message.status === 'read' ? (
                     <DoneAll style={{ color: 'blue' }} />
                   ) : message.status === 'sent' ? (

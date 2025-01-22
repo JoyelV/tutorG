@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Box, List, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Badge } from '@mui/material';
+import { Avatar, TextField, IconButton, Typography, Box, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Badge } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
 import api from '../../../infrastructure/api/api';
@@ -92,6 +92,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
 
     socket.current.on('error', (error: string) => {
       console.error("Socket error:", error);
+      toast.error(`Socket Error: ${error}`);
     });
 
     socket.current.on('message_read_update', (updatedMessage: { id: string; status: 'read' }) => {
@@ -107,54 +108,54 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     };
   }, []);
 
-  const formatMessageTime = (time: string) => {
-    const messageDate = new Date(time);
-
-    if (isNaN(messageDate.getTime())) {
-      return new Date().toLocaleDateString(); 
-    }
-    
-    const today = new Date();
-
-    if (
-      messageDate.getDate() === today.getDate() &&
-      messageDate.getMonth() === today.getMonth() &&
-      messageDate.getFullYear() === today.getFullYear()
-    ) {
-      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else {
-      return messageDate.toLocaleDateString();
-    }
-  };
-
   useEffect(() => {
     const fetchTutors = async () => {
       try {
         setLoading(true);
         const response = await api.get('/instructor/students-chat');
         const studentsMap: { [key: string]: Instructor } = {};
+        const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
 
-        response.data.forEach((item: any) => {
-          const studentId = item.studentId._id.toString();
-          if (!studentsMap[studentId]) {
-            studentsMap[studentId] = {
-              id: studentId,
-              name: item.studentId.username,
-              image: item.studentId.image,
-              onlineStatus: item.studentId.onlineStatus,
-            };
-          }
-        });
+        await Promise.all(
+          response.data.map(async (item: any) => {
+            const studentId = item.studentId._id.toString();
+            if (!studentsMap[studentId]) {
+              studentsMap[studentId] = {
+                id: studentId,
+                name: item.studentId.username,
+                image: item.studentId.image,
+                onlineStatus: item.studentId.onlineStatus,
+              };
+
+              // Fetch the last message for the current student
+              try {
+                const userId = localStorage.getItem('userId');
+                const messageResponse = await api.get('/instructor/messages', {
+                  params: {
+                    senderId: userId,
+                    receiverId: studentId,
+                  },
+                });
+                const messages = messageResponse.data;
+                if (messages.length > 0) {
+                  const lastMessage = messages[messages.length - 1];
+                  lastMessagesMap[studentId] = {
+                    content: lastMessage.content || '',
+                    time: lastMessage.createdAt || '',
+                  };
+                } else {
+                  lastMessagesMap[studentId] = { content: '', time: '' };
+                }
+              } catch (err) {
+                lastMessagesMap[studentId] = { content: '', time: '' };
+              }
+            }
+          })
+        );
 
         const data = Object.values(studentsMap);
         setUsers(data);
-        if (data.length > 0) {
-          const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
-          data.forEach((user: Instructor) => {
-            lastMessagesMap[user.id] = { content: '', time: '' };
-          });
-          setLastMessages(lastMessagesMap);
-        }
+        setLastMessages(lastMessagesMap);
       } catch (err) {
         toast.error('There is no students enrolled. Please wait for enrollments.');
       } finally {
@@ -180,6 +181,21 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       return sorted;
     });
   }, [users, lastMessages]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage) {
+        setLastMessages((prev) => ({
+          ...prev,
+          [selectedUser.id]: {
+            content: lastMessage.content,
+            time: lastMessage.time,
+          },
+        }));
+      }
+    }
+  }, [messages, selectedUser]);
 
   const handleStartRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -243,7 +259,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
         messageId: `${Date.now()}`,
         sender: userId || '',
         content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toISOString(),
         mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
         status: 'sent'
       };
@@ -306,13 +322,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       setMessages(fetchedMessages);
 
       if (fetchedMessages.length > 0) {
-        const sortedMessages = fetchedMessages.sort((a: any, b: any) => {
-          const aTime = new Date(a.createdAt).getTime();
-          const bTime = new Date(b.createdAt).getTime();
-          return bTime - aTime;
-        });
-
-        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        const lastMessage = fetchedMessages[fetchedMessages.length - 1];
 
         setLastMessages((prevLastMessages) => ({
           ...prevLastMessages,
@@ -496,7 +506,19 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                               marginLeft: '10px',
                             }}
                           >
-                            {formatMessageTime(lastMessages[user.id]?.time)}
+                            {lastMessages[user.id]?.time && (() => {
+                              const messageTime = new Date(lastMessages[user.id]?.time);
+                              const now = new Date();
+                              const isToday =
+                                messageTime.getDate() === now.getDate() &&
+                                messageTime.getMonth() === now.getMonth() &&
+                                messageTime.getFullYear() === now.getFullYear();
+
+                              return isToday
+                                ? messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                : messageTime.toLocaleDateString('en-GB');
+                            })()}
+
                           </Typography>
                           <Badge
                             badgeContent={unreadCounts[user.id] || 0}
@@ -564,7 +586,18 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
                         </>
                       )}
                       <div className="flex justify-between text-sm mt-1">
-                        <span>{message.time}</span>
+                        <span>
+                          {(() => {
+                            const messageTime = new Date(message.time);
+                            const day = String(messageTime.getDate()).padStart(2, '0');
+                            const month = String(messageTime.getMonth() + 1).padStart(2, '0');
+                            const year = String(messageTime.getFullYear()).slice(-2);
+                            const hours = String(messageTime.getHours()).padStart(2, '0');
+                            const minutes = String(messageTime.getMinutes()).padStart(2, '0');
+                            return `${day}/${month}/${year} ${hours}:${minutes}`;
+                          })()}
+                        </span>
+
                         {message.status === 'read' ? (
                           <DoneAll style={{ color: 'blue' }} />
                         ) : message.status === 'sent' ? (
