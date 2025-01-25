@@ -18,7 +18,6 @@ const stripe = new Stripe(stripeSecretKey, {
 export const stripePayment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { cartItems } = req.body;    
-    console.log( cartItems,"courseIds");
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       res.status(400).json({ error: "Cart items are required." });
@@ -63,8 +62,6 @@ export const stripePayment = async (req: Request, res: Response, next: NextFunct
         )
       }
     });
-
-    console.log(session,"session");
 
     res.json({
       status: true,
@@ -188,7 +185,6 @@ const handleInstructorPayout = async (session: any) => {
 
   instructor.transactions = instructor.transactions || []; 
   instructor.transactions.push(newTransaction);
-  console.log(instructor,"instructor data pyout updated")
   await instructor.save();
   return true;
 };

@@ -74,8 +74,8 @@ export const getCourses = async (req: Request, res: Response, next: NextFunction
     if (categoryFilter && categoryFilter !== 'All Courses') query.category = categoryFilter;
 
     const sort: any = {};
-    if (sortOption === 'Price: Low to High') sort.courseFee = 1;
-    if (sortOption === 'Price: High to Low') sort.courseFee = -1;
+    if (sortOption === 'Low to High') sort.courseFee = 1;
+    if (sortOption === 'High to Low') sort.courseFee = -1;
     if (sortOption === 'Latest') sort.createdAt = -1;
     if (sortOption === 'Popular') sort.rating = -1;
 
@@ -598,7 +598,12 @@ export const getViewChapter = async (req: Request, res: Response, next: NextFunc
 export const updateChapter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { lessonId } = req.params;
-    const { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
+    let { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
+
+    if(lessonPdf===''){
+      const lesson = await Lesson.findById(lessonId);
+      lessonPdf = lesson?.lessonPdf;
+    }
 
     const updatedLesson = await Lesson.findByIdAndUpdate(
       lessonId,
@@ -761,7 +766,7 @@ export const rejectCourse = async (req: Request, res: Response): Promise<void> =
 
 export const updateProgress = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { completedLesson, videoSource } = req.body;
-  const { id } = req.params; // Course ID
+  const { id } = req.params; 
   const studentId = req.userId;
 
   try {
@@ -780,7 +785,6 @@ export const updateProgress = async (req: AuthenticatedRequest, res: Response): 
 
     let progress = await Progress.findOne({ courseId: id, studentId });
     if (!progress) {
-      // Create a new progress record if it doesn't exist
       progress = await Progress.create({
         courseId: id,
         studentId,
@@ -788,7 +792,6 @@ export const updateProgress = async (req: AuthenticatedRequest, res: Response): 
         progressPercentage: (1 / totalLessons) * 100,
       });
     } else {
-      // Add the completed lesson if not already added
       if (!progress.completedLessons.includes(completedLesson)) {
         progress.completedLessons.push(completedLesson);
         progress.progressPercentage = (progress.completedLessons.length / totalLessons) * 100;
@@ -796,7 +799,6 @@ export const updateProgress = async (req: AuthenticatedRequest, res: Response): 
       }
     }
 
-    // Check if the course is completed
     if (progress.completedLessons.length === totalLessons) {
       progress.isCompleted = true;
       progress.completionDate = new Date();
