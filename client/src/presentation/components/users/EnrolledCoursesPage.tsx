@@ -8,7 +8,7 @@ function EnrolledCourseData() {
   const userId = localStorage.getItem("userId");
   const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const dataPerPage = 4;
+  const dataPerPage = 8;
 
   const totalPages = Math.ceil(enrolledCourses.length / dataPerPage);
   const paginatedData = enrolledCourses.slice(
@@ -17,142 +17,128 @@ function EnrolledCourseData() {
   );
 
   const handlePageChange = (pageNumber: number) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
+    if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
+  };
+
+  const fetchEnrolledCourses = async () => {
+    try {
+      const response = await api.get(`/user/orders`);
+      setEnrolledCourses(response.data || []);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Failed to fetch enrolled courses.";
+      toast.error(message);
     }
-  };
-
-  const handlePrev = () => {
-    handlePageChange(currentPage - 1);
-  };
-
-  const handleNext = () => {
-    handlePageChange(currentPage + 1);
   };
 
   useEffect(() => {
-    const fetchEnrolledCourses = async () => {
-      try {
-        const response = await api.get(`/user/orders`);
-        if (response.data && Array.isArray(response.data)) {
-          setEnrolledCourses(response.data);
-        } else {
-          setEnrolledCourses([]);
-        }
-      } catch (error: any) {
-        if (error.response) {
-          switch (error.response.status) {
-            case 400:
-              toast.error(error.response.data.message || 'Invalid User.');
-              break;
-            case 404:
-              toast.error('No enrolled courses, enroll one and learn.');
-              break;
-            default:
-              toast.error('Failed to fetch enrolled courses. Please check your internet connection and try again');
-              break;
-          }
-        } else {
-          toast.error('Failed to fetch enrolled courses. Please check your internet connection and try again.');
-        }
-      }
-    };
-
-    if (userId) {
-      fetchEnrolledCourses();
-    }
+    if (userId) fetchEnrolledCourses();
   }, [userId]);
 
-  const handleSingleEnrollCourse = (courseId: string) => {
+  const handleCourseClick = (courseId: string) => {
     navigate(`/enrolled-singlecourse/${courseId}`);
   };
 
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-5 mx-10 gap-4">
+    <div className="px-6">
+      {/* Course Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
         {paginatedData.map((course) => (
           <div
             key={course._id}
-            className="mt-5 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-3/4 mx-auto"
+            className="bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
           >
             <button
-              onClick={() => handleSingleEnrollCourse(course.courseId._id)}
+              onClick={() => handleCourseClick(course.courseId._id)}
               className="w-full"
             >
               {course.courseId?.thumbnail ? (
                 <img
-                  className="rounded-t-lg w-full h-40 object-cover"
                   src={course.courseId.thumbnail}
                   alt={course.courseId.title}
+                  className="w-full h-40 rounded-t-lg object-cover"
                 />
               ) : (
-                <div className="rounded-t-lg w-full h-40 bg-gray-200 flex items-center justify-center">
+                <div className="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-lg">
                   <span>No Image</span>
                 </div>
               )}
             </button>
 
-            <div className="p-5">
+            <div className="p-4">
               <button
-                onClick={() => handleSingleEnrollCourse(course.courseId._id)}
-                className="w-full text-left"
+                onClick={() => handleCourseClick(course.courseId._id)}
+                className="text-left w-full"
               >
-                <h5 className="mb-2 text-xl font-bold tracking-tight text-sky-700 dark:text-white">
+                <h5 className="text-lg font-semibold text-sky-700">
                   {course.courseId?.title || "No Course Name"}
                 </h5>
               </button>
-              <h3 className="mb-3 font-normal text-sky-600 dark:text-gray-400">
+              <p className="text-sky-600 text-base font-medium mt-2">
                 ₹{course.courseId?.courseFee || "N/A"}
-              </h3>
-              <h5 className="mb-2 text-sm tracking-tight text-yellow dark:text-white">
+              </p>
+              <p className="text-sm text-yellow-500 mb-4">
                 {course.courseId?.level || "No Level"} Level
-              </h5>
+              </p>
               <button
-                onClick={() => handleSingleEnrollCourse(course.courseId._id)}
-                className="inline-flex items-center px-6 py-1 text-sm font-medium text-center text-white bg-sky-600 rounded-lg hover:bg-blue-800"
+                onClick={() => handleCourseClick(course.courseId._id)}
+                className="w-full px-4 py-2 text-sm font-medium text-white bg-sky-600 rounded-md hover:bg-sky-700 transition"
               >
-                View
+                View Course
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* No Courses Message */}
       {enrolledCourses.length === 0 && (
-        <div className="text-center py-8">
-          <span className="text-xl text-gray-700">No courses available.</span>
+        <div className="text-center py-10">
+          <p className="text-xl text-gray-700">No courses available.</p>
         </div>
       )}
-      <div className="mt-28">
-        <ul className="flex space-x-3 justify-center mt-8">
-          <li
-            onClick={handlePrev}
-            className={`flex items-center justify-center shrink-0 cursor-pointer ${currentPage === 1 ? "pointer-events-none opacity-50" : ""
-              } w-9 h-8 rounded`}
-          >
-            Prev
-          </li>
-          {Array.from({ length: totalPages }, (_, i) => (
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10">
+          <ul className="flex space-x-2">
             <li
-              key={i}
-              onClick={() => handlePageChange(i + 1)}
-              className={`flex items-center justify-center shrink-0 cursor-pointer text-sm font-bold ${currentPage === i + 1
-                  ? "bg-sky-600 text-white"
-                  : "text-[#333] bg-gray-300"
-                } w-9 h-8 rounded`}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className={`cursor-pointer px-3 py-1 rounded-md ${
+                currentPage === 1
+                  ? "text-gray-400 pointer-events-none"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
-              {i + 1}
+              Prev
             </li>
-          ))}
-          <li
-            onClick={handleNext}
-            className={`flex items-center justify-center shrink-0 cursor-pointer ${currentPage === totalPages ? "pointer-events-none opacity-50" : ""
-              } w-9 h-8 rounded`}
-          >
-            Next
-          </li>
-        </ul>
-      </div>
-    </>
+            {Array.from({ length: totalPages }, (_, index) => (
+              <li
+                key={index}
+                onClick={() => handlePageChange(index + 1)}
+                className={`cursor-pointer px-3 py-1 rounded-md ${
+                  currentPage === index + 1
+                    ? "bg-sky-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                {index + 1}
+              </li>
+            ))}
+            <li
+              onClick={() => handlePageChange(currentPage + 1)}
+              className={`cursor-pointer px-3 py-1 rounded-md ${
+                currentPage === totalPages
+                  ? "text-gray-400 pointer-events-none"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
+            >
+              Next
+            </li>
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -1,47 +1,72 @@
-import React, { useEffect, useState } from "react";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  LineElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import api from "../../../infrastructure/api/api";
-import { ChartData } from 'chart.js/auto';
+import { Bar, Pie } from "react-chartjs-2";
+import { useState, useEffect } from "react";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
+interface ChartData {
+  bar: {
+    labels: string[];
+    datasets: Array<{
+      label: string;
+      data: number[];
+      backgroundColor: string[];
+      borderColor: string[];
+      borderWidth: number;
+    }>;
+  };
+  pie: {
+    labels: string[];
+    datasets: Array<{
+      data: number[];
+      backgroundColor: string[];
+    }>;
+  };
+}
 
-const EnrolledVsCoursesChart = () => {
-  const [chartData, setChartData] = useState<ChartData<"line", number[], unknown>>({
-    labels: [],
-    datasets: [],
+const ChartComponent = () => {
+  const [chartData, setChartData] = useState<ChartData>({
+    bar: { labels: [], datasets: [] },
+    pie: { labels: [], datasets: [] },
   });
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const enrolledResponse = await api.get("/instructor/coursesCount");
-        const myCoursesResponse = await api.get("/instructor/my-courses/coursesCount");
-
-        const enrolledCourses = enrolledResponse.data.count;
-        const totalCourses = myCoursesResponse.data.count;
+        const totalCourses = 10;
+        const myCourses = 5;
+        const totalStudents = 50;
+        const earnings = 1000;
 
         setChartData({
-          labels: ["Enrolled Courses", "Total Courses"],
-          datasets: [
-            {
-              label: "Courses",
-              data: [enrolledCourses, totalCourses],
-              backgroundColor: "rgba(54, 162, 235, 0.2)",
-              borderColor: "rgba(54, 162, 235, 1)",
-              tension: 0.4,
-              pointBackgroundColor: "rgba(54, 162, 235, 1)",
-              pointBorderColor: "#fff",
-            },
-          ],
+          bar: {
+            labels: ["Total Courses", "My Courses", "Students", "Earnings"],
+            datasets: [
+              {
+                label: "Statistics",
+                data: [totalCourses, myCourses, totalStudents, earnings],
+                backgroundColor: [
+                  "rgba(75, 192, 192, 0.6)",
+                  "rgba(54, 162, 235, 0.6)",
+                  "rgba(255, 206, 86, 0.6)",
+                  "rgba(255, 99, 132, 0.6)",
+                ],
+                borderColor: [
+                  "rgba(75, 192, 192, 1)",
+                  "rgba(54, 162, 235, 1)",
+                  "rgba(255, 206, 86, 1)",
+                  "rgba(255, 99, 132, 1)",
+                ],
+                borderWidth: 1,
+              },
+            ],
+          },
+          pie: {
+            labels: ["Total Courses", "My Courses", "Students", "Earnings"],
+            datasets: [
+              {
+                data: [totalCourses, myCourses, totalStudents, earnings],
+                backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56", "#4BC0C0"],
+              },
+            ],
+          },
         });
       } catch (error) {
         console.error("Error fetching chart data:", error);
@@ -51,36 +76,16 @@ const EnrolledVsCoursesChart = () => {
     fetchData();
   }, []);
 
-  const options: any = {
-    plugins: {
-      legend: { display: true, position: "top" },
-      tooltip: {
-        callbacks: {
-          label: (tooltipItem: any) => `${tooltipItem.dataset.label}: ${tooltipItem.raw}`,
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: { color: "#555" },
-      },
-      y: {
-        ticks: { callback: (value: number) => value.toLocaleString() },
-      },
-    },
-  };
-
   return (
-    <div className="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-md shadow-md">
-      <h3 className="text-xl font-semibold text-green-800 mb-4">
-        Enrolled vs Total Courses
-      </h3>
-      <p className="text-sm text-gray-700 mb-6">
-        This chart shows the enrolled courses in comparison to your total courses.
-      </p>
-      {chartData && <Line data={chartData} options={options} />}
+    <div className="flex items-center justify-between">
+      <div className="w-1/2 h-80">
+        <Bar data={chartData.bar} options={{ maintainAspectRatio: false }} />
       </div>
+      <div className="w-1/2 h-80">
+        <Pie data={chartData.pie} options={{ maintainAspectRatio: false }} />
+      </div>
+    </div>
   );
 };
 
-export default EnrolledVsCoursesChart;
+export default ChartComponent;

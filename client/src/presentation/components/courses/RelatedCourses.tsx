@@ -58,6 +58,10 @@ const RelatedCourses: React.FC<RelatedCoursesProps> = ({ courseId }) => {
     navigate(`/course/details/${id}`);
   };
 
+  if (relatedCourses.length === 0) {
+    return null; 
+  }
+
   return (
     <div>
       <h3 className="font-bold text-3xl text-left pl-10 pt-9">Related Courses</h3>

@@ -119,7 +119,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           onlineStatus: item.tutorId.onlineStatus,
         }));
         setUsers(data);
-        // Initialize lastMessages map
         const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
         await Promise.all(
           data.map(async (tutor: User) => {
@@ -127,7 +126,6 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
               const userId = localStorage.getItem('userId');
               if (!userId) throw new Error('User not logged in');
 
-              // Fetch last messages for the tutor
               const messageResponse = await api.get('/user/messages', {
                 params: {
                   senderId: userId,
@@ -253,7 +251,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       const message: Message = {
         messageId: `${Date.now()}`,
         sender: userId || '',
-        content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
+        content: newMessage || (mediaType === 'audio' ? 'Audio Message' : mediaType),
         time: new Date().toISOString(),
         mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
         status: 'sent',
@@ -272,7 +270,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       socket.current?.emit('send_message', {
         sender: userId,
         receiver: selectedUser?.id,
-        content: newMessage.trim() || (mediaType === 'audio' ? 'Audio Message' : ''),
+        content: newMessage.trim() || (mediaType === 'audio' ? 'Audio Message' : mediaType),
         senderModel: 'User',
         receiverModel: 'Instructor',
         mediaUrl: message.mediaUrl,
@@ -562,7 +560,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
               </div>
             </>
           ) : (
-            <Typography>Select a user to start chatting</Typography>
+            <Typography>Select an Instructor to start chatting</Typography>
           )}
         </div>
 

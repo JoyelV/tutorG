@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { Link } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import CourseDescription from '../../components/courses/CourseDescription';
-import CourseRating from '../../components/courses/CourseRating';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import InstructorInfo from '../../components/courses/InstructorInfo';
 import RelatedCourses from '../../components/courses/RelatedCourses';
@@ -27,6 +25,7 @@ const CoursePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedLessons, setCompletedLessons] = useState(0);
   const [totalLessons, setTotalLessons] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -108,6 +107,14 @@ const CoursePage = () => {
 
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
+  const handleDownloadClick = () => {
+    if (progressPercentage === 100) {
+      navigate(`/completion-certificate/${courseId}`);
+    } else {
+      toast.error('You must complete the course to download the certificate.');
+    }
+  }
+
   return (
     <div className="flex flex-col w-full min-h-screen">
       <ToastContainer />
@@ -125,7 +132,6 @@ const CoursePage = () => {
                 { label: 'Description', id: 'description' },
                 { label: 'Requirements', id: 'requirements' },
                 { label: 'Instructor', id: 'instructor' },
-                { label: 'Rating', id: 'rating' },
                 { label: 'Feedback', id: 'feedback' },
                 { label: 'Quiz', id: 'quiz' },
               ].map(({ label, id }) => (
@@ -152,19 +158,17 @@ const CoursePage = () => {
           <div id="feedback">
             <StudentFeedback />
           </div>
-          <div id="rating">
-            <CourseRating courseId={courseId!} />
-          </div>
-          <div id="quiz">
-            <h2 className="text-xl font-bold mb-4">Quiz Section</h2>
+          {/* Quiz Section */}
+          <div id="quiz" className="mt-8">
+            <h2 className="text-lg mb-4 font-bold text-blue-600">Quiz Section</h2>
             {quizData && quizData.length > 0 ? (
               quizData.map((quiz) => (
-                <div key={quiz._id} className="mb-6">
+                <div key={quiz._id} className="mb-6 p-4 border border-gray-300 rounded-lg">
                   {quiz.questions.map((question: any) => (
-                    <div key={question._id}>
-                      <p className="font-semibold">{question.question}</p>
+                    <div key={question._id} className="mb-4">
+                      <p className="font-semibold text-gray-800 mb-2">{question.question}</p>
                       {question.options.map((option: string) => (
-                        <div key={option} className="mb-2">
+                        <div key={option} className="flex items-center mb-2">
                           <input
                             type="radio"
                             id={`${quiz._id}-${question._id}-${option}`}
@@ -172,8 +176,9 @@ const CoursePage = () => {
                             value={option}
                             checked={selectedOptions[question._id] === option}
                             onChange={() => handleOptionChange(question._id, option)}
+                            className="text-blue-500"
                           />
-                          <label htmlFor={`${quiz._id}-${question._id}-${option}`} className="ml-2">
+                          <label htmlFor={`${quiz._id}-${question._id}-${option}`} className="ml-2 text-gray-700">
                             {option}
                           </label>
                         </div>
@@ -183,16 +188,14 @@ const CoursePage = () => {
                   <button
                     onClick={handleQuizSubmit}
                     disabled={isSubmitting}
-                    className={`bg-blue-500 text-white py-2 px-4 mt-2 rounded ${
-                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                    className={`w-full bg-blue-500 text-white py-2 px-4 mt-4 rounded ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600 transition'}`}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
                   </button>
                 </div>
               ))
             ) : (
-              <p>No quizzes available for this course.</p>
+              <p className="text-center text-gray-500">No quizzes available for this course.</p>
             )}
           </div>
         </div>
@@ -201,7 +204,7 @@ const CoursePage = () => {
           {/* Course Progress UI */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold text-gray-800">Course Contents</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Course Progress</h3>
               <span className="text-sm text-green-600 font-semibold">
                 {progressPercentage}% Completed
               </span>
@@ -210,8 +213,18 @@ const CoursePage = () => {
               <div
                 className="bg-green-500 h-2 rounded-full"
                 style={{ width: `${progressPercentage}%` }}
-              ></div>
+              >
+              </div>
             </div>
+            {/* Show Download button only when progress is 100% */}
+          {progressPercentage === 100 && (
+            <button
+              onClick={handleDownloadClick}
+              className="w-full bg-blue-500 text-white py-2 px-4 mt-4 rounded hover:bg-blue-600 transition"
+            >
+              Download Certificate
+            </button>
+          )}
           </div>
           <CurriculumBox onLessonSelect={setSelectedVideoUrl} onlessonId={setLessonId} />
         </div>

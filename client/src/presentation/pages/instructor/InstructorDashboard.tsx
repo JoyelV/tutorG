@@ -3,8 +3,7 @@ import Sidebar from '../../components/instructor/Sidebar';
 import DashboardHeader from '../../components/instructor/DashboardHeader';
 import StatsCard from '../../components/instructor/StatsCard';
 import api from '../../../infrastructure/api/api';
-import EarningsVsCoursesChart from '../../components/instructor/RevenueChart';
-import EnrolledVsCoursesChart from '../../components/instructor/EnrolledVsCoursesChart';
+import ChartComponent from '../../components/instructor/EnrolledVsCoursesChart';
 import { useAuth } from '../../../infrastructure/context/AuthContext';
 import { Navigate } from 'react-router-dom';
 
@@ -80,17 +79,10 @@ const InstructorDashboard = () => {
           </div>
 
           {/* Charts and Activity Feed */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            {/* Left Section: Chart 1 */}
-            <div className="flex flex-col">
-              <EarningsVsCoursesChart />
-            </div>
-            {/* Right Section: Chart 2 */}
-            <div className="flex flex-col">
-              <EnrolledVsCoursesChart />
+            <div className="flex flex-col col-span-1 lg:col-span-1 mt-16">
+              <ChartComponent />
             </div>
           </div>
-        </div>
       </div>
 
       {/* Overlay for sidebar on mobile */}

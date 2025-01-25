@@ -11,8 +11,10 @@ interface Tutor {
 
 const MyTutorsPage: React.FC = () => {
   const [tutors, setTutors] = useState<Tutor[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [tutorsPerPage] = useState<number>(12); 
   const studentId = localStorage.getItem('userId');
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTutors = async () => {
@@ -41,16 +43,21 @@ const MyTutorsPage: React.FC = () => {
     fetchTutors();
   }, [studentId]);
 
+  const indexOfLastTutor = currentPage * tutorsPerPage;
+  const indexOfFirstTutor = indexOfLastTutor - tutorsPerPage;
+  const currentTutors = tutors.slice(indexOfFirstTutor, indexOfLastTutor);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   return (
     <section className="p-8 bg-white">
-      <h3 className="text-2xl font-bold mb-4 text-center">My Tutors</h3>
+
       <div className="mx-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 justify-center">
-        {tutors.length > 0 ? (
-          tutors.map((tutor, index) => (
+        {currentTutors.length > 0 ? (
+          currentTutors.map((tutor, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl" onClick={() => navigate(`/instructorProfile/${tutor._id}`)} 
-
+              className="bg-white rounded-xl shadow-md max-w-xs w-full mx-auto transform transition duration-500 hover:scale-105 hover:shadow-xl"
+              onClick={() => navigate(`/instructorProfile/${tutor._id}`)}
             >
               {/* Tutor Image */}
               <div
@@ -71,6 +78,25 @@ const MyTutorsPage: React.FC = () => {
           <p>No tutors found.</p>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {tutors.length > tutorsPerPage && (
+        <div className="flex justify-center mt-6">
+          {[...Array(Math.ceil(tutors.length / tutorsPerPage))].map((_, index) => (
+            <button
+              key={index}
+              onClick={() => paginate(index + 1)}
+              className={`mx-1 px-3 py-1 rounded-full ${
+                currentPage === index + 1
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

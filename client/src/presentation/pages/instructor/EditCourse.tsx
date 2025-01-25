@@ -26,6 +26,8 @@ function EditCourse() {
   const [courseDescription, setCourseDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [trailer, setTrailer] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [trailerPreview, setTrailerPreview] = useState<string | null>(null);
 
   const [errors, setErrors] = useState({
     courseName: "",
@@ -42,7 +44,7 @@ function EditCourse() {
     image: "",
     trailer: "",
   });
-  
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -74,6 +76,20 @@ function EditCourse() {
       setCourseLearningPoints(course.learningPoints);
       setCourseTargetAudience(course.targetAudience);
       setCourseDescription(course.description);
+      setImage(course.thumbnail); 
+      setTrailer(course.trailer); 
+
+      setImagePreview(course.thumbnail);
+      setTrailerPreview(course.trailer);
+
+      if (course.thumbnail) {
+        setImagePreview(course.thumbnail); 
+      }
+
+      if (course.trailer) {
+        setTrailerPreview(course.trailer); 
+      }
+
     } catch (error) {
       console.error("Failed to fetch course details:", error);
       toast.error("Error loading course details.");
@@ -206,11 +222,8 @@ function EditCourse() {
         ...(imageUrl && { thumbnail: imageUrl }),
         ...(trailerUrl && { trailer: trailerUrl }),
       };
-      console.log(courseData, "data in editcourse")
 
       const response = await api.put(`/instructor/course/${courseId}`, courseData);
-      console.log(courseId, "id");
-      console.log(response, "editedcoursedata.....")
       toast.success("Course updated successfully!");
       navigate(`/instructor/course-view/${courseId}`);
     } catch (error: any) {
@@ -227,14 +240,16 @@ function EditCourse() {
   }, [courseId]);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+      <aside className={`bg-gray-800 text-white p-4 w-full lg:w-64 ${isSidebarOpen ? "block" : "hidden"} lg:block`}>
         <Sidebar />
       </aside>
-      <div className="flex-1 bg-gray-100 min-h-screen">
-      <DashboardHeader toggleSidebar={toggleSidebar} />
-      <section>
+
+      {/* Main Content */}
+      <div className="flex-1">
+        <DashboardHeader toggleSidebar={toggleSidebar} />
+        <section>
           <div className="p-6">
             <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
               <h1 className="text-2xl font-bold mb-4">Edit Course</h1>
@@ -371,25 +386,28 @@ function EditCourse() {
                 {errors.courseLearningPoints && <p className="text-red-500 text-sm">{errors.courseLearningPoints}</p>}
                 {/* Image Upload */}
                 <div className="mb-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg"
-                  />
+                  <label className="block mb-2 text-lg font-medium text-gray-700">Course Thumbnail:</label>
+                  {imagePreview && <img src={imagePreview} alt="Thumbnail Preview"       className="mt-2 w-full max-w-sm h-auto object-cover rounded-lg shadow-md" />}
+                  <input type="file" accept="image/jpeg,image/png" onChange={handleImageChange}  className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
                 </div>
                 {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
                 {/* Trailer Upload */}
                 <div className="mb-4">
-                  <input
-                    type="file"
-                    accept="video/mp4"
-                    onChange={handleTrailerChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg"
-                  />
+                  <label className="block mb-2 text-lg font-medium text-gray-700">Course Trailer:</label>
+                  {trailerPreview && <video controls     className="w-full max-w-lg h-auto p-2 border border-gray-300 rounded-lg shadow-md">
+                    <source src={trailerPreview} type="video/mp4" />
+                  </video>}
+                  <input type="file" accept="video/mp4" onChange={handleTrailerChange} className="mt-2 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-600"/>
                 </div>
                 {errors.trailer && <p className="text-red-500 text-sm">{errors.trailer}</p>}
-                <div className="text-center">
+                <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => navigate("/instructor/my-courses")}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
                   <button
                     onClick={handleSubmit}
                     className="bg-blue-500 text-white py-2 px-4 rounded-lg"

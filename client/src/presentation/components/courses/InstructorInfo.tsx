@@ -100,7 +100,7 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
 
   return (
     <div className="py-4">
-      <h2 className="text-xl font-semibold">Course Instructor</h2>
+      <h2 className="text-xl font-semibold text-blue-600">Course Instructor</h2>
       <div className="flex items-center my-4">
         <img
           src={instructorData.image}
@@ -118,7 +118,7 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold mt-4">Instructor Feedbacks</h3>
+      <h3 className="text-lg font-semibold mt-4 text-blue-600">Students about Instructor</h3>
       <div className="my-4 space-y-4">
         {ratings.length > 0 ? (
           ratings.map((rating, index) => (
@@ -140,11 +140,13 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No ratings yet.</p>
+          <p className="text-gray-500 text-center text-md mt-6">
+            <span className="text-green-500">No ratings yet.</span>
+          </p>
         )}
       </div>
 
-      <h3 className="text-lg font-semibold mt-4">Rate Instructor</h3>
+      <h3 className="text-lg font-semibold mt-4 text-blue-600">Rate Instructor</h3>
       <div className="flex items-center mt-4 space-x-2">
         {[1, 2, 3, 4, 5].map((star) => (
           <span
@@ -171,8 +173,8 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
           onClick={handleRatingSubmit}
           disabled={isSubmitting || userRating === 0 || comment.length < 5}
           className={`h-full p-2 text-white font-bold transition-all ${isSubmitting
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-orange-500 hover:bg-orange-600'
+            ? 'bg-gray-300 cursor-not-allowed'
+            : 'bg-orange-500 hover:bg-orange-600'
             }`}
         >
           {isSubmitting ? 'Submitting...' : 'Submit'}

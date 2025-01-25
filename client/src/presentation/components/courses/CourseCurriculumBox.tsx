@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../../infrastructure/api/api';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaVideo, FaFilePdf } from 'react-icons/fa';
 
 interface Lesson {
   _id: string;
@@ -161,16 +161,18 @@ const CurriculumBox: React.FC<CurriculumBoxProps> = ({ onLessonSelect, onlessonI
                         {topic.type === 'pdf' ? (
                           <button
                             onClick={() => handlePdfDownload(topic.link, `${topic.name}.pdf`)}
-                            className="hover:underline text-blue-500"
+                            className="flex items-center space-x-2 hover:underline text-blue-500"
                           >
-                            {topic.name}
+                            <FaFilePdf />
+                            <span>{topic.name}</span>
                           </button>
                         ) : (
                           <button
                             onClick={() => handleVideoSelect(section._id, topic.link)}
-                            className="hover:underline text-blue-500"
+                            className="flex items-center space-x-2 hover:underline text-blue-500"
                           >
-                            {topic.name}
+                            <FaVideo />
+                            <span>{topic.name}</span>
                           </button>
                         )}
                         <span>{topic.duration}</span>

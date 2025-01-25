@@ -35,7 +35,6 @@ const Dashboard: React.FC = () => {
     const fetchStudentSummary = async () => {
       try {
         const response = await api.get('/user/dashboard-courseData');
-        console.log('Backend Response:', response.data);
         setSummary(response.data);
         setLoading(false);
       } catch (error) {
@@ -49,7 +48,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-wrap justify-center items-center bg-white px-4">
+      <div className="flex flex-wrap justify-center items-center bg-white px-4 py-8 gap-3">
         {summary && (
           <>
             {[
@@ -80,16 +79,16 @@ const Dashboard: React.FC = () => {
             ].map((item, index) => (
               <div
                 key={index}
-                className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 m-2"
+                className="flex flex-col sm:flex-row items-center justify-between p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 m-2"
                 style={{
                   backgroundColor: item.bgColor,
-                  width: '170px',
-                  height: '120px',
+                  width: '260px',
+                  height: '110px',
                 }}
               >
-                <img src={item.icon} alt={`${item.title} Icon`} className="w-12 h-12" />
-                <div className="text-center sm:text-left ml-2">
-                  <p className="text-gray-900 font-semibold text-lg">{item.count}</p>
+                <img src={item.icon} alt={`${item.title} Icon`} className="w-15 h-15" />
+                <div className="flex items-center gap-x-1 mt-2">
+                  <p className="text-gray-900 font-semibold text-2xl">{item.count}</p>
                   <p className="text-gray-500 text-sm">{item.title}</p>
                 </div>
               </div>
@@ -98,7 +97,7 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-      <div className="mt-8 w-full text-3xl font-bold text-black text-center">
+      <div className="mt-8 w-full text-2xl font-bold text-black text-center">
         Let’s start learning, {name}
       </div>
 
@@ -107,12 +106,11 @@ const Dashboard: React.FC = () => {
         {loading ? (
           <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-blue-500"></div>
         ) : summary?.ongoingCourses?.length ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <h2 className="text-2xl font-semibold mb-4">Ongoing Courses</h2>
+          <div className="flex gap-6 overflow-x-scroll scrollbar-hide">
             {summary.ongoingCourses.map((course, index) => (
               <div
                 key={index}
-                className="bg-white rounded-lg shadow-md transition-transform duration-300 hover:scale-105 cursor-pointer"
+                className="bg-white min-w-[250px] rounded-lg shadow-md transition-transform duration-300 hover:scale-105 cursor-pointer"
                 onClick={() => navigate(`/enrolled-singlecourse/${course.courseId?._id}`)}
               >
                 <div
@@ -140,11 +138,22 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-center text-lg font-semibold text-gray-700 p-4">
-            🚀 No ongoing courses. Purchase one and start learning!
-          </p>
+          <>
+            <div className="flex items-center justify-center flex-col">
+              <p className="text-center text-md font-semibold text-gray-700 p-4">
+                🚀 No ongoing courses. Purchase one and start learning!
+              </p>
+              <button
+                onClick={() => (window.location.href = '/course-listing')}
+                className="mt-6 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Go to Courses
+              </button>
+            </div>
+          </>
         )}
       </div>
+
     </>
   );
 };

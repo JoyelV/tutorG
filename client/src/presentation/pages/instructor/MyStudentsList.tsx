@@ -21,11 +21,13 @@ interface Student {
 
 const StudentsList: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+  const [searchQuery, setSearchQuery] = useState<string>(""); 
+  const [filterCourseLevel, setFilterCourseLevel] = useState<string>("");
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -33,10 +35,11 @@ const StudentsList: React.FC = () => {
   const fetchStudents = async (page: number) => {
     try {
       const response = await api.get(`/instructor/students`, {
-        params: { page, limit: 4 }, 
+        params: { page, limit: 4 },
       });
       const { students, totalPages } = response.data;
       setStudents(students);
+      setFilteredStudents(students);
       setTotalPages(totalPages);
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -47,10 +50,34 @@ const StudentsList: React.FC = () => {
     fetchStudents(currentPage);
   }, [currentPage]);
 
+  useEffect(() => {
+    const filterAndSearch = () => {
+      let updatedList = students;
+
+      if (filterCourseLevel) {
+        updatedList = updatedList.filter((student) =>
+          student.courseId.level.toLowerCase() === filterCourseLevel.toLowerCase()
+        );
+      }
+
+      if (searchQuery) {
+        updatedList = updatedList.filter(
+          (student) =>
+            student.studentId.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            student.courseId.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setFilteredStudents(updatedList);
+    };
+
+    filterAndSearch();
+  }, [searchQuery, filterCourseLevel, students]);
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`w-64 bg-gray-800 text-white flex flex-col ${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
+      <aside className={`w-64 bg-gray-800 text-white flex flex-col ${isSidebarOpen ? "block" : "hidden"} md:block`}>
         <Sidebar />
       </aside>
 
@@ -64,6 +91,28 @@ const StudentsList: React.FC = () => {
         <div className="mt-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Students List</h2>
 
+          {/* Filters and Search */}
+          <div className="mb-4 flex flex-wrap gap-4">
+            <input
+              type="text"
+              placeholder="Search by Name or Course Title"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-4 py-2 border rounded shadow-sm focus:ring focus:ring-blue-200"
+            />
+            <select
+              value={filterCourseLevel}
+              onChange={(e) => setFilterCourseLevel(e.target.value)}
+              className="px-4 py-2 border rounded shadow-sm focus:ring focus:ring-blue-200"
+            >
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+
+          {/* Students Table */}
           <div className="overflow-x-auto bg-white shadow rounded-lg">
             <table className="min-w-full table-auto">
               <thead className="bg-gray-200">
@@ -78,7 +127,7 @@ const StudentsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.map((student) => (
+                {filteredStudents.map((student) => (
                   <tr key={student._id} className="hover:bg-gray-50 transition-all duration-200">
                     <td className="px-4 py-4">
                       <img

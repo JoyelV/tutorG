@@ -6,12 +6,12 @@ import CourseDescription from '../../components/courses/CourseDescription';
 import CourseImage from '../../components/courses/CourseImage';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import RelatedCourses from '../../components/courses/RelatedCourses';
-import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
 import { ToastContainer } from 'react-toastify';
 import CourseHeader from '../../components/users/CourseHeader';
 import CurriculumDetailed from '../../components/courses/DetailedCurriculumPage';
 import InstructorInfo from '../../components/courses/InstructorRate';
+import CourseFeedback from '../../components/courses/CourseFeedback';
 
 type Section = 'Description' | 'Requirements' | 'Curriculum' | 'Instructor' | 'Feedback';
 
@@ -91,7 +91,7 @@ const CoursePage = () => {
           </div>
           {/* Dynamic Section Display */}
           <div
-            className="transition-all duration-300 ease-in-out bg-white p-4 md:p-8 rounded-lg shadow-md"
+            className="transition-all duration-300 ease-in-out bg-white p-4 md:p-8 rounded-lg"
             style={{ minHeight: '300px' }}
           >
             {/* Description Section */}
@@ -121,7 +121,7 @@ const CoursePage = () => {
             )}
 
             {/* Feedback Section */}
-            {currentSection === 'Feedback' && <StudentFeedback />}
+            {currentSection === 'Feedback' && <CourseFeedback />}
           </div>
         </div>
 

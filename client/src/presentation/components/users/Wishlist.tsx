@@ -30,7 +30,7 @@ interface WishlistItem {
 
 function WishList() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  
+
   const userId = localStorage.getItem('userId');
 
   const fetchWishlistItems = useCallback(async () => {
@@ -86,13 +86,13 @@ function WishList() {
         const { message } = response.data;
 
         if (message === "Student is already enrolled in this course") {
-          toast.info(message); 
+          toast.info(message);
           return;
         } else if (message === "Course already exists in the cart") {
-          toast.info(message); 
+          toast.info(message);
           return;
         } else {
-          toast.success(message);        
+          toast.success(message);
         }
         await api.delete(`/user/removeitem/${wishlistItemId}`);
         setWishlistItems((prev) => prev.filter((item) => item._id !== wishlistItemId));
@@ -145,7 +145,18 @@ function WishList() {
                 </div>
               ))
             ) : (
-              <p className="text-center text-sky-500">Your wishlist is empty.</p>
+              <div className="flex flex-col text-center py-16 items-center">
+                <p className="text-sky-500">Your wishlist is empty.</p>
+                <p className="text-gray-500 mt-4">
+                  Looks like you haven’t added anything to your wishlist yet.
+                </p>
+                <button
+                  onClick={() => (window.location.href = '/course-listing')}
+                  className="mt-6 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                >
+                  Go to Courses
+                </button>
+              </div>
             )}
           </div>
         </div>

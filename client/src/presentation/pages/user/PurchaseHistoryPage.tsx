@@ -137,23 +137,32 @@ const PurchaseHistoryPage = () => {
             </table>
           </div>
 
-          <div className="flex flex-wrap justify-center items-center mt-4 space-x-2">
+          <div className="flex justify-center items-center mt-4 space-x-2">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg disabled:bg-gray-300"
+              className="px-4 py-2 text-sm text-white bg-blue-500 rounded-full disabled:bg-gray-300"
             >
-              Previous
+              &lt;
             </button>
-            <span className="px-4 py-2 text-sm font-medium text-gray-700">
-              Page {currentPage} of {totalPages}
-            </span>
+
+            {/* Display page numbers */}
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => setCurrentPage(index + 1)}
+                className={`px-4 py-2 text-sm font-medium rounded-full ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-300`}
+              >
+                {index + 1}
+              </button>
+            ))}
+
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg disabled:bg-gray-300"
+              className="px-4 py-2 text-sm text-white bg-blue-500 rounded-full disabled:bg-gray-300"
             >
-              Next
+              &gt;
             </button>
           </div>
         </>

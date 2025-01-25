@@ -48,10 +48,14 @@ const EditLessonPage: React.FC = () => {
 
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setPdf(file);
-    } else {
-      Swal.fire('Error', 'Invalid file type. Please upload a PDF file.', 'error');
+    if(file){
+      if (file.type === 'application/pdf') {
+        setPdf(file);
+      } else {
+        Swal.fire('Error', 'Invalid file type. Please upload a PDF file.', 'error');
+      }
+    }else {
+    setPdf(null);
     }
   };
 
@@ -65,7 +69,7 @@ const EditLessonPage: React.FC = () => {
   };
 
   const uploadPdfToCloudinary = async () => {
-    if (!pdf) return '';
+    if (!pdf||pdf===null) return '';
     const formData = new FormData();
     formData.append('file', pdf);
     formData.append('upload_preset', 'pdf_preset');
@@ -78,7 +82,7 @@ const EditLessonPage: React.FC = () => {
       );
       return response.data.url;
     } catch (error: any) {
-      Swal.fire('Error', `Error uploading PDF: ${error.response?.data?.message || error.message}`, 'error');
+      //Swal.fire('Error', `Error uploading PDFffff: ${error.response?.data?.message || error.message}`, 'error');
       return '';
     }
   };
@@ -148,6 +152,10 @@ const EditLessonPage: React.FC = () => {
     }
   };
 
+  const handleCancel = () => {
+    navigate(`/instructor/course-view/${courseId}`);
+  };
+
   return (
     <div className="p-6">
       <div className="p-6 max-w-4xl mx-auto bg-white rounded shadow">
@@ -207,6 +215,7 @@ const EditLessonPage: React.FC = () => {
               disabled={loading}
             />
           </div>
+          <div className="flex space-x-4">
           <button
             type="submit"
             className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -214,6 +223,15 @@ const EditLessonPage: React.FC = () => {
           >
             {loading ? 'Updating...' : 'Update Lesson'}
           </button>
+          <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-gray-500 text-white py-2 px-4 rounded"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            </div>
         </form>
       </div>
     </div>

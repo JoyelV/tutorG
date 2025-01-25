@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import { useParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import CourseRating from './CourseRating'; 
 
 interface Feedback {
   username: string;
@@ -13,7 +12,7 @@ interface Feedback {
   updatedAt: string;
 }
 
-const StudentFeedback: React.FC = () => {
+const CourseFeedback: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +56,6 @@ const StudentFeedback: React.FC = () => {
   return (
     <div className="py-0">
       <h3 className="text-lg font-semibold text-blue-600">Course Feedbacks</h3>
-
-      {/* Course Rating Section */}
-      <CourseRating courseId={courseId} onRatingSubmitted={handleNewRating} /> 
-
       {feedbacks.length > 0 ? (
         feedbacks.map((feed, index) => (
           <div key={index} className="flex items-center mt-2 p-2 bg-white rounded-lg">
@@ -88,4 +83,4 @@ const StudentFeedback: React.FC = () => {
   );
 };
 
-export default StudentFeedback;
+export default CourseFeedback;

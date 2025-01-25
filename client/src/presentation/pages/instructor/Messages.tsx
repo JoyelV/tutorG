@@ -258,7 +258,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       const message: Message = {
         messageId: `${Date.now()}`,
         sender: userId || '',
-        content: newMessage || (mediaType === 'audio' ? 'Audio Message' : ''),
+        content: newMessage || (mediaType === 'audio' ? 'Audio Message' : mediaType),
         time: new Date().toISOString(),
         mediaUrl: mediaUrl ? { url: mediaUrl, type: mediaType } : undefined,
         status: 'sent'
@@ -277,7 +277,7 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       socket.current?.emit('send_message', {
         sender: userId,
         receiver: selectedUser?.id,
-        content: newMessage.trim() || (mediaType === 'audio' ? 'Audio Message' : ''),
+        content: newMessage.trim() || (mediaType === 'audio' ? 'Audio Message' : mediaType),
         senderModel: 'Instructor',
         receiverModel: 'User',
         mediaUrl: message.mediaUrl,

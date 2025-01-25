@@ -72,8 +72,8 @@ const ViewCoursesListing: React.FC = () => {
           >
             <option>Latest</option>
             <option>Popular</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
+            <option>Low to High</option>
+            <option>High to Low</option>
           </select>
         </div>
       </div>

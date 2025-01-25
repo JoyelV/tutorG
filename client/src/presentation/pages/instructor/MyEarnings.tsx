@@ -221,7 +221,7 @@ const Earnings = () => {
                       <span className="text-xl font-bold">{index + 1}</span>
                     </div>
                     <Typography variant="h6" className="font-bold text-right">
-                      {stat.value}
+                    {Math.round(stat.value)}
                     </Typography>
                   </div>
                   <Typography variant="subtitle2" className="mt-4 opacity-90">
@@ -284,7 +284,7 @@ const Earnings = () => {
 
           {/* Withdrawal History Table */}
           <div className="mt-8 overflow-x-auto">
-            <table className="min-w-full table-auto">
+            <table className="min-w-full table-auto text-center">
               <thead>
                 <tr>
                   <th className="px-4 py-2">Date</th>
@@ -294,7 +294,7 @@ const Earnings = () => {
               </thead>
               <tbody>
                 {paginatedData.map((historyItem, index) => (
-                  <tr key={index} className="border-t">
+                  <tr key={index} className="border-t text-center">
                     <td className="px-4 py-2">  {new Date(historyItem.date).toLocaleDateString("en-GB")} </td>
                     <td className="px-4 py-2">${historyItem.amount}</td>
                     <td className="px-4 py-2">{historyItem.status}</td>
