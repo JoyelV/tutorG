@@ -76,11 +76,6 @@ const MyTutorsPage: React.FC = () => {
           ))
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
-            <img
-              src="https://via.placeholder.com/150"
-              alt="No Tutors Illustration"
-              className="w-40 h-40 mb-6"
-            />
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               No Tutors Found
             </h2>

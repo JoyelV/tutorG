@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseRequirements from '../../components/courses/CourseRequirements';
-import StudentFeedback from '../../components/courses/StudentFeedback';
 import api from '../../../infrastructure/api/api';
 import CourseVideo from '../../components/admin/CourseVideo';
 import Sidebar from '../../components/admin/Sidebar';
 import CourseHeader from '../../components/admin/CourseHeader';
-import CurriculumDetailed from '../../components/courses/DetailedCurriculumPage';
+import CourseFeedbackTutor from '../../components/courses/CourseFeedbackTutor';
+import CurriculumPage from '../../components/courses/CourseCurriculums';
 
 type Section = 'Description' | 'Requirements' | 'Feedback' | 'Reviews';
 
@@ -149,7 +149,7 @@ const CourseViewPage = () => {
                 <CourseRequirements requirements={courseData.requirements} />
               )}
 
-              {currentSection === 'Feedback' && <StudentFeedback />}
+              {currentSection === 'Feedback' && <CourseFeedbackTutor />}
               {currentSection === 'Reviews' && (
                 <div>
                   {reviews.length === 0 ? (
@@ -211,7 +211,7 @@ const CourseViewPage = () => {
                   </button>
                 )}
             <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
-            <CurriculumDetailed
+            <CurriculumPage
               onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
             />          
             </div>

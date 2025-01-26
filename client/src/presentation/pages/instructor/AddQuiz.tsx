@@ -110,6 +110,10 @@ const AddQuizForm: React.FC = () => {
     }
   };
 
+  const handleCancel = () => {
+    navigate(`/instructor/course-view/${courseId}`);
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -175,6 +179,13 @@ const AddQuizForm: React.FC = () => {
             >
               Save & Submit
             </button>
+            <button
+                type="button"
+                onClick={handleCancel}
+                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
+              >
+                Cancel
+              </button>
           </form>
         </div>
       </div>

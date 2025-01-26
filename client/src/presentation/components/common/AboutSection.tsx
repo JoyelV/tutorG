@@ -15,9 +15,9 @@ const AboutSection: React.FC = () => {
             We share knowledge with the world
           </h4>
           <p className="text-gray-600 text-sm md:text-base leading-relaxed text-center lg:text-left">
-            Interdum et malesuada fames ac ante ipsum primis in faucibus.
-            Praesent fermentum quam mauris. Fusce tempor et augue a aliquet.
-            Donec non ipsum non risus egestas tincidunt at vitae nulla.
+            Our mission is to provide accessible learning resources to individuals around the globe.
+            We aim to bridge the gap between curiosity and understanding by offering comprehensive educational materials.
+            Whether you're looking to learn a new skill, advance your career, or broaden your horizons, we are here to support your journey.
           </p>
         </div>
       </div>

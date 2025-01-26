@@ -66,7 +66,7 @@ const QuizList: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-4">Quiz List</h1>
+        <h1 className="text-xl font-semibold text-blue-600 mb-4">Quiz List</h1>
         {quizzes.length > 0 ? (
           <div className="space-y-4">
             {quizzes.map((quiz) => (
@@ -93,7 +93,9 @@ const QuizList: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">No quizzes found.</p>
+          <p className="text-gray-500 text-center font-semibold text-lg mt-6">
+          <span className="text-green-500">No Quiz Found.</span>
+        </p>
         )}
       </div>
     </div>

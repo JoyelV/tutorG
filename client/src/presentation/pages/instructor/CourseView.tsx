@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseRequirements from '../../components/courses/CourseRequirements';
-import StudentFeedback from '../../components/courses/StudentFeedback';
 import CourseHeader from '../../components/courses/courseHeader';
 import api from '../../../infrastructure/api/api';
 import Sidebar from '../../components/instructor/Sidebar';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
 import EditQuizForm from './QuizListSection';
 import CourseVideo from '../../components/instructor/CourseVideo';
+import CourseFeedbackTutor from '../../components/courses/CourseFeedbackTutor';
 
 type Section = 'Description' | 'Requirements' | 'Quiz' | 'Feedback';
 
@@ -126,7 +126,7 @@ const CourseView = () => {
               {currentSection === 'Requirements' && (
                 <CourseRequirements requirements={courseData.requirements} />
               )}
-              {currentSection === 'Feedback' && <StudentFeedback />}
+              {currentSection === 'Feedback' && <CourseFeedbackTutor />}
               {currentSection === 'Quiz' && <EditQuizForm />}
             </div>
           </div>

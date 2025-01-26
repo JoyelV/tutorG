@@ -76,7 +76,24 @@ const Earnings = () => {
   const elements = useElements();
 
   const handleWithdrawSubmit = async () => {
-    if (!withdrawAmount) return;
+    if (!withdrawAmount) {
+      toast.error("Please enter a withdrawal amount.", { position: "top-right" });
+      return;
+    }
+
+    const withdrawalAmount = parseFloat(withdrawAmount);
+
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+      toast.error("Please enter a valid withdrawal amount.", { position: "top-right" });
+      return;
+    }
+  
+    if (withdrawalAmount > stats.currentBalance) {
+      toast.error("Insufficient balance. You cannot withdraw more than your current balance.", {
+        position: "top-right",
+      });
+      return;
+    }
 
     try {
       const response = await api.post("/instructor/create-checkout-session", {
@@ -90,12 +107,12 @@ const Earnings = () => {
 
         if (error) {
           console.error('Error redirecting to checkout', error);
-          alert('Something went wrong. Please try again.');
+          toast.error("Something went wrong. Please try again.", { position: "top-right" });
         }
       }
     } catch (error) {
       console.error('Error during withdrawal:', error);
-      alert('An error occurred while processing the withdrawal.');
+      toast.error("An error occurred while processing the withdrawal.", { position: "top-right" });
     }
   };
 

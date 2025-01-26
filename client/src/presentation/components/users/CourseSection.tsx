@@ -91,7 +91,7 @@ const InstructorDetails: React.FC<InstructorDetailsProps> = ({ instructorId }) =
         <section className="container mx-auto px-8 sm:px-16 py-4 sm:py-8">
           <h2 className="text-lg sm:text-xl font-bold mb-2 italic">{`Courses (${courses.length})`}</h2>
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 p-4 bg-gradient-to-br from-white to-white">
-          {courses.map((course) => (
+            {courses.map((course) => (
               <div
                 key={course._id}
                 className="bg-white rounded-2xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer"
@@ -182,7 +182,9 @@ const InstructorDetails: React.FC<InstructorDetailsProps> = ({ instructorId }) =
                 </div>
               ))
             ) : (
-              <p>No feedback available.</p>
+              <p className="text-center text-lg text-green-600 italic">
+                No feedback registered yet.
+              </p>
             )}
           </div>
         </section>

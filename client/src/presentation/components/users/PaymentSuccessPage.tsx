@@ -59,7 +59,18 @@ const CheckoutSuccess = () => {
   }
 
   if (!orders.length) {
-    return <div className="text-center text-red-500">No orders found for this session.</div>;
+    return (
+      <div className="flex items-center justify-center w-full min-h-screen bg-gray-100 p-6">
+        <div className="bg-white rounded-lg p-8 shadow-lg max-w-md w-full text-center">
+          <p className="text-xl text-red-600 font-semibold mb-4">
+            Oops! No orders found.
+          </p>
+          <p className="text-gray-600">
+            It looks like there are no orders for this session. Please try again later or check your order details.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

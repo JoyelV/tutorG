@@ -24,7 +24,11 @@ const EditQuizForm: React.FC = () => {
     const fetchQuizData = async () => {
       try {
         const response = await api.get(`/instructor/quizzes/${courseId}/${quizId}`);
+        if (response.data && response.data.questions) {
         setFormData({ questions: response.data.questions });
+        }else {
+          throw new Error('Invalid quiz data received');
+        }
       } catch (error) {
         console.error('Error fetching quiz data:', error);
         Swal.fire({
@@ -101,13 +105,16 @@ const EditQuizForm: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      await api.put(`/instructor/quizzes/${courseId}/${quizId}`, formData);
-      Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: 'Quiz updated successfully!',
-      });
-      navigate(`/instructor/course-view/${courseId}`);
+      const response = await api.put(`/instructor/quizzes/${courseId}/${quizId}`,  {questions: formData.questions});
+      if(response.status===200){
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Quiz updated successfully!',
+        });
+        navigate(`/instructor/course-view/${courseId}`);
+      }
+      
     } catch (error) {
       console.error('Error updating quiz:', error);
       Swal.fire({

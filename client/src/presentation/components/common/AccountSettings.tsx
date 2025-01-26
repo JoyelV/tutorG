@@ -101,7 +101,7 @@ const AccountSettings: React.FC = () => {
       return false;
     }
 
-    const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,20}$/;
     if (!passwordStrengthRegex.test(newPassword)) {
       toast.error('New password must be at least 8 characters long, include uppercase, lowercase, number, and special character.');
       return false;

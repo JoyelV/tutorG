@@ -93,11 +93,6 @@ function EnrolledCourseData() {
 
       {enrolledCourses.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16">
-          <img
-            src="https://via.placeholder.com/150"
-            alt="No Courses Illustration"
-            className="w-40 h-40 mb-6"
-          />
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
             Oops! No Courses Found
           </h2>

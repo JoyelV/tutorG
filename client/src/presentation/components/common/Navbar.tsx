@@ -95,29 +95,6 @@ const Navbar: React.FC = () => {
                     Welcome, {isLoggedIn ? username : 'Guest'}!
                 </Typography>
 
-                {/* Search Bar (Hidden on Mobile) */}
-                {!isMobile && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            flex: 1,
-                            maxWidth: 600,
-                            bgcolor: 'white',
-                            borderRadius: 1,
-                            paddingX: 1,
-                        }}
-                    >
-                        <SearchIcon color="action" />
-                        <InputBase
-                            placeholder="What do you want to learn..."
-                            fullWidth
-                            sx={{ ml: 1 }}
-                            onFocus={(e) => e.target.select()}
-                        />
-                    </Box>
-                )}
-
                 {/* Icons and Auth Buttons */}
                 {isMobile ? (
                     <>
