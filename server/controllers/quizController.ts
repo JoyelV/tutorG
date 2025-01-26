@@ -83,19 +83,23 @@ export const getQuizById = async (req: Request, res: Response): Promise<void> =>
 
 export const updateQuiz = async (req: Request, res: Response) : Promise<void> => {
   const { courseId, quizId } = req.params;
-  const { question, answer, options } = req.body;
+  const { questions } = req.body;
+
+  if (!questions || !Array.isArray(questions)) {
+    res.status(400).json({ message: 'Invalid request data.' });
+    return;
+  }
 
   try {
-    const quiz = await Quiz.findOneAndUpdate(
-      { _id: quizId, courseId },
-      { question, answer, options },
-      { new: true, runValidators: true }
-    );
-
+    const quiz = await Quiz.findOne({ _id: quizId, courseId });
     if (!quiz) {
       res.status(404).json({ message: 'Quiz not found.' });
-      return 
+      return;
     }
+
+    quiz.questions = questions;
+    await quiz.save(); 
+
     res.status(200).json({ message: 'Quiz updated successfully.', quiz });
   } catch (error) {
     console.error('Error updating quiz:', error);
