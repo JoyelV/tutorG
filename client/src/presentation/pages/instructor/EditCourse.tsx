@@ -157,7 +157,7 @@ function EditCourse() {
   };
   const validateForm = () => {
     const newErrors: any = {};
-    const alphanumericRegex = /^[a-zA-Z0-9\s\-:!()&,.]+$/;
+    const alphanumericRegex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
 
     if (!courseName.trim()) newErrors.courseName = "Course name cannot be empty.";
     else if (!alphanumericRegex.test(courseName)) newErrors.courseName = "Course name can only contain letters and numbers with first 3 characters must be letters .";
