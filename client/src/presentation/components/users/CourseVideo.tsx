@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
@@ -7,10 +7,11 @@ import api from '../../../infrastructure/api/api';
 type CourseVideoProps = {
   videoUrl?: string; 
   id?: string;     
-  lesson:string;  
+  lesson:string; 
+  onProgressUpdate: (progressPercentage: number) => void;
 };
 
-const CourseVideo = ({ videoUrl, id,lesson }: CourseVideoProps) => {
+const CourseVideo = ({ videoUrl, id,lesson,onProgressUpdate }: CourseVideoProps) => {
   const [existingVideoUrl, setExistingVideoUrl] = useState<string>('');
   const navigate = useNavigate();
 
@@ -67,6 +68,10 @@ const CourseVideo = ({ videoUrl, id,lesson }: CourseVideoProps) => {
           title: 'Progress Updated',
           text: 'Your course progress has been updated!',
         });
+        const { progressPercentage } = response.data;
+        if (progressPercentage !== undefined) {
+          onProgressUpdate(progressPercentage||0);
+        }
       }
     } catch (error) {
       Swal.fire({

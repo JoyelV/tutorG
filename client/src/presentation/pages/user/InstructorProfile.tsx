@@ -11,7 +11,7 @@ const InstructorProfile: React.FC = () => {
     return (
       <div className="bg-white min-h-screen flex items-center justify-center px-4">
         <p className="text-lg sm:text-xl font-bold text-red-500 text-center">
-          Instructor ID is missing or invalid.
+          Instructor ID is missing or data is not available.
         </p>
       </div>
     );

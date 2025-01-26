@@ -91,10 +91,25 @@ function EnrolledCourseData() {
         ))}
       </div>
 
-      {/* No Courses Message */}
       {enrolledCourses.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-xl text-gray-700">No courses available.</p>
+        <div className="flex flex-col items-center justify-center py-16">
+          <img
+            src="https://via.placeholder.com/150"
+            alt="No Courses Illustration"
+            className="w-40 h-40 mb-6"
+          />
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Oops! No Courses Found
+          </h2>
+          <p className="text-gray-600 text-lg mb-6 text-center">
+            You haven't enrolled in any courses yet. Explore our catalog and start learning today!
+          </p>
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+            onClick={() => navigate('/course-listing')}
+          >
+            Browse Courses
+          </button>
         </div>
       )}
 
@@ -104,11 +119,10 @@ function EnrolledCourseData() {
           <ul className="flex space-x-2">
             <li
               onClick={() => handlePageChange(currentPage - 1)}
-              className={`cursor-pointer px-3 py-1 rounded-md ${
-                currentPage === 1
+              className={`cursor-pointer px-3 py-1 rounded-md ${currentPage === 1
                   ? "text-gray-400 pointer-events-none"
                   : "bg-gray-200 hover:bg-gray-300"
-              }`}
+                }`}
             >
               Prev
             </li>
@@ -116,22 +130,20 @@ function EnrolledCourseData() {
               <li
                 key={index}
                 onClick={() => handlePageChange(index + 1)}
-                className={`cursor-pointer px-3 py-1 rounded-md ${
-                  currentPage === index + 1
+                className={`cursor-pointer px-3 py-1 rounded-md ${currentPage === index + 1
                     ? "bg-sky-600 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
-                }`}
+                  }`}
               >
                 {index + 1}
               </li>
             ))}
             <li
               onClick={() => handlePageChange(currentPage + 1)}
-              className={`cursor-pointer px-3 py-1 rounded-md ${
-                currentPage === totalPages
+              className={`cursor-pointer px-3 py-1 rounded-md ${currentPage === totalPages
                   ? "text-gray-400 pointer-events-none"
                   : "bg-gray-200 hover:bg-gray-300"
-              }`}
+                }`}
             >
               Next
             </li>

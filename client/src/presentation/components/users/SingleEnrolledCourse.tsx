@@ -125,7 +125,9 @@ const CoursePage = () => {
             courseSubtitle={courseData.subtitle}
             instructorId={courseData.instructorId}
           />
-          <CourseVideo videoUrl={selectedVideoUrl} id={courseId!} lesson={lessonId} />
+          <CourseVideo videoUrl={selectedVideoUrl} id={courseId!} lesson={lessonId} onProgressUpdate={(updatedProgress) => {
+            setCompletedLessons((prev) => Math.round((updatedProgress * totalLessons) / 100));
+          }} />
           <div className="border-b border-gray-200 mb-6 overflow-x-auto">
             <div className="flex space-x-4">
               {[
@@ -217,14 +219,14 @@ const CoursePage = () => {
               </div>
             </div>
             {/* Show Download button only when progress is 100% */}
-          {progressPercentage === 100 && (
-            <button
-              onClick={handleDownloadClick}
-              className="w-full bg-blue-500 text-white py-2 px-4 mt-4 rounded hover:bg-blue-600 transition"
-            >
-              Download Certificate
-            </button>
-          )}
+            {progressPercentage === 100 && (
+              <button
+                onClick={handleDownloadClick}
+                className="w-full bg-blue-500 text-white py-2 px-4 mt-4 rounded hover:bg-blue-600 transition"
+              >
+                Download Certificate
+              </button>
+            )}
           </div>
           <CurriculumBox onLessonSelect={setSelectedVideoUrl} onlessonId={setLessonId} />
         </div>

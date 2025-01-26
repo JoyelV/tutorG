@@ -12,7 +12,7 @@ interface Tutor {
 const MyTutorsPage: React.FC = () => {
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [tutorsPerPage] = useState<number>(12); 
+  const [tutorsPerPage] = useState<number>(12);
   const studentId = localStorage.getItem('userId');
   const navigate = useNavigate();
 
@@ -75,7 +75,25 @@ const MyTutorsPage: React.FC = () => {
             </div>
           ))
         ) : (
-          <p>No tutors found.</p>
+          <div className="flex flex-col items-center justify-center py-16">
+            <img
+              src="https://via.placeholder.com/150"
+              alt="No Tutors Illustration"
+              className="w-40 h-40 mb-6"
+            />
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              No Tutors Found
+            </h2>
+            <p className="text-gray-600 text-lg mb-6 text-center">
+              You don't have any courses enrolled, Purchase a course.
+            </p>
+            <button
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+              onClick={() => navigate('/course-listing')}
+            >
+              Browse All Courses
+            </button>
+          </div>
         )}
       </div>
 
@@ -86,11 +104,10 @@ const MyTutorsPage: React.FC = () => {
             <button
               key={index}
               onClick={() => paginate(index + 1)}
-              className={`mx-1 px-3 py-1 rounded-full ${
-                currentPage === index + 1
+              className={`mx-1 px-3 py-1 rounded-full ${currentPage === index + 1
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-              }`}
+                }`}
             >
               {index + 1}
             </button>

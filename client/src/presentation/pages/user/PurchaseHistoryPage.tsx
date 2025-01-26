@@ -167,9 +167,9 @@ const PurchaseHistoryPage = () => {
           </div>
         </>
       ) : (
-        <div className="flex-grow flex items-center justify-center text-gray-500">
-          No purchase history available.
-        </div>
+        <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-xl">Purchase History loading...</div>
+      </div>
       )}
     </div>
   );
