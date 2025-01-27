@@ -14,9 +14,9 @@ const Sidebar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      logout();
       const response = await api.post("/instructor/logout", { withCredentials: true });
       if (response.status === 200) {
+        logout();
         navigate("/instructor");
       }
     } catch (error) {
