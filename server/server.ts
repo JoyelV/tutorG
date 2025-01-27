@@ -22,14 +22,14 @@ const server = http.createServer(app);
 
 export const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL||'http://localhost:3000',
+    origin: process.env.CLIENT_URL||'https://tutorg.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   },
 });
 
 app.use(cors({
-  origin: process.env.CLIENT_URL||'http://localhost:3000',
+  origin: process.env.CLIENT_URL||'https://tutorg.vercel.app',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 }));
