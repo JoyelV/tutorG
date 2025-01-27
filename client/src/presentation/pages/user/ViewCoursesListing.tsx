@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import ImageCard from '../../components/users/ImageCard';
 import Navbar from '../../components/common/Navbar';
 import api from '../../../infrastructure/api/api';
+import { CircularProgress } from '@mui/material';
 
 const ViewCoursesListing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<string>('All Courses');
   const [sortOption, setSortOption] = useState<string>('Trending');
   const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false); 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -22,12 +24,15 @@ const ViewCoursesListing: React.FC = () => {
   };
 
   const fetchCategories = async () => {
+    setLoading(true);
     try {
       const response = await api.get('/user/categories');
       const categoryNames = response.data.map((category: any) => category.categoryName);
       setCategories(categoryNames);
     } catch (error) {
       console.error('Error fetching categories:', error);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -78,12 +83,16 @@ const ViewCoursesListing: React.FC = () => {
         </div>
       </div>
 
-      <div className="min-h-[50vh] flex flex-col items-center justify-center">
-        <ImageCard
-          searchTerm={searchTerm}
-          selectedFilter={selectedFilter}
-          sortOption={sortOption}
-        />
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        {loading ? (
+          <CircularProgress /> 
+        ) : (
+          <ImageCard
+            searchTerm={searchTerm}
+            selectedFilter={selectedFilter}
+            sortOption={sortOption}
+          />
+        )}
       </div>
     </div>
   );
