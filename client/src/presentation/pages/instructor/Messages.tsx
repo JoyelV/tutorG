@@ -409,7 +409,11 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        {loading && <CircularProgress />}
+      </div>
+    );
   }
 
   if (error) {
