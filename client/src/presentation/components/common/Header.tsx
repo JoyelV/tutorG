@@ -35,7 +35,7 @@ const Header: React.FC = () => {
 
                 {/* Navigation Links */}
                 <nav
-                    className={`space-x-4 md:flex ${isMenuOpen ? 'flex flex-col space-x-0 space-y-2 mt-4' : 'hidden'} md:space-y-0 md:mt-0`}
+                    className={`md:flex ${isMenuOpen ? 'flex flex-col space-x-0 space-y-2 mt-4' : 'hidden'} md:space-y-0 md:mt-0`}
                 >
                     <a href="/" className="hover:text-blue-400">Home</a>
                     <a href="/course-listing" className="hover:text-blue-400">Courses</a>
