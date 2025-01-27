@@ -77,7 +77,7 @@ export const getCourses = async (req: Request, res: Response, next: NextFunction
     if (sortOption === 'Low to High') sort.courseFee = 1;
     if (sortOption === 'High to Low') sort.courseFee = -1;
     if (sortOption === 'Latest') sort.createdAt = -1;
-    if (sortOption === 'Popular') sort.rating = -1;
+    if (sortOption === 'Popular') sort.averageRating = -1;
 
     const total = await Course.countDocuments(query);
 
