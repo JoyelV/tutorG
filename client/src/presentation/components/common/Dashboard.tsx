@@ -141,7 +141,7 @@ const Dashboard: React.FC = () => {
           <>
             <div className="flex items-center justify-center flex-col">
               <p className="text-center text-md font-semibold text-gray-700 p-4">
-                🚀 No ongoing courses. Purchase one and start learning!
+                🚀 No ongoing courses. start learning an enrolled course!
               </p>
               <button
                 onClick={() => (window.location.href = '/course-listing')}
