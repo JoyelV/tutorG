@@ -55,8 +55,8 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         const { token, refreshToken, user } = yield (0, instructorService_1.loginService)(emailLowerCase, password);
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
-            sameSite: 'strict', // Prevent CSRF
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         res.status(200).json({
