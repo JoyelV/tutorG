@@ -53,11 +53,9 @@ export const stripePayment = async (req: Request, res: Response, next: NextFunct
       metadata: {
         type: 'course_purchase',
         cartItems: JSON.stringify(
-          cartItems.map(({ courseId, studentId, courseFee, thumbnail }) => ({
+          cartItems.map(({ courseId, studentId }) => ({
             courseId,
             studentId,
-            courseFee,
-            thumbnail,
           })), 
         )
       }
@@ -116,7 +114,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
       const sessionId = session.id; 
       
       const orderPromises = cartItems.map(async (item: any) => {
-        const { courseId, studentId, courseFee } = item;
+        const { courseId, studentId } = item;
 
         const courseData = await Course.findById(courseId);
         if (!courseData) {
@@ -127,7 +125,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           studentId,
           courseId: courseData._id,
           tutorId: courseData.instructorId,
-          amount: courseFee,
+          amount: courseData.courseFee,
           paymentMethod: 'Stripe',
           sessionId, 
         });
