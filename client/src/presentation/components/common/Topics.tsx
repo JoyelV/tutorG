@@ -61,7 +61,7 @@ const Topics: React.FC = () => {
     <section className="px-4 md:px-8 py-4 bg-white">
       <h3 className="text-2xl font-bold mb-4 text-center">Topics Recommended for You</h3>
       {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-blue-500"></div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {categories.slice(0, 12).map((category, index) => (
