@@ -13,6 +13,7 @@ interface Course {
   courseFee: number;
   rating: number;
   thumbnail: string;
+  status:string;
 }
 
 interface ApiResponse {
@@ -230,12 +231,14 @@ const MyCourses: React.FC = () => {
                       >
                         Edit
                       </button>
-                      <button
-                        className="px-4 py-2 bg-red-600 text-white rounded-md"
-                        onClick={() => handleDelete(course._id)}
-                      >
-                        Delete
-                      </button>
+                      {course.status !== "published" && (
+                        <button
+                          className="px-4 py-2 bg-red-600 text-white rounded-md"
+                          onClick={() => handleDelete(course._id)}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </li>
                 ))}
@@ -246,8 +249,8 @@ const MyCourses: React.FC = () => {
                   <button
                     key={page}
                     className={`px-4 py-2 rounded-md ${currentPage === page
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
                     onClick={() => setCurrentPage(page)}
                   >
