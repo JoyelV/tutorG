@@ -45,6 +45,7 @@ const Navbar: React.FC = () => {
     const handleLogout = async () => {
         logout();
         const response = await api.post('/user/logout', { withCredentials: true });
+        console.log('API Response:', response);
         if(response.status===200){
         navigate('/login');
         }
