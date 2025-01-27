@@ -28,8 +28,8 @@ const MyCourses: React.FC = () => {
   const [limit] = useState<number>(6);
   const navigate = useNavigate();
   const [categories, setCategories] = useState<string[]>([]);
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -38,6 +38,7 @@ const MyCourses: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setLoading(true);
         const response = await api.get<ApiResponse>(`/instructor/courses`);
         setCourses(response.data.courses);
         setCategories([
@@ -46,6 +47,8 @@ const MyCourses: React.FC = () => {
         ]);
       } catch (error) {
         console.error("Error fetching courses:", error);
+      }finally {
+        setLoading(false); 
       }
     };
     fetchCourses();
@@ -135,6 +138,12 @@ const MyCourses: React.FC = () => {
 
         <div className="pt-24 px-4 sm:px-6">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">My Courses</h2>
+          {loading ? ( // Show spinner while loading
+            <div className="flex justify-center items-center h-64">
+              <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div>
+            </div>
+          ) : (
+            <>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
             <div>
               <label htmlFor="filter" className="block sm:inline-block mr-2 font-medium text-gray-700">
@@ -247,6 +256,8 @@ const MyCourses: React.FC = () => {
               </button>
             ))}
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

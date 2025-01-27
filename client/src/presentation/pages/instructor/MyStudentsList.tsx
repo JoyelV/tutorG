@@ -3,6 +3,7 @@ import Pagination from "@mui/material/Pagination";
 import api from "../../../infrastructure/api/api";
 import Sidebar from "../../components/instructor/Sidebar";
 import DashboardHeader from "../../components/instructor/DashboardHeader";
+import { CircularProgress } from "@mui/material";
 
 interface Student {
   _id: string;
@@ -27,12 +28,14 @@ const StudentsList: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>(""); 
   const [filterCourseLevel, setFilterCourseLevel] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   const fetchStudents = async (page: number) => {
+    setIsLoading(true);
     try {
       const response = await api.get(`/instructor/students`, {
         params: { page, limit: 4 },
@@ -43,6 +46,8 @@ const StudentsList: React.FC = () => {
       setTotalPages(totalPages);
     } catch (error) {
       console.error("Error fetching students:", error);
+    }finally {
+      setIsLoading(false); 
     }
   };
 
@@ -112,51 +117,60 @@ const StudentsList: React.FC = () => {
             </select>
           </div>
 
-          {/* Students Table */}
-          <div className="overflow-x-auto bg-white shadow rounded-lg">
-            <table className="min-w-full table-auto">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Image</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Username</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Email</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Phone</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Gender</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Course Title</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-700">Course Level</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.map((student) => (
-                  <tr key={student._id} className="hover:bg-gray-50 transition-all duration-200">
-                    <td className="px-4 py-4">
-                      <img
-                        src={student.studentId.image}
-                        alt={student.studentId.username}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    </td>
-                    <td className="px-4 py-4 text-gray-700">{student.studentId.username}</td>
-                    <td className="px-4 py-4 text-gray-700">{student.studentId.email}</td>
-                    <td className="px-4 py-4 text-gray-700">{student.studentId.phone}</td>
-                    <td className="px-4 py-4 text-gray-700">{student.studentId.gender}</td>
-                    <td className="px-4 py-4 text-gray-700">{student.courseId.title}</td>
-                    <td className="px-4 py-4 text-gray-700">{student.courseId.level}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Loading Spinner */}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <CircularProgress color="primary" />
+            </div>
+          ) : (
+            <div>
+              {/* Students Table */}
+              <div className="overflow-x-auto bg-white shadow rounded-lg">
+                <table className="min-w-full table-auto">
+                  <thead className="bg-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Image</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Username</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Email</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Phone</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Gender</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Course Title</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-700">Course Level</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredStudents.map((student) => (
+                      <tr key={student._id} className="hover:bg-gray-50 transition-all duration-200">
+                        <td className="px-4 py-4">
+                          <img
+                            src={student.studentId.image}
+                            alt={student.studentId.username}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        </td>
+                        <td className="px-4 py-4 text-gray-700">{student.studentId.username}</td>
+                        <td className="px-4 py-4 text-gray-700">{student.studentId.email}</td>
+                        <td className="px-4 py-4 text-gray-700">{student.studentId.phone}</td>
+                        <td className="px-4 py-4 text-gray-700">{student.studentId.gender}</td>
+                        <td className="px-4 py-4 text-gray-700">{student.courseId.title}</td>
+                        <td className="px-4 py-4 text-gray-700">{student.courseId.level}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center mt-6">
-            <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={(_, page) => setCurrentPage(page)}
-              color="primary"
-            />
-          </div>
+              {/* Pagination */}
+              <div className="flex justify-center mt-6">
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(_, page) => setCurrentPage(page)}
+                  color="primary"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
