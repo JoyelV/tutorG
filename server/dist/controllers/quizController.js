@@ -87,13 +87,19 @@ const getQuizById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getQuizById = getQuizById;
 const updateQuiz = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { courseId, quizId } = req.params;
-    const { question, answer, options } = req.body;
+    const { questions } = req.body;
+    if (!questions || !Array.isArray(questions)) {
+        res.status(400).json({ message: 'Invalid request data.' });
+        return;
+    }
     try {
-        const quiz = yield Quiz_1.default.findOneAndUpdate({ _id: quizId, courseId }, { question, answer, options }, { new: true, runValidators: true });
+        const quiz = yield Quiz_1.default.findOne({ _id: quizId, courseId });
         if (!quiz) {
             res.status(404).json({ message: 'Quiz not found.' });
             return;
         }
+        quiz.questions = questions;
+        yield quiz.save();
         res.status(200).json({ message: 'Quiz updated successfully.', quiz });
     }
     catch (error) {

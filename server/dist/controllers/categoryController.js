@@ -24,6 +24,12 @@ const saveCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             res.status(400).json({ message: 'Category name is required' });
             return;
         }
+        const subCategoryNames = subCategories.map((sub) => sub.trim().toLowerCase());
+        const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
+        if (hasDuplicateSubcategories) {
+            res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
+            return;
+        }
         const newCategory = new Category_1.default({
             categoryName,
             subCategories: subCategories.map((name) => ({ name })),
@@ -50,6 +56,12 @@ const updateCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             const category = yield Category_1.default.findById(id);
             if (!category) {
                 res.status(404).json({ message: 'Category not found' });
+                return;
+            }
+            const subCategoryNames = subCategories.map((sub) => sub.trim().toLowerCase());
+            const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
+            if (hasDuplicateSubcategories) {
+                res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
                 return;
             }
             category.categoryName = categoryName;

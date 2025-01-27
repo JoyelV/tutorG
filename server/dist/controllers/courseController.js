@@ -64,7 +64,7 @@ const createCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.createCourse = createCourse;
 const getCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { page = '1', limit = '5', searchTerm = '', filter = '', sortOption = '', } = req.query;
+        const { page = '1', limit = '10', searchTerm = '', filter = '', sortOption = '', } = req.query;
         const currentPage = Number(page);
         const pageSize = Number(limit);
         const search = typeof searchTerm === 'string' ? searchTerm : '';
@@ -78,14 +78,14 @@ const getCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         if (categoryFilter && categoryFilter !== 'All Courses')
             query.category = categoryFilter;
         const sort = {};
-        if (sortOption === 'Price: Low to High')
+        if (sortOption === 'Low to High')
             sort.courseFee = 1;
-        if (sortOption === 'Price: High to Low')
+        if (sortOption === 'High to Low')
             sort.courseFee = -1;
         if (sortOption === 'Latest')
             sort.createdAt = -1;
         if (sortOption === 'Popular')
-            sort.rating = -1;
+            sort.averageRating = -1;
         const total = yield Course_1.default.countDocuments(query);
         const courses = yield Course_1.default.find(query)
             .sort(sort)
@@ -203,9 +203,10 @@ const updateCourseRating = (req, res, next) => __awaiter(void 0, void 0, void 0,
         if (existingFeedback) {
             existingFeedback.rating = rating;
             existingFeedback.feedback = feedback;
+            existingFeedback.updatedAt = new Date();
         }
         else {
-            course.ratingsAndFeedback.push({ userId, rating, feedback });
+            course.ratingsAndFeedback.push({ userId, rating, feedback, createdAt: new Date(), updatedAt: new Date(), });
         }
         yield course.calculateAverageRating();
         res.status(200).json({
@@ -222,7 +223,7 @@ exports.updateCourseRating = updateCourseRating;
 const getCourseWithFeedbacks = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const course = yield Course_1.default.findById(req.params.courseId)
-            .populate('ratingsAndFeedback.userId', 'username email')
+            .populate('ratingsAndFeedback.userId', 'username email image')
             .exec();
         if (!course) {
             res.status(404).json({ message: "Course not found" });
@@ -234,8 +235,10 @@ const getCourseWithFeedbacks = (req, res, next) => __awaiter(void 0, void 0, voi
             feedbacks: course.ratingsAndFeedback.map((feedback) => ({
                 username: feedback.userId.username,
                 email: feedback.userId.email,
+                image: feedback.userId.image,
                 rating: feedback.rating,
                 feedback: feedback.feedback,
+                updatedAt: feedback.updatedAt,
             })),
         };
         res.json(courseData);
@@ -551,7 +554,11 @@ exports.getViewChapter = getViewChapter;
 const updateChapter = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { lessonId } = req.params;
-        const { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
+        let { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
+        if (lessonPdf === '') {
+            const lesson = yield Lesson_1.default.findById(lessonId);
+            lessonPdf = lesson === null || lesson === void 0 ? void 0 : lesson.lessonPdf;
+        }
         const updatedLesson = yield Lesson_1.default.findByIdAndUpdate(lessonId, { lessonTitle, lessonDescription, lessonVideo, lessonPdf }, { new: true });
         if (!updatedLesson) {
             res.status(404).json({ message: 'Lesson not found.' });
@@ -674,7 +681,7 @@ const rejectCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.rejectCourse = rejectCourse;
 const updateProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { completedLesson, videoSource } = req.body;
-    const { id } = req.params; // Course ID
+    const { id } = req.params;
     const studentId = req.userId;
     try {
         const course = yield Course_1.default.findById(id);
@@ -689,7 +696,6 @@ const updateProgress = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const totalLessons = yield Lesson_1.default.countDocuments({ courseId: id });
         let progress = yield Progress_1.default.findOne({ courseId: id, studentId });
         if (!progress) {
-            // Create a new progress record if it doesn't exist
             progress = yield Progress_1.default.create({
                 courseId: id,
                 studentId,
@@ -698,14 +704,12 @@ const updateProgress = (req, res) => __awaiter(void 0, void 0, void 0, function*
             });
         }
         else {
-            // Add the completed lesson if not already added
             if (!progress.completedLessons.includes(completedLesson)) {
                 progress.completedLessons.push(completedLesson);
                 progress.progressPercentage = (progress.completedLessons.length / totalLessons) * 100;
                 yield progress.save();
             }
         }
-        // Check if the course is completed
         if (progress.completedLessons.length === totalLessons) {
             progress.isCompleted = true;
             progress.completionDate = new Date();

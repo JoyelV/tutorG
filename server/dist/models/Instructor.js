@@ -34,5 +34,11 @@ const instructorSchema = new mongoose_1.Schema({
     ],
     averageRating: { type: Number, default: 0 },
     numberOfRatings: { type: Number, default: 0 },
+    website: { type: String, required: true },
+    facebook: { type: String, required: true },
+    twitter: { type: String, required: true },
+    linkedin: { type: String, required: true },
+    instagram: { type: String, required: true },
+    github: { type: String, required: true },
 });
 exports.default = (0, mongoose_1.model)('Instructor', instructorSchema);

@@ -16,7 +16,8 @@ const storage = new multer_storage_cloudinary_1.CloudinaryStorage({
     cloudinary: cloudinary_1.v2,
     params: {
         folder: 'uploads', // Specify your Cloudinary folder
-        allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed file formats
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'], // Allowed file formats
+        resource_type: 'raw',
     }, // Cast to the extended type
 });
 const upload = (0, multer_1.default)({ storage });

@@ -28,7 +28,6 @@ const stripe = new stripe_1.default(stripeSecretKey, {
 const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { cartItems } = req.body;
-        console.log(cartItems, "courseIds");
         if (!Array.isArray(cartItems) || cartItems.length === 0) {
             res.status(400).json({ error: "Cart items are required." });
             return;
@@ -59,15 +58,12 @@ const stripePayment = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             cancel_url: `${process.env.CLIENT_URL}/cart`,
             metadata: {
                 type: 'course_purchase',
-                cartItems: JSON.stringify(cartItems.map(({ courseId, studentId, courseFee, thumbnail }) => ({
+                cartItems: JSON.stringify(cartItems.map(({ courseId, studentId }) => ({
                     courseId,
                     studentId,
-                    courseFee,
-                    thumbnail,
                 })))
             }
         });
-        console.log(session, "session");
         res.json({
             status: true,
             url: session.url,
@@ -114,7 +110,7 @@ const handleStripeWebhook = (req, res) => __awaiter(void 0, void 0, void 0, func
             const cartItems = ((_b = session.metadata) === null || _b === void 0 ? void 0 : _b.cartItems) ? JSON.parse(session.metadata.cartItems) : [];
             const sessionId = session.id;
             const orderPromises = cartItems.map((item) => __awaiter(void 0, void 0, void 0, function* () {
-                const { courseId, studentId, courseFee } = item;
+                const { courseId, studentId } = item;
                 const courseData = yield Course_1.default.findById(courseId);
                 if (!courseData) {
                     throw new Error('Course not found');
@@ -123,7 +119,7 @@ const handleStripeWebhook = (req, res) => __awaiter(void 0, void 0, void 0, func
                     studentId,
                     courseId: courseData._id,
                     tutorId: courseData.instructorId,
-                    amount: courseFee,
+                    amount: courseData.courseFee,
                     paymentMethod: 'Stripe',
                     sessionId,
                 });
@@ -175,7 +171,6 @@ const handleInstructorPayout = (session) => __awaiter(void 0, void 0, void 0, fu
     };
     instructor.transactions = instructor.transactions || [];
     instructor.transactions.push(newTransaction);
-    console.log(instructor, "instructor data pyout updated");
     yield instructor.save();
     return true;
 });

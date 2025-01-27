@@ -234,7 +234,7 @@ const toggleTutorStatus = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.toggleTutorStatus = toggleTutorStatus;
 const addTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username, email, phone, password, headline, areasOfExpertise, bio, highestQualification, websiteLink, isBlocked, tutorRequest, } = req.body;
+        const { username, email, phone, password, headline, areasOfExpertise, bio, highestQualification, website, facebook, linkedin, twitter, instagram, github, isBlocked, tutorRequest, } = req.body;
         if (!req.file) {
             res.status(400).json({ success: false, message: 'No file uploaded' });
             return;
@@ -255,7 +255,12 @@ const addTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             areasOfExpertise,
             bio,
             highestQualification,
-            websiteLink,
+            website,
+            facebook,
+            linkedin,
+            twitter,
+            instagram,
+            github,
             isBlocked,
             tutorRequest,
         });
@@ -399,6 +404,7 @@ const getInstructorById = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const totalStudents = uniqueStudentIds.size;
         res.status(200).json({
             username: instructor.username,
+            email: instructor.email,
             image: instructor.image,
             bio: instructor.bio,
             about: instructor.about,
@@ -407,6 +413,12 @@ const getInstructorById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             highestQualification: instructor.highestQualification,
             averageRating: instructor.averageRating,
             numberOfRatings: instructor.numberOfRatings,
+            website: instructor.website,
+            facebook: instructor.facebook,
+            twitter: instructor.twitter,
+            linkedin: instructor.linkedin,
+            instagram: instructor.instagram,
+            github: instructor.github,
             totalStudents,
             totalCourses,
         });
