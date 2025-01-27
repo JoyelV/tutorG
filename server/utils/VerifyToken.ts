@@ -1,7 +1,6 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
-import { decode } from 'punycode';
 import Instructor from '../models/Instructor';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
