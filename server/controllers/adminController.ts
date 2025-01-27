@@ -42,7 +42,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // Prevent access via JavaScript
-      secure: process.env.NODE_ENV === 'development', // Use HTTPS in production
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
       sameSite: 'strict', // Prevent CSRF
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
