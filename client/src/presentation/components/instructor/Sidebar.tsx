@@ -15,6 +15,8 @@ const Sidebar: React.FC = () => {
   const handleLogout = async () => {
     try {
       const response = await api.post("/instructor/logout", { withCredentials: true });
+      console.log('API Response in instructor:', response);
+
       if (response.status === 200) {
         logout();
         navigate("/instructor");
