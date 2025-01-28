@@ -67,7 +67,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         toast.success(message);
       }
     } catch (err) {
-      toast.error("An error occurred while adding to cart.");
+      toast.error("Login first and then add to cart.");
     } finally {
       setLoadingCart(false);
     }
