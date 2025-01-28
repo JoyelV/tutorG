@@ -9,7 +9,7 @@ const ViewCoursesListing: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All Courses');
   const [sortOption, setSortOption] = useState<string>('Trending');
   const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(false); 
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -31,7 +31,7 @@ const ViewCoursesListing: React.FC = () => {
       setCategories(categoryNames);
     } catch (error) {
       console.error('Error fetching categories:', error);
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -83,17 +83,17 @@ const ViewCoursesListing: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center">
-        {loading ? (
-          <CircularProgress /> 
-        ) : (
-          <ImageCard
-            searchTerm={searchTerm}
-            selectedFilter={selectedFilter}
-            sortOption={sortOption}
-          />
-        )}
-      </div>
+      {loading ? (
+        <div className="min-h-screen flex justify-center items-center h-64">
+          <CircularProgress color="primary" />
+        </div>
+      ) : (
+        <ImageCard
+          searchTerm={searchTerm}
+          selectedFilter={selectedFilter}
+          sortOption={sortOption}
+        />
+      )}
     </div>
   );
 };
