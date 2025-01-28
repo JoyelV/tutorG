@@ -41,14 +41,14 @@ export const verifyToken = async (
   const authHeader = req.headers['authorization'];
 
   if (!authHeader) {
-    res.status(401).json({ message: 'Authorization header missing' });
+    res.status(403).json({ message: 'Authorization header missing' });
     return;
   }
 
   const token = authHeader.split(' ')[1]; 
 
   if (!token) {
-    res.status(401).json({ message: 'Token missing' });
+    res.status(403).json({ message: 'Token missing' });
     return;
   }
 
@@ -88,7 +88,7 @@ export const verifyToken = async (
     }
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Invalid or expired token' });
+    res.status(403).json({ message: 'Invalid or expired token' });
     return;
   }
 };
