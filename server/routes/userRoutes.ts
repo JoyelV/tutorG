@@ -25,12 +25,12 @@ router.post('/verify-otp', verifyPasswordOtp);
 router.post('/reset-password', resetPassword);
 
 //USER PROFILE 
-router.get('/image', fetchImage);
-router.get('/profile', fetchUserProfile);
+router.get('/image',verifyToken, fetchImage);
+router.get('/profile',verifyToken, fetchUserProfile);
 router.put('/update',verifyToken,editUserProfile);
 router.put('/update-password',verifyToken,editPassword );
 router.put('/upload-image', upload.single('image'),verifyToken,uploadImage);
-router.get('/my-tutors',getMyTutors);
+router.get('/my-tutors',verifyToken,getMyTutors);
 
 //Home page
 router.get('/top-tutors',getTopTutors);
@@ -51,16 +51,16 @@ router.get('/courses/recent',getRecentlyAddedCourses);
 router.get('/categories', getCategories);
 router.get('/courses/:courseId',getIndividualCourses);
 router.get('/view-lessons/:courseId',getViewChapters);
-router.get('/dashboard-courseData',getStudentCourseSummary);
-router.get('/courses-enrolled/:courseId',getIndividualCourseData);
-router.get('/courses-complete/:courseId',getCompletionCertificate);
+router.get('/dashboard-courseData',verifyToken,getStudentCourseSummary);
+router.get('/courses-enrolled/:courseId',verifyToken,getIndividualCourseData);
+router.get('/courses-complete/:courseId',verifyToken,getCompletionCertificate);
 router.patch('/rating/:courseId',verifyToken,updateCourseRating);
-router.get('/feedbacks/:courseId',getCourseWithFeedbacks);
-router.get('/instructorData/:instructorId',getInstructorData);
-router.get('/quizzes/:courseId',getQuizzesByCourse);
+router.get('/feedbacks/:courseId',verifyToken,getCourseWithFeedbacks);
+router.get('/instructorData/:instructorId',verifyToken,getInstructorData);
+router.get('/quizzes/:courseId', verifyToken,getQuizzesByCourse);
 router.post('/quizzes/attempt', verifyToken,submitQuiz);
 router.put('/progress/:id',verifyToken,updateProgress);
-router.get('/notifications',getNotifications);
+router.get('/notifications', verifyToken,getNotifications);
 router.put('/instructorRating/:instructorId',verifyToken,addInstructorRating);
 
 //CART MANAGEMENT
@@ -70,7 +70,7 @@ router.delete("/removecartitem/:cartItemId",removeCartItem);
 
 //WISHLIST MANAGEMENT
 router.post("/addtowishlist",verifyToken,addToWishlist);
-router.get("/wishlist",getWishlistItems);
+router.get("/wishlist",verifyToken,getWishlistItems);
 router.delete("/removeitem/:wishlistItemId",removeWishlistItem);
 
 //CHECKOUT
