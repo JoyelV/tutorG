@@ -259,7 +259,7 @@ export const getCourseWithFeedbacks = async (req: Request, res: Response, next: 
   }
 };
 
-export const getInstructorData = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const getInstructorData = async (req: Request, res: Response): Promise<void> => {
   const { instructorId } = req.params;
 
   if (!instructorId) {
