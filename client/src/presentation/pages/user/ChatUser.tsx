@@ -505,6 +505,9 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                         >
                           {lastMessages[user.id]?.time && (() => {
                             const messageTime = new Date(lastMessages[user.id]?.time);
+                            if (isNaN(messageTime.getTime())) {
+                              return "28-01-2025";
+                            }
                             const now = new Date();
                             const isToday =
                               messageTime.getDate() === now.getDate() &&
