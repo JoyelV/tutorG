@@ -111,6 +111,7 @@ export const getRelatedCourses = async (req: Request, res: Response, next: NextF
     const relatedCourses = await Course.find({
       category: course.category,
       _id: { $ne: courseId },
+      status: 'published',
     }).limit(5);
 
     res.status(200).json(relatedCourses);

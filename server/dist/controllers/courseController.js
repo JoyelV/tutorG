@@ -115,6 +115,7 @@ const getRelatedCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         const relatedCourses = yield Course_1.default.find({
             category: course.category,
             _id: { $ne: courseId },
+            status: 'published',
         }).limit(5);
         res.status(200).json(relatedCourses);
     }
