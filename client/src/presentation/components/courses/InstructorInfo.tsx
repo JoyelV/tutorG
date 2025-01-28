@@ -137,6 +137,7 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
                 </div>
               </div>
               <p className="text-gray-700 my-2">{rating.comment}</p>
+              <p className="text-gray-700 my-2">{rating.rating}</p>
             </div>
           ))
         ) : (
