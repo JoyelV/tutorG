@@ -145,7 +145,7 @@ export const getInstructorCourses = async (req: Request, res: Response, next: Ne
   }
 
   try {
-    const courses = await Course.find({ instructorId }).select('title category courseFee thumbnail averageRating students');
+    const courses = await Course.find({ instructorId,status:"published" }).select('title category courseFee thumbnail averageRating students');
     res.status(200).json(courses);
   } catch (error) {
     console.error('Error fetching recently added courses:', error);
