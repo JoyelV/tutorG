@@ -62,7 +62,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6 bg-gradient-to-br from-white to-white">
+      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6 bg-gradient-to-br from-white to-white">
         {courses.map((course) => (
           <div
             key={course._id}
