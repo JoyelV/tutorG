@@ -49,16 +49,16 @@ router.get('/courses/recent', courseController_1.getRecentlyAddedCourses);
 router.get('/categories', categoryController_1.getCategories);
 router.get('/courses/:courseId', courseController_1.getIndividualCourses);
 router.get('/view-lessons/:courseId', courseController_1.getViewChapters);
-router.get('/dashboard-courseData', VerifyToken_1.verifyToken, courseController_1.getStudentCourseSummary);
-router.get('/courses-enrolled/:courseId', VerifyToken_1.verifyToken, courseController_1.getIndividualCourseData);
-router.get('/courses-complete/:courseId', VerifyToken_1.verifyToken, courseController_1.getCompletionCertificate);
+router.get('/dashboard-courseData', courseController_1.getStudentCourseSummary);
+router.get('/courses-enrolled/:courseId', courseController_1.getIndividualCourseData);
+router.get('/courses-complete/:courseId', courseController_1.getCompletionCertificate);
 router.patch('/rating/:courseId', VerifyToken_1.verifyToken, courseController_1.updateCourseRating);
-router.get('/feedbacks/:courseId', VerifyToken_1.verifyToken, courseController_1.getCourseWithFeedbacks);
-router.get('/instructorData/:instructorId', VerifyToken_1.verifyToken, courseController_1.getInstructorData);
-router.get('/quizzes/:courseId', VerifyToken_1.verifyToken, quizController_1.getQuizzesByCourse);
+router.get('/feedbacks/:courseId', courseController_1.getCourseWithFeedbacks);
+router.get('/instructorData/:instructorId', courseController_1.getInstructorData);
+router.get('/quizzes/:courseId', quizController_1.getQuizzesByCourse);
 router.post('/quizzes/attempt', VerifyToken_1.verifyToken, quizController_1.submitQuiz);
 router.put('/progress/:id', VerifyToken_1.verifyToken, courseController_1.updateProgress);
-router.get('/notifications', VerifyToken_1.verifyToken, courseController_1.getNotifications);
+router.get('/notifications', courseController_1.getNotifications);
 router.put('/instructorRating/:instructorId', VerifyToken_1.verifyToken, instructorController_1.addInstructorRating);
 //CART MANAGEMENT
 router.post('/cart/add', VerifyToken_1.verifyToken, cartController_1.addToCart);
@@ -66,7 +66,7 @@ router.get('/getcart', VerifyToken_1.verifyToken, cartController_1.getCartItems)
 router.delete("/removecartitem/:cartItemId", cartController_1.removeCartItem);
 //WISHLIST MANAGEMENT
 router.post("/addtowishlist", VerifyToken_1.verifyToken, wishlistController_1.addToWishlist);
-router.get("/wishlist", VerifyToken_1.verifyToken, wishlistController_1.getWishlistItems);
+router.get("/wishlist", wishlistController_1.getWishlistItems);
 router.delete("/removeitem/:wishlistItemId", wishlistController_1.removeWishlistItem);
 //CHECKOUT
 router.post('/stripepayment', VerifyToken_1.verifyToken, paymentController_1.stripePayment);

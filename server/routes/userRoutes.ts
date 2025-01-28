@@ -51,16 +51,16 @@ router.get('/courses/recent',getRecentlyAddedCourses);
 router.get('/categories', getCategories);
 router.get('/courses/:courseId',getIndividualCourses);
 router.get('/view-lessons/:courseId',getViewChapters);
-router.get('/dashboard-courseData',verifyToken,getStudentCourseSummary);
-router.get('/courses-enrolled/:courseId',verifyToken,getIndividualCourseData);
-router.get('/courses-complete/:courseId',verifyToken,getCompletionCertificate);
+router.get('/dashboard-courseData',getStudentCourseSummary);
+router.get('/courses-enrolled/:courseId',getIndividualCourseData);
+router.get('/courses-complete/:courseId',getCompletionCertificate);
 router.patch('/rating/:courseId',verifyToken,updateCourseRating);
-router.get('/feedbacks/:courseId',verifyToken,getCourseWithFeedbacks);
-router.get('/instructorData/:instructorId',verifyToken,getInstructorData);
-router.get('/quizzes/:courseId', verifyToken,getQuizzesByCourse);
+router.get('/feedbacks/:courseId',getCourseWithFeedbacks);
+router.get('/instructorData/:instructorId',getInstructorData);
+router.get('/quizzes/:courseId',getQuizzesByCourse);
 router.post('/quizzes/attempt', verifyToken,submitQuiz);
 router.put('/progress/:id',verifyToken,updateProgress);
-router.get('/notifications', verifyToken,getNotifications);
+router.get('/notifications',getNotifications);
 router.put('/instructorRating/:instructorId',verifyToken,addInstructorRating);
 
 //CART MANAGEMENT
@@ -70,7 +70,7 @@ router.delete("/removecartitem/:cartItemId",removeCartItem);
 
 //WISHLIST MANAGEMENT
 router.post("/addtowishlist",verifyToken,addToWishlist);
-router.get("/wishlist",verifyToken,getWishlistItems);
+router.get("/wishlist",getWishlistItems);
 router.delete("/removeitem/:wishlistItemId",removeWishlistItem);
 
 //CHECKOUT
