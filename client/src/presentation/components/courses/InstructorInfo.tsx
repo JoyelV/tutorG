@@ -137,7 +137,10 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
                 </div>
               </div>
               <p className="text-gray-700 my-2">{rating.comment}</p>
-              <p className="text-gray-700 my-2">{rating.rating}</p>
+              <span className="text-orange-500 text-md">
+            {'★'.repeat(Math.floor(rating.rating))}
+            {'☆'.repeat(5 - Math.floor(rating.rating))}
+            </span>
             </div>
           ))
         ) : (
