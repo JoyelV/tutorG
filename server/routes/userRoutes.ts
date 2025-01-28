@@ -25,12 +25,12 @@ router.post('/verify-otp', verifyPasswordOtp);
 router.post('/reset-password', resetPassword);
 
 //USER PROFILE 
-router.get('/image',verifyToken, fetchImage);
-router.get('/profile',verifyToken, fetchUserProfile);
+router.get('/image', fetchImage);
+router.get('/profile', fetchUserProfile);
 router.put('/update',verifyToken,editUserProfile);
 router.put('/update-password',verifyToken,editPassword );
 router.put('/upload-image', upload.single('image'),verifyToken,uploadImage);
-router.get('/my-tutors',verifyToken,getMyTutors);
+router.get('/my-tutors',getMyTutors);
 
 //Home page
 router.get('/top-tutors',getTopTutors);

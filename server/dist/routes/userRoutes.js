@@ -27,12 +27,12 @@ router.post('/resend-otp', userController_1.resendOtp);
 router.post('/verify-otp', userController_1.verifyPasswordOtp);
 router.post('/reset-password', userController_1.resetPassword);
 //USER PROFILE 
-router.get('/image', VerifyToken_1.verifyToken, userController_1.fetchImage);
-router.get('/profile', VerifyToken_1.verifyToken, userController_1.fetchUserProfile);
+router.get('/image', userController_1.fetchImage);
+router.get('/profile', userController_1.fetchUserProfile);
 router.put('/update', VerifyToken_1.verifyToken, userController_1.editUserProfile);
 router.put('/update-password', VerifyToken_1.verifyToken, userController_1.editPassword);
 router.put('/upload-image', multerConfig_1.default.single('image'), VerifyToken_1.verifyToken, userController_1.uploadImage);
-router.get('/my-tutors', VerifyToken_1.verifyToken, instructorController_1.getMyTutors);
+router.get('/my-tutors', instructorController_1.getMyTutors);
 //Home page
 router.get('/top-tutors', instructorController_1.getTopTutors);
 router.get('/stats', userController_1.getStatsCounts);
