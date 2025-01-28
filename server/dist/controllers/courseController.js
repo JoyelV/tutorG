@@ -147,7 +147,7 @@ const getInstructorCourses = (req, res, next) => __awaiter(void 0, void 0, void 
         return;
     }
     try {
-        const courses = yield Course_1.default.find({ instructorId }).select('title category courseFee thumbnail averageRating students');
+        const courses = yield Course_1.default.find({ instructorId, status: "published" }).select('title category courseFee thumbnail averageRating students');
         res.status(200).json(courses);
     }
     catch (error) {
