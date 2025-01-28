@@ -83,7 +83,7 @@ const ViewCoursesListing: React.FC = () => {
         </div>
       </div>
 
-      <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center">
         {loading ? (
           <CircularProgress /> 
         ) : (
