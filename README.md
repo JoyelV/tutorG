@@ -90,6 +90,7 @@ Client environment (if used):
 Add a `LICENSE` file at the repository root with your chosen license (for example, MIT).
 
 ## Contact
-Add maintainer/author contact details here.
+Joyel Varghese
+Email: Varghesejoyel71@gmail.com
 
 ---
