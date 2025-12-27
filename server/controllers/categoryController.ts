@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import Category from '../models/Category';
+import { CategoryService } from '../services/categoryService';
+
+const categoryService = new CategoryService();
 
 /**
  * Add or Edit a category with subcategories
@@ -7,36 +9,21 @@ import Category from '../models/Category';
 export const saveCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { categoryName, subCategories = [] } = req.body;
-
     if (!categoryName) {
       res.status(400).json({ message: 'Category name is required' });
       return;
     }
 
-    const subCategoryNames = subCategories.map((sub: string) => sub.trim().toLowerCase());
-    const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
-    if (hasDuplicateSubcategories) {
-      res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
-      return;
-    }
-
-    const newCategory = new Category({
-        categoryName,
-        subCategories: subCategories.map((name: string) => ({ name })),
-        createdByAdmin: true,
-      });
-      const savedCategory = await newCategory.save();
-      res.status(201).json(savedCategory);
-    
-  } catch (error) {
-    console.error('Error saving category:', error);
-    next({ status: 500, message: 'Error saving category', error });
+    const savedCategory = await categoryService.saveCategory(categoryName, subCategories);
+    res.status(201).json(savedCategory);
+  } catch (error:any) {
+    next({ status: 400, message: error.message });
   }
 };
 
 export const updateCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const { categoryName, subCategories = [] } = req.body;
 
     if (!categoryName) {
@@ -44,27 +31,14 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
       return;
     }
 
-    if (id) {
-      const category = await Category.findById(id);
-      if (!category) {
-        res.status(404).json({ message: 'Category not found' });
-        return;
-      }
-
-    const subCategoryNames = subCategories.map((sub: string) => sub.trim().toLowerCase());
-    const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
-    if (hasDuplicateSubcategories) {
-      res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
+    const updatedCategory = await categoryService.updateCategory(id, categoryName, subCategories);
+    if (!updatedCategory) {
+      res.status(404).json({ message: 'Category not found' });
       return;
     }
-      category.categoryName = categoryName;
-      category.subCategories = subCategories.map((name: string) => ({ name }));
-      const updatedCategory = await category.save();
-      res.status(200).json(updatedCategory);
-    } 
-  } catch (error) {
-    console.error('Error saving category:', error);
-    next({ status: 500, message: 'Error saving category', error });
+    res.status(200).json(updatedCategory);
+  } catch (error:any) {
+    next({ status: 400, message: error.message });
   }
 };
 
@@ -73,10 +47,9 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
  */
 export const getCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const categories = await Category.find({status:false});
+    const categories = await categoryService.getCategories();
     res.status(200).json(categories);
   } catch (error) {
-    console.error('Error fetching categories:', error);
     next({ status: 500, message: 'Error fetching categories', error });
   }
 };
@@ -86,73 +59,34 @@ export const getCategoriesPagination = async (req: Request, res: Response, next:
   const limit = parseInt(req.query.limit as string, 10) || 5;
 
   if (page < 1 || limit < 1) {
-    res.status(400).json({ error: "Page and limit must be positive integers." });
-    return;
+    res.status(400).json({ message: 'Page and limit must be positive integers.' });
+    return ;
   }
 
   try {
-    const totalCategories = await Category.countDocuments();
-    const totalPages = Math.ceil(totalCategories / limit);
-
-    if ((page - 1) * limit >= totalCategories) {
-      res.status(200).json({
-        categories: [],
-        totalPages,
-        currentPage: page,
-      });
-      return;
-    }
-
-    const categories = await Category.find()
-      .skip((page - 1) * limit)
-      .limit(limit);
-
-    res.status(200).json({
-      categories,
-      totalPages,
-      currentPage: page,
-      totalItems: totalCategories,
-    });
+    const result = await categoryService.getCategoriesPagination(page, limit);
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Fetch all Unblocked categories
- */
-export const getUnblockedCategories = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const categories = await Category.find({ status: false });
-    res.status(200).json(categories);
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    next({ status: 500, message: 'Error fetching categories', error });
-  }
-};
-
-
-/**
- * Delete a category
+ * Block/Unblock a category
  */
 export const deleteCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-
-    const category = await Category.findById(id);
-    if (!category) {
+    const updatedCategory = await categoryService.toggleCategoryStatus(id);
+    if (!updatedCategory) {
       res.status(404).json({ message: 'Category not found' });
       return;
     }
-    category.status = category.status ? false : true;
-    const updatedCategory = await category.save();
-
     res.status(200).json({
       message: `Category ${updatedCategory.status ? 'unblocked' : 'blocked'} successfully`,
       category: updatedCategory,
     });
   } catch (error) {
-    console.error('Error blocking/unblocking category:', error);
     next({ status: 500, message: 'Error blocking/unblocking category', error });
   }
 };

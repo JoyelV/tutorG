@@ -1,53 +1,38 @@
 import { Request, Response, NextFunction } from 'express';
-import WishListModel from '../models/wishlist';
+import WishlistService from '../services/wishlistService';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
 
-export const addToWishlist = async(req:Request, res:Response,next: NextFunction):Promise<void> =>{
+export const addToWishlist = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { userId, courseId } = req.body; 
-        const itemExisted = await WishListModel.findOne({user:userId,course:courseId})
-        if(itemExisted){
-             res.status(200).json({message:"Course already existed in Wishlist"})
-             return
-        } 
-        else{
-            const newItem = new WishListModel({user:userId,course:courseId});
-            await newItem.save();
-            res.status(201).json({message:"Course added to wishlist successfully"})
-            return 
+        const { userId, courseId } = req.body;
+        const response = await WishlistService.addToWishlist(userId, courseId);
+        res.status(response.status).json({ message: response.message });
+    } catch (error) {
+        console.error("Error Occurred while Adding to Wishlist:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const getWishlistItems = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const studentId = req.userId;
+        if(studentId){
+            const wishlistItems = await WishlistService.getWishlistItems(studentId);
+            res.status(200).json(wishlistItems);
         }
     } catch (error) {
-        console.error("Error Occur while Adding to wishlist", error);
+        console.error("Error Fetching Wishlist Items:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
 
-export const  getWishlistItems = async(req:AuthenticatedRequest, res:Response,next: NextFunction):Promise<void> =>{
-    const studentId = req.userId;    
-    try {
-        const wishlistItems = await WishListModel.find({ user: studentId }).populate("course");
-        wishlistItems.forEach(item => {
-            console.log('Populated Course:', item.course); 
-        });
-
-    res.status(200).json(wishlistItems);
-    } catch (error) {
-        console.error("Error fetching cart Items", error);
-        res.status(500).json({ error: "Internal server Error" });
-    }
-}
-
-export const removeWishlistItem = async(req:Request, res:Response,next: NextFunction):Promise<void> =>{
+export const removeWishlistItem = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const wishlistItemId = req.params.wishlistItemId;
-        const removedItem = await WishListModel.findByIdAndDelete({_id:wishlistItemId})
-        if (!removedItem) {
-            res.status(404).json({ error: "Wishlist item not found" });
-            return ;
-          }
-          res.status(200).json({ message: "Course removed from the wishlist" });
+        const response = await WishlistService.removeWishlistItem(wishlistItemId);
+        res.status(response.status).json({ message: response.message });
     } catch (error) {
-        console.error("Error removing course from wishlist", error);
+        console.error("Error Removing Wishlist Item:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};

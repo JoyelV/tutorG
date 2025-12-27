@@ -58,8 +58,8 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
       return;
     }
 
-    if (comment.length < 5) {
-      setRatingMessage('Comment must be at least 5 characters long.');
+    if (comment.length < 4) {
+      setRatingMessage('Comment must be at least 4 characters long.');
       return;
     }
 
@@ -69,15 +69,9 @@ const InstructorInfo: React.FC<InstructorInfoProps> = ({ instructorId }) => {
         rating: userRating,
         comment,
       });
-      if (response.status === 201) {
-        setRatingMessage('Rating submitted successfully!');
-        setUserRating(0);
-        setComment('');
-      } else if (response.status === 200) {
-        setRatingMessage('You have already rated this instructor.');
-        setUserRating(0);
-        setComment('');
-      }
+      setRatingMessage(response.data.message);
+      setUserRating(0);
+      setComment('');
     } catch (error) {
       console.error('Error submitting rating:', error);
       setRatingMessage('Error submitting rating. Please try again.');

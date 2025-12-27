@@ -1,12 +1,12 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IProgress extends Document {
-  courseId: mongoose.Schema.Types.ObjectId;
-  studentId: mongoose.Schema.Types.ObjectId;
-  completedLessons: mongoose.Schema.Types.ObjectId[];
+  courseId: Types.ObjectId;
+  studentId: Types.ObjectId;
+  completedLessons: Types.ObjectId[];
   completionDate?: Date;
   isCompleted: boolean;
-  progressPercentage: Number,
+  progressPercentage: number;
 }
 
 const ProgressSchema = new Schema<IProgress>({

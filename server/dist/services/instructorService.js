@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadUserImage = exports.updatePassword = exports.updateUserProfile = exports.getUserProfileService = exports.resetPasswordService = exports.loginService = exports.verifyOTP = void 0;
+exports.getUserByEmail = exports.getInstructorByIdService = exports.getTopTutorsService = exports.addTutorService = exports.toggleTutorStatusService = exports.logoutService = exports.uploadUserImage = exports.updatePassword = exports.updateUserProfile = exports.getUserProfileService = exports.resetPasswordService = exports.loginService = exports.verifyOTP = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const otpRepository_1 = require("../repositories/otpRepository");
 const instructorRepository_1 = require("../repositories/instructorRepository");
@@ -136,3 +136,105 @@ const uploadUserImage = (userId, imageUrl) => __awaiter(void 0, void 0, void 0, 
     return user;
 });
 exports.uploadUserImage = uploadUserImage;
+const logoutService = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    yield instructorRepository_1.instructorRepository.updateOnlineStatus(userId, false);
+});
+exports.logoutService = logoutService;
+const toggleTutorStatusService = (tutorId, isBlocked) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!tutorId) {
+        throw new Error('Missing tutorId in request parameters');
+    }
+    if (typeof isBlocked !== 'boolean') {
+        throw new Error('Invalid or missing isBlocked value');
+    }
+    const updatedUser = yield instructorRepository_1.instructorRepository.updateTutorStatus(tutorId, isBlocked);
+    if (!updatedUser) {
+        throw new Error('User not found');
+    }
+    return updatedUser;
+});
+exports.toggleTutorStatusService = toggleTutorStatusService;
+const addTutorService = (tutorData, file) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, email, phone, password, headline, areasOfExpertise, bio, highestQualification, website, facebook, linkedin, twitter, instagram, github, isBlocked, tutorRequest, } = tutorData;
+    if (!file) {
+        throw new Error('No file uploaded');
+    }
+    if (!username || !email || !phone || !password) {
+        throw new Error('Required fields are missing');
+    }
+    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+    const tutor = yield instructorRepository_1.instructorRepository.createTutor({
+        username,
+        email,
+        phone,
+        password: hashedPassword,
+        headline,
+        image: file.path,
+        areasOfExpertise,
+        bio,
+        highestQualification,
+        website,
+        facebook,
+        linkedin,
+        twitter,
+        instagram,
+        github,
+        isBlocked,
+        tutorRequest,
+    });
+    return tutor;
+});
+exports.addTutorService = addTutorService;
+const getTopTutorsService = () => __awaiter(void 0, void 0, void 0, function* () {
+    return yield instructorRepository_1.instructorRepository.getTopTutors(5);
+});
+exports.getTopTutorsService = getTopTutorsService;
+const getInstructorByIdService = (instructorId) => __awaiter(void 0, void 0, void 0, function* () {
+    const instructor = yield instructorRepository_1.instructorRepository.findUserById(instructorId);
+    if (!instructor) {
+        throw new Error('Instructor not found');
+    }
+    const courses = yield instructorRepository_1.instructorRepository.findCoursesByInstructor(instructorId);
+    const totalCourses = courses.length;
+    // Collect unique student IDs
+    const uniqueStudentIds = new Set();
+    courses.forEach(course => {
+        course.students.forEach(studentId => {
+            uniqueStudentIds.add(studentId.toString());
+        });
+    });
+    const totalStudents = uniqueStudentIds.size;
+    return {
+        username: instructor.username,
+        email: instructor.email,
+        image: instructor.image,
+        bio: instructor.bio,
+        about: instructor.about,
+        headline: instructor.headline,
+        areasOfExpertise: instructor.areasOfExpertise,
+        highestQualification: instructor.highestQualification,
+        averageRating: instructor.averageRating,
+        numberOfRatings: instructor.numberOfRatings,
+        website: instructor.website,
+        facebook: instructor.facebook,
+        twitter: instructor.twitter,
+        linkedin: instructor.linkedin,
+        instagram: instructor.instagram,
+        github: instructor.github,
+        totalStudents,
+        totalCourses,
+    };
+});
+exports.getInstructorByIdService = getInstructorByIdService;
+const getUserByEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!email) {
+        throw new Error('Email is required');
+    }
+    // Return user from the repository
+    const user = yield instructorRepository_1.instructorRepository.findUserByEmail(email);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    return user;
+});
+exports.getUserByEmail = getUserByEmail;

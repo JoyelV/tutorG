@@ -31,6 +31,6 @@ const NotificationSchema = new mongoose_1.Schema({
     thumbnail: { type: String, default: '' },
     message: { type: String, required: true },
     isRead: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now, expires: '07d' }, //TTL 
+    createdAt: { type: Date, default: Date.now, expires: '07d' }, // TTL
 });
 exports.default = mongoose_1.default.model('Notification', NotificationSchema);

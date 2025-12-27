@@ -19,14 +19,10 @@ const otpGenerator_1 = require("../utils/otpGenerator");
 const authService_1 = require("../services/authService");
 const otpService_1 = require("../services/otpService");
 const otpRepository_1 = require("../repositories/otpRepository");
-const Orders_1 = __importDefault(require("../models/Orders"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const userService_1 = require("../services/userService");
-const User_1 = __importDefault(require("../models/User"));
-const Message_1 = __importDefault(require("../models/Message"));
-const Course_1 = __importDefault(require("../models/Course"));
-const Instructor_1 = __importDefault(require("../models/Instructor"));
 const userRepository_1 = require("../repositories/userRepository");
+const userService_2 = require("../services/userService");
 dotenv_1.default.config();
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -125,9 +121,12 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
 exports.login = login;
 const logout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let userId = req.userId;
-        yield User_1.default.findByIdAndUpdate(userId, { onlineStatus: false }, { new: true });
-        res.status(200).json({ message: "Logout successfully" });
+        const userId = req.userId || '';
+        if (!userId) {
+            res.status(404).json({ message: "No userId found" });
+        }
+        const message = yield (0, authService_1.logoutService)(userId);
+        res.status(200).json({ message });
     }
     catch (error) {
         res.status(400).json({ message: 'An unknown error occurred' });
@@ -188,7 +187,7 @@ const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const { email } = req.body;
         const emailLowerCase = email.toLowerCase();
-        const user = yield User_1.default.findOne({ email: emailLowerCase });
+        const user = yield userRepository_1.userRepository.findUserByEmail(emailLowerCase);
         if (!user) {
             res.status(404).json({ error: 'Email address not found in the system.' });
             return;
@@ -232,8 +231,16 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.resetPassword = resetPassword;
 const fetchImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
+    if (!userId) {
+        res.status(400).json({ message: 'User ID is missing in the request' });
+        return;
+    }
     try {
-        const user = yield User_1.default.findById(userId);
+        const user = yield (0, userService_1.getUserProfileService)(userId);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
         res.status(200).json({ imageUrl: user === null || user === void 0 ? void 0 : user.image });
     }
     catch (error) {
@@ -325,103 +332,61 @@ const toggleUserStatus = (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.status(400).json({ message: 'Invalid or missing isBlocked value' });
             return;
         }
-        const updatedUser = yield User_1.default.findByIdAndUpdate(userId, { isBlocked }, { new: true });
-        if (!updatedUser) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
+        const updatedUser = yield (0, userService_2.toggleUserStatusService)(userId, isBlocked);
         res.status(200).json(updatedUser);
     }
     catch (error) {
-        console.error('Error updating user status:', error);
         res.status(500).json({ message: 'Failed to update user status', error: error });
     }
 });
 exports.toggleUserStatus = toggleUserStatus;
 const getStudentsByInstructor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const instructorId = req.userId;
+        const instructorId = req.userId || '';
         const { page = 1, limit = 4 } = req.query;
-        const skip = (Number(page) - 1) * Number(limit);
-        const totalStudents = yield Orders_1.default.countDocuments({
-            tutorId: instructorId,
-            studentId: { $ne: null },
-        });
-        const students = yield Orders_1.default
-            .find({
-            tutorId: instructorId,
-            studentId: { $ne: null },
-        })
-            .populate("studentId", "username email phone image gender")
-            .populate("courseId", "title level")
-            .skip(skip)
-            .limit(Number(limit));
-        res.status(200).json({
-            students,
-            totalStudents,
-            currentPage: Number(page),
-            totalPages: Math.ceil(totalStudents / Number(limit)),
-        });
+        const result = yield (0, userService_2.getStudentsByInstructorService)(instructorId, page.toString(), limit.toString());
+        res.status(200).json(result);
     }
     catch (error) {
-        console.error('Error fetching students by instructor:', error);
         res.status(500).json({ message: 'Error fetching students' });
     }
 });
 exports.getStudentsByInstructor = getStudentsByInstructor;
 const getStudentsChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const instructorId = req.userId;
-        const orders = yield Orders_1.default
-            .find({
-            tutorId: instructorId,
-            studentId: { $ne: null },
-        })
-            .populate("studentId", "username email phone image gender onlineStatus")
-            .populate("courseId", "title level");
-        if (orders.length === 0) {
-            res.status(404).json({ message: "No students found for this instructor." });
-            return;
-        }
+        const instructorId = req.userId || '';
+        const orders = yield (0, userService_2.getStudentsChatService)(instructorId);
         res.status(200).json(orders);
     }
     catch (error) {
-        console.error('Error fetching students by instructor:', error);
         res.status(500).json({ message: 'Error fetching students' });
     }
 });
 exports.getStudentsChat = getStudentsChat;
 const getMyMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { senderId, receiverId } = req.query;
+    const sender = typeof senderId === 'string' ? senderId : undefined;
+    const receiver = typeof receiverId === 'string' ? receiverId : undefined;
+    if (!sender || !receiver) {
+        res.status(400).json({ message: 'Invalid or missing senderId or receiverId in request query' });
+        return;
+    }
     try {
-        const messages = yield Message_1.default.find({
-            $or: [
-                { sender: senderId, receiver: receiverId },
-                { sender: receiverId, receiver: senderId },
-            ],
-        }).sort({ createdAt: 1 });
+        const messages = yield (0, userService_2.getMyMessagesService)(sender, receiver);
         res.status(200).json(messages);
     }
     catch (error) {
+        console.error('Error fetching messages:', error);
         res.status(500).json({ message: 'Failed to fetch messages' });
     }
 });
 exports.getMyMessages = getMyMessages;
 const getStatsCounts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const [studentCount, courseCount, tutorCount] = yield Promise.all([
-            User_1.default.countDocuments(),
-            Course_1.default.countDocuments(),
-            Instructor_1.default.countDocuments(),
-        ]);
-        res.status(200).json({
-            students: studentCount,
-            courses: courseCount,
-            tutors: tutorCount,
-        });
+        const stats = yield (0, userService_2.getStatsCountsService)();
+        res.status(200).json(stats);
     }
     catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Failed to fetch statistics' });
     }
 });

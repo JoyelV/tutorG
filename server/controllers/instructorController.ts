@@ -2,17 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { sendOTPEmail } from '../utils/emailService';
 import { generateOTP } from '../utils/otpGenerator';
-import { verifyOTP, loginService, resetPasswordService } from '../services/instructorService';
+import { loginService, resetPasswordService, toggleTutorStatusService } from '../services/instructorService';
 import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
-import bcrypt from 'bcrypt';
-import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/instructorService';
-import Instructor from '../models/Instructor';
-import orderModel from '../models/Orders';
+import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService,logoutService,addTutorService,getTopTutorsService,getInstructorByIdService,getUserByEmail } from '../services/instructorService';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
-import RateInstructor from '../models/RateInstructor';
-import Course from '../models/Course';
-import { instructorRepository } from 'repositories/instructorRepository';
+import { OrderService } from '../services/OrderService';
+import { RateInstructorService } from '../services/rateInstructorService';
+import { FeedbackService } from '../services/FeedbackService';
 
 dotenv.config();
 
@@ -68,23 +65,21 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 };
 
 export const logout = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
- try {
-  let userId = req.userId;
-  await Instructor.findByIdAndUpdate(
-    userId, 
-    { onlineStatus: false }, 
-    { new: true } 
-  );
-    res.status(200).json({message:"Logout successfully"});
- } catch (error) {
-  res.status(400).json({ message: 'An unknown error occurred' });
- }
-}
+  try {
+    const userId = req.userId;
+    if(userId){
+      await logoutService(userId);
+      res.status(200).json({ message: "Logout successfully" });
+    }
+  } catch (error) {
+    res.status(400).json({ message: "An unknown error occurred" });
+  }
+};
 
 export const sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email } = req.body;
   const emailLowerCase = email.toLowerCase();
-  const user = await Instructor.findOne({ email: emailLowerCase });
+  const user = await getUserByEmail(emailLowerCase);
   if (!user) {
     res.status(404).json({ error: 'Email address not found in the system.' });
     return;
@@ -214,121 +209,46 @@ export const toggleTutorStatus = async (req: Request, res: Response): Promise<vo
     const { tutorId } = req.params;
     const { isBlocked } = req.body;
 
-    if (!tutorId) {
-      res.status(400).json({ message: 'Missing userId in request parameters' });
-      return;
-    }
-
-    if (typeof isBlocked !== 'boolean') {
-      res.status(400).json({ message: 'Invalid or missing isBlocked value' });
-      return;
-    }
-
-    const updatedUser = await Instructor.findByIdAndUpdate(
-      tutorId,
-      { isBlocked },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
+    if (tutorId) {
+      const updatedUser = await toggleTutorStatusService(tutorId, isBlocked);
+      res.status(200).json(updatedUser);
+    }  
+   
+  } catch (error:any) {
     console.error('Error updating user status:', error);
-    res.status(500).json({ message: 'Failed to update user status', error: error });
+    res.status(400).json({ message: error.message });
   }
 };
 
-
 export const addTutors = async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-        username,
-        email,
-        phone,
-        password,
-        headline,
-        areasOfExpertise,
-        bio,
-        highestQualification,
-        website,
-        facebook,
-        linkedin,
-        twitter,
-        instagram,
-        github,
-        isBlocked,
-        tutorRequest,
-    } = req.body;
+    const tutor = await addTutorService(req.body, req.file);
 
-    if (!req.file) {
-      res.status(400).json({ success: false, message: 'No file uploaded' });
-      return;
-    }
-
-    const image = req.file ? req.file.path : "";
-
-    if (!username || !email || !phone || !password) {
-        res.status(400).json({ message: 'Required fields are missing.' });
-        return;
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newTutor = new Instructor({
-        username,
-        email,
-        phone,
-        password:hashedPassword, 
-        headline,
-        image,
-        areasOfExpertise,
-        bio,
-        highestQualification,
-        website,
-        facebook,
-        linkedin,
-        twitter,
-        instagram,
-        github,
-        isBlocked,
-        tutorRequest,
-    });
-
-    await newTutor.save();
-
-    res.status(201).json({ message: 'Tutor added successfully!', tutor: newTutor });
-} catch (error) {
+    res.status(201).json({ message: 'Tutor added successfully!', tutor });
+  } catch (error:any) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error.' });
-}
+    res.status(400).json({ message: error.message });
+  }
 };
 
-export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  const studentId = req.userId;
+const orderService = new OrderService();
 
+export const getMyTutors = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const orders = await orderModel.find({ studentId })
-    .populate('tutorId', 'username image onlineStatus') 
-    .exec();
-  const uniqueOrders = orders.filter((order, index, self) =>
-    index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString())
-  ); 
-  res.status(200).json(uniqueOrders); 
+    const studentId = req.userId;
+    if(studentId){
+      const tutors = await orderService.getMyTutorsService(studentId);
+      res.status(200).json(tutors);
+    }
   } catch (error) {
     console.error('Error fetching tutors:', error);
     res.status(500).json({ message: 'Server error' });
   }
-}
+};
 
 export const getTopTutors = async (req: Request, res: Response): Promise<void> => {
   try {
-    const instructors = await Instructor.find()
-      .sort({ averageRating: -1 }) 
-      .limit(5) 
-      .select('username headline areasOfExpertise image averageRating numberOfRatings'); 
+    const instructors = await getTopTutorsService();
 
     res.status(200).json(instructors);
   } catch (error) {
@@ -344,7 +264,8 @@ export const getStripePayment = async (req: AuthenticatedRequest, res: Response)
   const userId = req.userId;  
 
   try {
-    const instructor = await Instructor.findById(userId);
+    if(userId){
+    const instructor = await getUserProfileService(userId);
     
     if (!instructor) {
       res.status(404).send('Instructor not found');
@@ -380,122 +301,53 @@ export const getStripePayment = async (req: AuthenticatedRequest, res: Response)
     });
 
     res.json({ sessionId: session.id, instructorDetails: { username, email, image }});
+  }
   } catch (error) {
     console.error('Error creating Stripe Checkout session:', error);
     res.status(500).send('Internal Server Error');
   }
 };
 
+const rateInstructorService = new RateInstructorService();
+
 export const addInstructorRating = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  const { rating, comment } = req.body; 
-  const { instructorId } = req.params;   
-  const userId = req.userId; 
-  
-  if (comment && comment.length < 5) {
-    res.status(400).json({ message: 'Comment must be at least 5 characters long.' });
-    return;
-  }
+try {
+    const { rating, comment } = req.body;
+    const { instructorId } = req.params;
+    const userId = req.userId;
 
-  try {
-    const instructor = await Instructor.findById(instructorId);
-    if (!instructor) {
-      res.status(404).json({ message: 'Instructor not found' });
-      return ;
+    if(userId){
+      const response = await rateInstructorService.addInstructorRatingService(userId, instructorId, rating, comment);
+      res.status(201).json({message:response.message});
     }
-
-    const existingRating = await RateInstructor.findOne({ userId, instructorId });
-    if (existingRating) {
-      res.status(200).json({ message: 'You have already rated this instructor' });
-      return ;
-    }
-
-    const newRating = new RateInstructor({
-      userId,
-      instructorId,
-      rating,
-      comment,
-    });
-
-    await newRating.save();
-    const totalRatings = await RateInstructor.find({ instructorId }).exec(); 
-    const newAverageRating = totalRatings.reduce((acc, r) => acc + r.rating, 0) / totalRatings.length;
-
-    instructor.averageRating = newAverageRating;
-    instructor.numberOfRatings = totalRatings.length;
-    await instructor.save();
-
-    res.status(201).json({ message: 'Rating submitted successfully!' });
-  } catch (error) {
+  } catch (error:any) {
     console.error('Error updating instructor rating:', error);
-    res.status(500).json({ message: 'Server error', error });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
-};
-
+}
 
 export const getInstructorById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { instructorId } = req.params;
-    const instructor = await Instructor.findById(instructorId);
-
-    if (!instructor) {
-      res.status(404).json({ message: "Instructor not found" });
-      return ;
-    }
-
-    const courses = await Course.find({ instructorId: instructorId });
-    const totalCourses = courses.length;
-
-    const uniqueStudentIds = new Set<string>();
-    courses.forEach((course) => {
-      course.students.forEach((studentId) => {
-        uniqueStudentIds.add(studentId.toString());
-      });
-    });
-
-    const totalStudents = uniqueStudentIds.size;
-
-    res.status(200).json({
-      username: instructor.username,
-      email:instructor.email,
-      image: instructor.image,
-      bio: instructor.bio,
-      about:instructor.about,
-      headline: instructor.headline,
-      areasOfExpertise:instructor.areasOfExpertise,
-      highestQualification:instructor.highestQualification,
-      averageRating: instructor.averageRating,
-      numberOfRatings: instructor.numberOfRatings,
-      website:instructor.website,
-      facebook:instructor.facebook,
-      twitter:instructor.twitter,
-      linkedin:instructor.linkedin,
-      instagram:instructor.instagram,
-      github:instructor.github,
-      totalStudents,
-      totalCourses,
-    });
-  } catch (error) {
-    console.error("Error fetching instructor data:", error);
-    res.status(500).json({ message: "Server error" });
+    const instructorData = await getInstructorByIdService(instructorId);
+    
+    res.status(200).json(instructorData);
+  } catch (error:any) {
+    console.error('Error fetching instructor data:', error);
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
+const feedbackService = new FeedbackService();
+
 export const getInstructorFeedback = async (req: Request, res: Response, next: NextFunction) => {
-  const { instructorId } = req.params;
-
-  if (!instructorId) {
-    res.status(400).json({ message: "Instructor ID is required." });
-    return;
-  }
-
   try {
-    const feedback = await RateInstructor.find({instructorId}).populate({
-      path: 'userId',
-      select: 'username image', 
-    });
+    const { instructorId } = req.params;
+    const feedback = await feedbackService.getInstructorFeedback(instructorId);
+    
     res.status(200).json(feedback);
-  } catch (error) {
+  } catch (error:any) {
     console.error("Error fetching instructor feedback:", error);
-    res.status(500).json({ message: "Server error. Could not fetch feedback." });
+    res.status(500).json({ message: error.message || "Server error. Could not fetch feedback." });
   }
 };

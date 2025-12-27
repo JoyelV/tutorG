@@ -5,13 +5,15 @@ import { getCompletionCertificate, getCourses, getCourseWithFeedbacks, getIndivi
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
 import { addToWishlist, getWishlistItems, removeWishlistItem } from '../controllers/wishlistController';
 import { stripePayment } from '../controllers/paymentController';
-import { getEnrolledOrders, getOrdersBySessionId, getUserOrders } from '../controllers/orderController';
+import { OrderController } from "../controllers/OrderController";
 import { verifyToken } from '../utils/VerifyToken';
 import { addInstructorRating, getInstructorById, getInstructorFeedback, getMyTutors, getTopTutors } from '../controllers/instructorController';
-import { getQuizzesByCourse, submitQuiz } from '../controllers/quizController';
+import {QuizController} from '../controllers/quizController'
 import { getCategories } from '../controllers/categoryController';
 
 const router = Router();
+const orderController = new OrderController();
+const quizController = new QuizController();
 
 // AUTHENTICATION
 router.post('/register', register);
@@ -57,8 +59,8 @@ router.get('/courses-complete/:courseId',verifyToken,getCompletionCertificate);
 router.patch('/rating/:courseId',verifyToken,updateCourseRating);
 router.get('/feedbacks/:courseId',getCourseWithFeedbacks);
 router.get('/instructorData/:instructorId',getInstructorData);
-router.get('/quizzes/:courseId',getQuizzesByCourse);
-router.post('/quizzes/attempt', verifyToken,submitQuiz);
+router.get('/quizzes/:courseId',quizController.getQuizzesByCourse);
+router.post('/quizzes/attempt', verifyToken,quizController.submitQuiz);
 router.put('/progress/:id',verifyToken,updateProgress);
 router.get('/notifications',getNotifications);
 router.put('/instructorRating/:instructorId',verifyToken,addInstructorRating);
@@ -77,8 +79,8 @@ router.delete("/removeitem/:wishlistItemId",removeWishlistItem);
 router.post('/stripepayment',verifyToken,stripePayment);
 
 //ORDER MANAGEMENT
-router.get('/orders',verifyToken,getUserOrders);
-router.get('/purchase-history',verifyToken,getEnrolledOrders);
-router.get("/getorders", getOrdersBySessionId);
+router.get('/orders',verifyToken,orderController.getUserOrders.bind(orderController));
+router.get('/purchase-history',verifyToken,orderController.getEnrolledOrders.bind(orderController));
+router.get("/getorders", orderController.getOrdersBySessionId.bind(orderController));
 
 export default router;

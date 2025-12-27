@@ -10,12 +10,14 @@ const courseController_1 = require("../controllers/courseController");
 const cartController_1 = require("../controllers/cartController");
 const wishlistController_1 = require("../controllers/wishlistController");
 const paymentController_1 = require("../controllers/paymentController");
-const orderController_1 = require("../controllers/orderController");
+const OrderController_1 = require("../controllers/OrderController");
 const VerifyToken_1 = require("../utils/VerifyToken");
 const instructorController_1 = require("../controllers/instructorController");
 const quizController_1 = require("../controllers/quizController");
 const categoryController_1 = require("../controllers/categoryController");
 const router = (0, express_1.Router)();
+const orderController = new OrderController_1.OrderController();
+const quizController = new quizController_1.QuizController();
 // AUTHENTICATION
 router.post('/register', userController_1.register);
 router.post('/verify-registerotp', userController_1.verifyRegisterOTP);
@@ -55,8 +57,8 @@ router.get('/courses-complete/:courseId', VerifyToken_1.verifyToken, courseContr
 router.patch('/rating/:courseId', VerifyToken_1.verifyToken, courseController_1.updateCourseRating);
 router.get('/feedbacks/:courseId', courseController_1.getCourseWithFeedbacks);
 router.get('/instructorData/:instructorId', courseController_1.getInstructorData);
-router.get('/quizzes/:courseId', quizController_1.getQuizzesByCourse);
-router.post('/quizzes/attempt', VerifyToken_1.verifyToken, quizController_1.submitQuiz);
+router.get('/quizzes/:courseId', quizController.getQuizzesByCourse);
+router.post('/quizzes/attempt', VerifyToken_1.verifyToken, quizController.submitQuiz);
 router.put('/progress/:id', VerifyToken_1.verifyToken, courseController_1.updateProgress);
 router.get('/notifications', courseController_1.getNotifications);
 router.put('/instructorRating/:instructorId', VerifyToken_1.verifyToken, instructorController_1.addInstructorRating);
@@ -71,7 +73,7 @@ router.delete("/removeitem/:wishlistItemId", wishlistController_1.removeWishlist
 //CHECKOUT
 router.post('/stripepayment', VerifyToken_1.verifyToken, paymentController_1.stripePayment);
 //ORDER MANAGEMENT
-router.get('/orders', VerifyToken_1.verifyToken, orderController_1.getUserOrders);
-router.get('/purchase-history', VerifyToken_1.verifyToken, orderController_1.getEnrolledOrders);
-router.get("/getorders", orderController_1.getOrdersBySessionId);
+router.get('/orders', VerifyToken_1.verifyToken, orderController.getUserOrders.bind(orderController));
+router.get('/purchase-history', VerifyToken_1.verifyToken, orderController.getEnrolledOrders.bind(orderController));
+router.get("/getorders", orderController.getOrdersBySessionId.bind(orderController));
 exports.default = router;

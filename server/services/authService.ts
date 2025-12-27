@@ -6,6 +6,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { IUser } from '../entities/IUser';
 import User from '../models/User';
 
+
 export const verifyOTP = async (email: string, otp: string): Promise<string> => {
   const storedEntry = otpRepository.getOtp(email);
   if (!storedEntry) {
@@ -155,3 +156,13 @@ export const resetPasswordService = async (token: string, newPassword: string): 
     throw new Error('Invalid or expired token');
   }
 };
+
+export const logoutService = async (userId: string): Promise<string> => {
+  try {
+    await userRepository.logoutRepository(userId);
+    return 'Logout successfully';
+  } catch (error) {
+    throw new Error('Error during logout');
+  }
+};
+

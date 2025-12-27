@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadUserImage = exports.updatePassword = exports.updateUserProfile = exports.getUserProfileService = void 0;
+exports.getStatsCountsService = exports.getMyMessagesService = exports.getStudentsChatService = exports.getStudentsByInstructorService = exports.toggleUserStatusService = exports.uploadUserImage = exports.updatePassword = exports.updateUserProfile = exports.getUserProfileService = void 0;
 const userRepository_1 = require("../repositories/userRepository");
+const userRepository_2 = require("../repositories/userRepository");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const getUserProfileService = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -63,3 +64,39 @@ const uploadUserImage = (userId, imageUrl) => __awaiter(void 0, void 0, void 0, 
     return user;
 });
 exports.uploadUserImage = uploadUserImage;
+const toggleUserStatusService = (userId, isBlocked) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const updatedUser = yield (0, userRepository_2.toggleUserStatusRepository)(userId, isBlocked);
+        if (!updatedUser) {
+            throw new Error('User not found');
+        }
+        return updatedUser;
+    }
+    catch (error) {
+        throw new Error('Failed to update user status');
+    }
+});
+exports.toggleUserStatusService = toggleUserStatusService;
+const getStudentsByInstructorService = (instructorId, page, limit) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield (0, userRepository_2.getStudentsByInstructorRepository)(instructorId, page, limit);
+    return result;
+});
+exports.getStudentsByInstructorService = getStudentsByInstructorService;
+const getStudentsChatService = (instructorId) => __awaiter(void 0, void 0, void 0, function* () {
+    const orders = yield (0, userRepository_2.getStudentsChatRepository)(instructorId);
+    if (orders.length === 0) {
+        throw new Error('No students found for this instructor.');
+    }
+    return orders;
+});
+exports.getStudentsChatService = getStudentsChatService;
+const getMyMessagesService = (senderId, receiverId) => __awaiter(void 0, void 0, void 0, function* () {
+    const messages = yield (0, userRepository_2.getMyMessagesRepository)(senderId, receiverId);
+    return messages;
+});
+exports.getMyMessagesService = getMyMessagesService;
+const getStatsCountsService = () => __awaiter(void 0, void 0, void 0, function* () {
+    const stats = yield (0, userRepository_2.getStatsCountsRepository)();
+    return stats;
+});
+exports.getStatsCountsService = getStatsCountsService;

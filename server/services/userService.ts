@@ -1,5 +1,7 @@
 import { IUser } from '../entities/IUser';
 import { userRepository } from '../repositories/userRepository';
+import { toggleUserStatusRepository, getStudentsByInstructorRepository, getStudentsChatRepository, getMyMessagesRepository, getStatsCountsRepository } from '../repositories/userRepository';
+
 import bcrypt from 'bcrypt';
 
 export const getUserProfileService = async (userId: string): Promise<IUser> => {
@@ -50,3 +52,38 @@ export const uploadUserImage = async (userId: string, imageUrl: string): Promise
   }
   return user;
 }
+
+export const toggleUserStatusService = async (userId: string, isBlocked: boolean) => {
+  try {
+    const updatedUser = await toggleUserStatusRepository(userId, isBlocked);
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
+  } catch (error) {
+    throw new Error('Failed to update user status');
+  }
+};
+
+export const getStudentsByInstructorService = async (instructorId: string, page: string, limit: string) => {
+  const result = await getStudentsByInstructorRepository(instructorId, page, limit);
+  return result;
+};
+
+export const getStudentsChatService = async (instructorId: string) => {
+  const orders = await getStudentsChatRepository(instructorId);
+  if (orders.length === 0) {
+    throw new Error('No students found for this instructor.');
+  }
+  return orders;
+};
+
+export const getMyMessagesService = async (senderId: string | undefined, receiverId: string | undefined) => {
+  const messages = await getMyMessagesRepository(senderId, receiverId);
+  return messages;
+};
+
+export const getStatsCountsService = async () => {
+  const stats = await getStatsCountsRepository();
+  return stats;
+};

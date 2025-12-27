@@ -13,55 +13,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.removeWishlistItem = exports.getWishlistItems = exports.addToWishlist = void 0;
-const wishlist_1 = __importDefault(require("../models/wishlist"));
+const wishlistService_1 = __importDefault(require("../services/wishlistService"));
 const addToWishlist = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId, courseId } = req.body;
-        const itemExisted = yield wishlist_1.default.findOne({ user: userId, course: courseId });
-        if (itemExisted) {
-            res.status(200).json({ message: "Course already existed in Wishlist" });
-            return;
-        }
-        else {
-            const newItem = new wishlist_1.default({ user: userId, course: courseId });
-            yield newItem.save();
-            res.status(201).json({ message: "Course added to wishlist successfully" });
-            return;
-        }
+        const response = yield wishlistService_1.default.addToWishlist(userId, courseId);
+        res.status(response.status).json({ message: response.message });
     }
     catch (error) {
-        console.error("Error Occur while Adding to wishlist", error);
+        console.error("Error Occurred while Adding to Wishlist:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.addToWishlist = addToWishlist;
 const getWishlistItems = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const studentId = req.userId;
     try {
-        const wishlistItems = yield wishlist_1.default.find({ user: studentId }).populate("course");
-        wishlistItems.forEach(item => {
-            console.log('Populated Course:', item.course);
-        });
-        res.status(200).json(wishlistItems);
+        const studentId = req.userId;
+        if (studentId) {
+            const wishlistItems = yield wishlistService_1.default.getWishlistItems(studentId);
+            res.status(200).json(wishlistItems);
+        }
     }
     catch (error) {
-        console.error("Error fetching cart Items", error);
-        res.status(500).json({ error: "Internal server Error" });
+        console.error("Error Fetching Wishlist Items:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 exports.getWishlistItems = getWishlistItems;
 const removeWishlistItem = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const wishlistItemId = req.params.wishlistItemId;
-        const removedItem = yield wishlist_1.default.findByIdAndDelete({ _id: wishlistItemId });
-        if (!removedItem) {
-            res.status(404).json({ error: "Wishlist item not found" });
-            return;
-        }
-        res.status(200).json({ message: "Course removed from the wishlist" });
+        const response = yield wishlistService_1.default.removeWishlistItem(wishlistItemId);
+        res.status(response.status).json({ message: response.message });
     }
     catch (error) {
-        console.error("Error removing course from wishlist", error);
+        console.error("Error Removing Wishlist Item:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });

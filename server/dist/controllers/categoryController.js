@@ -8,12 +8,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCategory = exports.getUnblockedCategories = exports.getCategoriesPagination = exports.getCategories = exports.updateCategory = exports.saveCategory = void 0;
-const Category_1 = __importDefault(require("../models/Category"));
+exports.deleteCategory = exports.getCategoriesPagination = exports.getCategories = exports.updateCategory = exports.saveCategory = void 0;
+const categoryService_1 = require("../services/categoryService");
+const categoryService = new categoryService_1.CategoryService();
 /**
  * Add or Edit a category with subcategories
  */
@@ -24,23 +22,11 @@ const saveCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             res.status(400).json({ message: 'Category name is required' });
             return;
         }
-        const subCategoryNames = subCategories.map((sub) => sub.trim().toLowerCase());
-        const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
-        if (hasDuplicateSubcategories) {
-            res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
-            return;
-        }
-        const newCategory = new Category_1.default({
-            categoryName,
-            subCategories: subCategories.map((name) => ({ name })),
-            createdByAdmin: true,
-        });
-        const savedCategory = yield newCategory.save();
+        const savedCategory = yield categoryService.saveCategory(categoryName, subCategories);
         res.status(201).json(savedCategory);
     }
     catch (error) {
-        console.error('Error saving category:', error);
-        next({ status: 500, message: 'Error saving category', error });
+        next({ status: 400, message: error.message });
     }
 });
 exports.saveCategory = saveCategory;
@@ -52,27 +38,15 @@ const updateCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             res.status(400).json({ message: 'Category name is required' });
             return;
         }
-        if (id) {
-            const category = yield Category_1.default.findById(id);
-            if (!category) {
-                res.status(404).json({ message: 'Category not found' });
-                return;
-            }
-            const subCategoryNames = subCategories.map((sub) => sub.trim().toLowerCase());
-            const hasDuplicateSubcategories = new Set(subCategoryNames).size !== subCategoryNames.length;
-            if (hasDuplicateSubcategories) {
-                res.status(400).json({ message: 'Duplicate subcategories are not allowed' });
-                return;
-            }
-            category.categoryName = categoryName;
-            category.subCategories = subCategories.map((name) => ({ name }));
-            const updatedCategory = yield category.save();
-            res.status(200).json(updatedCategory);
+        const updatedCategory = yield categoryService.updateCategory(id, categoryName, subCategories);
+        if (!updatedCategory) {
+            res.status(404).json({ message: 'Category not found' });
+            return;
         }
+        res.status(200).json(updatedCategory);
     }
     catch (error) {
-        console.error('Error saving category:', error);
-        next({ status: 500, message: 'Error saving category', error });
+        next({ status: 400, message: error.message });
     }
 });
 exports.updateCategory = updateCategory;
@@ -81,11 +55,10 @@ exports.updateCategory = updateCategory;
  */
 const getCategories = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categories = yield Category_1.default.find({ status: false });
+        const categories = yield categoryService.getCategories();
         res.status(200).json(categories);
     }
     catch (error) {
-        console.error('Error fetching categories:', error);
         next({ status: 500, message: 'Error fetching categories', error });
     }
 });
@@ -94,29 +67,12 @@ const getCategoriesPagination = (req, res, next) => __awaiter(void 0, void 0, vo
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 5;
     if (page < 1 || limit < 1) {
-        res.status(400).json({ error: "Page and limit must be positive integers." });
+        res.status(400).json({ message: 'Page and limit must be positive integers.' });
         return;
     }
     try {
-        const totalCategories = yield Category_1.default.countDocuments();
-        const totalPages = Math.ceil(totalCategories / limit);
-        if ((page - 1) * limit >= totalCategories) {
-            res.status(200).json({
-                categories: [],
-                totalPages,
-                currentPage: page,
-            });
-            return;
-        }
-        const categories = yield Category_1.default.find()
-            .skip((page - 1) * limit)
-            .limit(limit);
-        res.status(200).json({
-            categories,
-            totalPages,
-            currentPage: page,
-            totalItems: totalCategories,
-        });
+        const result = yield categoryService.getCategoriesPagination(page, limit);
+        res.status(200).json(result);
     }
     catch (error) {
         next(error);
@@ -124,39 +80,22 @@ const getCategoriesPagination = (req, res, next) => __awaiter(void 0, void 0, vo
 });
 exports.getCategoriesPagination = getCategoriesPagination;
 /**
- * Fetch all Unblocked categories
- */
-const getUnblockedCategories = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const categories = yield Category_1.default.find({ status: false });
-        res.status(200).json(categories);
-    }
-    catch (error) {
-        console.error('Error fetching categories:', error);
-        next({ status: 500, message: 'Error fetching categories', error });
-    }
-});
-exports.getUnblockedCategories = getUnblockedCategories;
-/**
- * Delete a category
+ * Block/Unblock a category
  */
 const deleteCategory = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const category = yield Category_1.default.findById(id);
-        if (!category) {
+        const updatedCategory = yield categoryService.toggleCategoryStatus(id);
+        if (!updatedCategory) {
             res.status(404).json({ message: 'Category not found' });
             return;
         }
-        category.status = category.status ? false : true;
-        const updatedCategory = yield category.save();
         res.status(200).json({
             message: `Category ${updatedCategory.status ? 'unblocked' : 'blocked'} successfully`,
             category: updatedCategory,
         });
     }
     catch (error) {
-        console.error('Error blocking/unblocking category:', error);
         next({ status: 500, message: 'Error blocking/unblocking category', error });
     }
 });

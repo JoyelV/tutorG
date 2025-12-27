@@ -2,18 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { sendOTPEmail } from '../utils/emailService';
 import { generateOTP } from '../utils/otpGenerator';
-import { verifyOTP, loginService, resetPasswordService, googleLoginService } from '../services/authService';
+import { verifyOTP, loginService, resetPasswordService, googleLoginService,logoutService } from '../services/authService';
 import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
-import orderModel from '../models/Orders';
 import jwt from 'jsonwebtoken';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService } from '../services/userService';
-import User from '../models/User'
-import Message from '../models/Message';
-import Course from '../models/Course';
-import Instructor from '../models/Instructor';
 import { userRepository } from '../repositories/userRepository';
+import { toggleUserStatusService, getStudentsByInstructorService, getStudentsChatService, getMyMessagesService, getStatsCountsService } from '../services/userService';
+
 dotenv.config();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -119,15 +116,14 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
 export const logout = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-   let userId = req.userId;
-   await User.findByIdAndUpdate(
-     userId, 
-     { onlineStatus: false }, 
-     { new: true } 
-   );
-     res.status(200).json({message:"Logout successfully"});
+    const userId = req.userId || '';
+    if(!userId){
+      res.status(404).json({ message: "No userId found" });
+    }
+    const message = await logoutService(userId);
+    res.status(200).json({ message });
   } catch (error) {
-   res.status(400).json({ message: 'An unknown error occurred' });
+    res.status(400).json({ message: 'An unknown error occurred' });
   }
 }
 
@@ -191,7 +187,7 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction): 
   try {
     const { email } = req.body;
     const emailLowerCase = email.toLowerCase();
-    const user = await User.findOne({ email: emailLowerCase });
+    const user = await userRepository.findUserByEmail(emailLowerCase);
 
     if (!user) {
       res.status(404).json({ error: 'Email address not found in the system.' });
@@ -236,8 +232,16 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
 export const fetchImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const userId = req.userId;  
+  if (!userId) {
+    res.status(400).json({ message: 'User ID is missing in the request' });
+    return;
+  }
   try {
-    const user = await User.findById(userId);
+    const user = await getUserProfileService(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
     res.status(200).json({imageUrl:user?.image});
   } catch (error) {
     res.status(400).json({message:'Image not found'});
@@ -335,112 +339,59 @@ export const toggleUserStatus = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { isBlocked },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-
+    const updatedUser = await toggleUserStatusService(userId, isBlocked);
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.error('Error updating user status:', error);
     res.status(500).json({ message: 'Failed to update user status', error: error });
   }
 };
 
 export const getStudentsByInstructor = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const instructorId = req.userId;
-    const { page = 1, limit = 4 } = req.query; 
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const totalStudents = await orderModel.countDocuments({
-      tutorId: instructorId,
-      studentId: { $ne: null },
-    });
-
-    const students = await orderModel
-      .find({
-        tutorId: instructorId,
-        studentId: { $ne: null },
-      })
-      .populate("studentId", "username email phone image gender")
-      .populate("courseId", "title level")
-      .skip(skip)
-      .limit(Number(limit));
-    
-    res.status(200).json({
-      students,
-      totalStudents,
-      currentPage: Number(page),
-      totalPages: Math.ceil(totalStudents / Number(limit)),
-    });
+    const instructorId = req.userId || '';
+    const { page = 1, limit = 4 } = req.query;
+    const result = await getStudentsByInstructorService(instructorId, page.toString(), limit.toString());
+    res.status(200).json(result);
   } catch (error) {
-    console.error('Error fetching students by instructor:', error);
     res.status(500).json({ message: 'Error fetching students' });
   }
 };
 
 export const getStudentsChat = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const instructorId = req.userId;
-
-    const orders = await orderModel
-    .find({
-      tutorId: instructorId,
-      studentId: { $ne: null },  
-    })
-    .populate("studentId", "username email phone image gender onlineStatus")
-    .populate("courseId", "title level"); 
-
-    if (orders.length === 0) {
-      res.status(404).json({ message: "No students found for this instructor." });
-      return;
-    }
+    const instructorId = req.userId || '';
+    const orders = await getStudentsChatService(instructorId);
     res.status(200).json(orders);
   } catch (error) {
-    console.error('Error fetching students by instructor:', error);
     res.status(500).json({ message: 'Error fetching students' });
   }
 };
 
 export const getMyMessages = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { senderId, receiverId } = req.query;
-    
-  try {
-    const messages = await Message.find({
-      $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId },
-      ],
-    }).sort({ createdAt: 1 });
 
+  const sender = typeof senderId === 'string' ? senderId : undefined;
+  const receiver = typeof receiverId === 'string' ? receiverId : undefined;
+
+  if (!sender || !receiver) {
+    res.status(400).json({ message: 'Invalid or missing senderId or receiverId in request query' });
+    return ;
+  }
+
+  try {
+    const messages = await getMyMessagesService(sender, receiver);
     res.status(200).json(messages);
   } catch (error) {
+    console.error('Error fetching messages:', error);
     res.status(500).json({ message: 'Failed to fetch messages' });
   }
-}
+};
 
-export const getStatsCounts = async(req:Request,res:Response):Promise<void>=>{
+export const getStatsCounts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const [studentCount, courseCount, tutorCount] = await Promise.all([
-      User.countDocuments(),
-      Course.countDocuments(),
-      Instructor.countDocuments(),
-    ]);
-
-    res.status(200).json({
-      students: studentCount,
-      courses: courseCount,
-      tutors: tutorCount,
-    });
+    const stats = await getStatsCountsService();
+    res.status(200).json(stats);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Failed to fetch statistics' });
   }
-}
+};

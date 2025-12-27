@@ -1,11 +1,15 @@
 import User from '../models/Instructor'; 
 import { IInstructor } from '../entities/IInstructor';
+import Course from '../models/Course';
 
 export const instructorRepository = {
   async createUser(username: string, email: string, password: string): Promise<void> {
     const newUser = new User({ username, email, password });
     await newUser.save();
     console.log("newUser in userrepo - vERIFTY OTP",newUser);
+  },
+  async findCoursesByInstructor(instructorId: string) {
+    return await Course.find({ instructorId });
   },
   async findUserByEmail(email: string): Promise<IInstructor | null> {
     return await User.findOne({ email });
@@ -51,6 +55,23 @@ export const instructorRepository = {
     } catch (error) {
        throw error; 
     }
+  },
+  async updateOnlineStatus(userId: string, status: boolean): Promise<void> {
+    await User.findByIdAndUpdate(userId, { onlineStatus: status }, { new: true });
+  },
+  async updateTutorStatus(tutorId: string, isBlocked: boolean) {
+    return await User.findByIdAndUpdate(tutorId, { isBlocked }, { new: true });
+  },
+  async createTutor(tutorData: any) {
+    const newTutor = new User(tutorData);
+    return await newTutor.save();
+  },
+  async getTopTutors(limit: number) {
+    return await User.find()
+      .sort({ averageRating: -1 })
+      .limit(limit)
+      .select('username headline areasOfExpertise image averageRating numberOfRatings')
+      .exec();
   },
 };
 

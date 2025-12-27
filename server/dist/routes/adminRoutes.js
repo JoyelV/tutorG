@@ -12,8 +12,9 @@ const categoryController_1 = require("../controllers/categoryController");
 const courseController_1 = require("../controllers/courseController");
 const reviewController_1 = require("../controllers/reviewController");
 const VerifyToken_1 = require("../utils/VerifyToken");
-const orderController_1 = require("../controllers/orderController");
+const OrderController_1 = require("../controllers/OrderController");
 const router = (0, express_1.Router)();
+const orderController = new OrderController_1.OrderController();
 // AUTHENTICATION
 router.post('/login', adminController_1.login);
 router.post('/send-otp', adminController_1.sendOtp);
@@ -45,6 +46,6 @@ router.post('/courses/:courseId', VerifyToken_1.verifyToken, reviewController_1.
 router.get('/reviews/:courseId', VerifyToken_1.verifyToken, reviewController_1.getReviews);
 router.get('/instructorProfile/:instructorId', VerifyToken_1.verifyToken, courseController_1.getInstructorData);
 //Order Management
-router.get("/orders", VerifyToken_1.verifyToken, orderController_1.getOrders);
-router.get("/order-view/:orderId", VerifyToken_1.verifyToken, orderController_1.getOrderDetail);
+router.get("/orders", VerifyToken_1.verifyToken, orderController.getOrders.bind(orderController));
+router.get("/order-view/:orderId", VerifyToken_1.verifyToken, orderController.getOrderDetail.bind(orderController));
 exports.default = router;

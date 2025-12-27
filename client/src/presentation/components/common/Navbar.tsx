@@ -4,7 +4,6 @@ import {
     Toolbar,
     Typography,
     IconButton,
-    InputBase,
     Button,
     Box,
     Badge,
@@ -15,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from 'react';
 import { assets } from '../../../assets/assets_user/assets';

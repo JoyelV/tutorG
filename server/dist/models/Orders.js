@@ -28,17 +28,17 @@ const orderSchema = new mongoose_1.Schema({
     studentId: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
-        ref: "User",
+        ref: 'User',
     },
     courseId: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
-        ref: "Course",
+        ref: 'Course',
     },
     tutorId: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
-        ref: "Instructor",
+        ref: 'Instructor',
     },
     amount: {
         type: Number,
@@ -46,11 +46,11 @@ const orderSchema = new mongoose_1.Schema({
     },
     status: {
         type: String,
-        default: "completed",
+        default: 'completed',
     },
     paymentMethod: {
         type: String,
-        enum: ["Stripe", "Wallet"],
+        enum: ['Stripe', 'Wallet'],
         required: true,
     },
     sessionId: { type: String, required: true },
@@ -67,5 +67,5 @@ const orderSchema = new mongoose_1.Schema({
         default: Date.now,
     },
 }, { timestamps: true });
-const orderModel = mongoose_1.default.model("Orders", orderSchema);
+const orderModel = mongoose_1.default.model('Orders', orderSchema);
 exports.default = orderModel;

@@ -14,12 +14,13 @@ import {
 from '../controllers/instructorController';
 import upload from '../config/multerConfig';
 import { addLesson, createCourse, deleteCourse, deleteLesson, editCourse, getEarningDetails, getEnrolledMyCourses, getMyCourses, getMyEarnings, getMyStudents, getMyTutorCourses, getViewChapter, getViewChapters, getViewCourses, getWithdrawalHistory, updateChapter } from '../controllers/courseController';
-import { getUnblockedCategories } from '../controllers/categoryController';
-import { addQuiz, deleteQuiz, getQuizById, getQuizzesByCourse, updateQuiz } from '../controllers/quizController';
 import { getMyMessages, getStudentsByInstructor, getStudentsChat } from '../controllers/userController';
 import { verifyToken } from '../utils/VerifyToken';
+import { getCategories } from '../controllers/categoryController';
+import {QuizController} from '../controllers/quizController'
 
 const router = Router();
+const quizController = new QuizController();
 
 // AUTHENTICATION
 router.post('/login', login); 
@@ -49,12 +50,12 @@ router.get('/view-lessons/:courseId',getViewChapters);
 router.get('/view-lesson/:lessonId',getViewChapter);
 router.put('/update-lesson/:lessonId',updateChapter);
 router.delete('/delete-lesson',deleteLesson);
-router.post('/quizzes/:courseId', addQuiz);
-router.get('/quizzes/:courseId', getQuizzesByCourse);
-router.get('/quizzes/:courseId/:quizId', getQuizById);
-router.put('/quizzes/:courseId/:quizId', updateQuiz);
-router.delete('/quizzes/:courseId/:quizId', deleteQuiz);
-router.get('/categories', getUnblockedCategories);
+router.post('/quizzes/:courseId',quizController.addQuiz );
+router.get('/quizzes/:courseId', quizController.getQuizzesByCourse);
+router.get('/quizzes/:courseId/:quizId', quizController.getQuizById);
+router.put('/quizzes/:courseId/:quizId', quizController.updateQuiz);
+router.delete('/quizzes/:courseId/:quizId', quizController.deleteQuiz);
+router.get('/categories', getCategories);
 
 //STUDENT LIST
 router.get('/students', verifyToken,getStudentsByInstructor );

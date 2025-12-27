@@ -14,12 +14,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.instructorRepository = void 0;
 const Instructor_1 = __importDefault(require("../models/Instructor"));
+const Course_1 = __importDefault(require("../models/Course"));
 exports.instructorRepository = {
     createUser(username, email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             const newUser = new Instructor_1.default({ username, email, password });
             yield newUser.save();
             console.log("newUser in userrepo - vERIFTY OTP", newUser);
+        });
+    },
+    findCoursesByInstructor(instructorId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield Course_1.default.find({ instructorId });
         });
     },
     findUserByEmail(email) {
@@ -83,6 +89,31 @@ exports.instructorRepository = {
             catch (error) {
                 throw error;
             }
+        });
+    },
+    updateOnlineStatus(userId, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield Instructor_1.default.findByIdAndUpdate(userId, { onlineStatus: status }, { new: true });
+        });
+    },
+    updateTutorStatus(tutorId, isBlocked) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield Instructor_1.default.findByIdAndUpdate(tutorId, { isBlocked }, { new: true });
+        });
+    },
+    createTutor(tutorData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newTutor = new Instructor_1.default(tutorData);
+            return yield newTutor.save();
+        });
+    },
+    getTopTutors(limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield Instructor_1.default.find()
+                .sort({ averageRating: -1 })
+                .limit(limit)
+                .select('username headline areasOfExpertise image averageRating numberOfRatings')
+                .exec();
         });
     },
 };

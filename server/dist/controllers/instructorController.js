@@ -19,12 +19,10 @@ const otpGenerator_1 = require("../utils/otpGenerator");
 const instructorService_1 = require("../services/instructorService");
 const otpService_1 = require("../services/otpService");
 const otpRepository_1 = require("../repositories/otpRepository");
-const bcrypt_1 = __importDefault(require("bcrypt"));
 const instructorService_2 = require("../services/instructorService");
-const Instructor_1 = __importDefault(require("../models/Instructor"));
-const Orders_1 = __importDefault(require("../models/Orders"));
-const RateInstructor_1 = __importDefault(require("../models/RateInstructor"));
-const Course_1 = __importDefault(require("../models/Course"));
+const OrderService_1 = require("../services/OrderService");
+const rateInstructorService_1 = require("../services/rateInstructorService");
+const FeedbackService_1 = require("../services/FeedbackService");
 dotenv_1.default.config();
 /**
  * Resend OTP to the student email for registration.
@@ -76,19 +74,21 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
 exports.login = login;
 const logout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let userId = req.userId;
-        yield Instructor_1.default.findByIdAndUpdate(userId, { onlineStatus: false }, { new: true });
-        res.status(200).json({ message: "Logout successfully" });
+        const userId = req.userId;
+        if (userId) {
+            yield (0, instructorService_2.logoutService)(userId);
+            res.status(200).json({ message: "Logout successfully" });
+        }
     }
     catch (error) {
-        res.status(400).json({ message: 'An unknown error occurred' });
+        res.status(400).json({ message: "An unknown error occurred" });
     }
 });
 exports.logout = logout;
 const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;
     const emailLowerCase = email.toLowerCase();
-    const user = yield Instructor_1.default.findOne({ email: emailLowerCase });
+    const user = yield (0, instructorService_2.getUserByEmail)(emailLowerCase);
     if (!user) {
         res.status(404).json({ error: 'Email address not found in the system.' });
         return;
@@ -211,76 +211,36 @@ const toggleTutorStatus = (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         const { tutorId } = req.params;
         const { isBlocked } = req.body;
-        if (!tutorId) {
-            res.status(400).json({ message: 'Missing userId in request parameters' });
-            return;
+        if (tutorId) {
+            const updatedUser = yield (0, instructorService_1.toggleTutorStatusService)(tutorId, isBlocked);
+            res.status(200).json(updatedUser);
         }
-        if (typeof isBlocked !== 'boolean') {
-            res.status(400).json({ message: 'Invalid or missing isBlocked value' });
-            return;
-        }
-        const updatedUser = yield Instructor_1.default.findByIdAndUpdate(tutorId, { isBlocked }, { new: true });
-        if (!updatedUser) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
-        res.status(200).json(updatedUser);
     }
     catch (error) {
         console.error('Error updating user status:', error);
-        res.status(500).json({ message: 'Failed to update user status', error: error });
+        res.status(400).json({ message: error.message });
     }
 });
 exports.toggleTutorStatus = toggleTutorStatus;
 const addTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username, email, phone, password, headline, areasOfExpertise, bio, highestQualification, website, facebook, linkedin, twitter, instagram, github, isBlocked, tutorRequest, } = req.body;
-        if (!req.file) {
-            res.status(400).json({ success: false, message: 'No file uploaded' });
-            return;
-        }
-        const image = req.file ? req.file.path : "";
-        if (!username || !email || !phone || !password) {
-            res.status(400).json({ message: 'Required fields are missing.' });
-            return;
-        }
-        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-        const newTutor = new Instructor_1.default({
-            username,
-            email,
-            phone,
-            password: hashedPassword,
-            headline,
-            image,
-            areasOfExpertise,
-            bio,
-            highestQualification,
-            website,
-            facebook,
-            linkedin,
-            twitter,
-            instagram,
-            github,
-            isBlocked,
-            tutorRequest,
-        });
-        yield newTutor.save();
-        res.status(201).json({ message: 'Tutor added successfully!', tutor: newTutor });
+        const tutor = yield (0, instructorService_2.addTutorService)(req.body, req.file);
+        res.status(201).json({ message: 'Tutor added successfully!', tutor });
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(400).json({ message: error.message });
     }
 });
 exports.addTutors = addTutors;
+const orderService = new OrderService_1.OrderService();
 const getMyTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const studentId = req.userId;
     try {
-        const orders = yield Orders_1.default.find({ studentId })
-            .populate('tutorId', 'username image onlineStatus')
-            .exec();
-        const uniqueOrders = orders.filter((order, index, self) => index === self.findIndex((o) => o.tutorId.toString() === order.tutorId.toString()));
-        res.status(200).json(uniqueOrders);
+        const studentId = req.userId;
+        if (studentId) {
+            const tutors = yield orderService.getMyTutorsService(studentId);
+            res.status(200).json(tutors);
+        }
     }
     catch (error) {
         console.error('Error fetching tutors:', error);
@@ -290,10 +250,7 @@ const getMyTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getMyTutors = getMyTutors;
 const getTopTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const instructors = yield Instructor_1.default.find()
-            .sort({ averageRating: -1 })
-            .limit(5)
-            .select('username headline areasOfExpertise image averageRating numberOfRatings');
+        const instructors = yield (0, instructorService_2.getTopTutorsService)();
         res.status(200).json(instructors);
     }
     catch (error) {
@@ -307,38 +264,40 @@ const getStripePayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
     const { amount } = req.body;
     const userId = req.userId;
     try {
-        const instructor = yield Instructor_1.default.findById(userId);
-        if (!instructor) {
-            res.status(404).send('Instructor not found');
-            return;
-        }
-        const { username, email, image } = instructor;
-        const session = yield stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [
-                {
-                    price_data: {
-                        currency: 'usd',
-                        product_data: {
-                            name: 'Withdrawal',
+        if (userId) {
+            const instructor = yield (0, instructorService_2.getUserProfileService)(userId);
+            if (!instructor) {
+                res.status(404).send('Instructor not found');
+                return;
+            }
+            const { username, email, image } = instructor;
+            const session = yield stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: 'usd',
+                            product_data: {
+                                name: 'Withdrawal',
+                            },
+                            unit_amount: amount * 100,
                         },
-                        unit_amount: amount * 100,
+                        quantity: 1,
                     },
-                    quantity: 1,
+                ],
+                mode: 'payment',
+                success_url: `${process.env.CLIENT_URL}/instructor/my-earnings?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.CLIENT_URL}/instructor/my-earnings`,
+                metadata: {
+                    type: 'instructor_payout',
+                    username,
+                    email,
+                    image,
+                    amount
                 },
-            ],
-            mode: 'payment',
-            success_url: `${process.env.CLIENT_URL}/instructor/my-earnings?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.CLIENT_URL}/instructor/my-earnings`,
-            metadata: {
-                type: 'instructor_payout',
-                username,
-                email,
-                image,
-                amount
-            },
-        });
-        res.json({ sessionId: session.id, instructorDetails: { username, email, image } });
+            });
+            res.json({ sessionId: session.id, instructorDetails: { username, email, image } });
+        }
     }
     catch (error) {
         console.error('Error creating Stripe Checkout session:', error);
@@ -346,105 +305,45 @@ const getStripePayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getStripePayment = getStripePayment;
+const rateInstructorService = new rateInstructorService_1.RateInstructorService();
 const addInstructorRating = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { rating, comment } = req.body;
-    const { instructorId } = req.params;
-    const userId = req.userId;
-    if (comment && comment.length < 5) {
-        res.status(400).json({ message: 'Comment must be at least 5 characters long.' });
-        return;
-    }
     try {
-        const instructor = yield Instructor_1.default.findById(instructorId);
-        if (!instructor) {
-            res.status(404).json({ message: 'Instructor not found' });
-            return;
+        const { rating, comment } = req.body;
+        const { instructorId } = req.params;
+        const userId = req.userId;
+        if (userId) {
+            const response = yield rateInstructorService.addInstructorRatingService(userId, instructorId, rating, comment);
+            res.status(201).json({ message: response.message });
         }
-        const existingRating = yield RateInstructor_1.default.findOne({ userId, instructorId });
-        if (existingRating) {
-            res.status(200).json({ message: 'You have already rated this instructor' });
-            return;
-        }
-        const newRating = new RateInstructor_1.default({
-            userId,
-            instructorId,
-            rating,
-            comment,
-        });
-        yield newRating.save();
-        const totalRatings = yield RateInstructor_1.default.find({ instructorId }).exec();
-        const newAverageRating = totalRatings.reduce((acc, r) => acc + r.rating, 0) / totalRatings.length;
-        instructor.averageRating = newAverageRating;
-        instructor.numberOfRatings = totalRatings.length;
-        yield instructor.save();
-        res.status(201).json({ message: 'Rating submitted successfully!' });
     }
     catch (error) {
         console.error('Error updating instructor rating:', error);
-        res.status(500).json({ message: 'Server error', error });
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 });
 exports.addInstructorRating = addInstructorRating;
 const getInstructorById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { instructorId } = req.params;
-        const instructor = yield Instructor_1.default.findById(instructorId);
-        if (!instructor) {
-            res.status(404).json({ message: "Instructor not found" });
-            return;
-        }
-        const courses = yield Course_1.default.find({ instructorId: instructorId });
-        const totalCourses = courses.length;
-        const uniqueStudentIds = new Set();
-        courses.forEach((course) => {
-            course.students.forEach((studentId) => {
-                uniqueStudentIds.add(studentId.toString());
-            });
-        });
-        const totalStudents = uniqueStudentIds.size;
-        res.status(200).json({
-            username: instructor.username,
-            email: instructor.email,
-            image: instructor.image,
-            bio: instructor.bio,
-            about: instructor.about,
-            headline: instructor.headline,
-            areasOfExpertise: instructor.areasOfExpertise,
-            highestQualification: instructor.highestQualification,
-            averageRating: instructor.averageRating,
-            numberOfRatings: instructor.numberOfRatings,
-            website: instructor.website,
-            facebook: instructor.facebook,
-            twitter: instructor.twitter,
-            linkedin: instructor.linkedin,
-            instagram: instructor.instagram,
-            github: instructor.github,
-            totalStudents,
-            totalCourses,
-        });
+        const instructorData = yield (0, instructorService_2.getInstructorByIdService)(instructorId);
+        res.status(200).json(instructorData);
     }
     catch (error) {
-        console.error("Error fetching instructor data:", error);
-        res.status(500).json({ message: "Server error" });
+        console.error('Error fetching instructor data:', error);
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 });
 exports.getInstructorById = getInstructorById;
+const feedbackService = new FeedbackService_1.FeedbackService();
 const getInstructorFeedback = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { instructorId } = req.params;
-    if (!instructorId) {
-        res.status(400).json({ message: "Instructor ID is required." });
-        return;
-    }
     try {
-        const feedback = yield RateInstructor_1.default.find({ instructorId }).populate({
-            path: 'userId',
-            select: 'username image',
-        });
+        const { instructorId } = req.params;
+        const feedback = yield feedbackService.getInstructorFeedback(instructorId);
         res.status(200).json(feedback);
     }
     catch (error) {
         console.error("Error fetching instructor feedback:", error);
-        res.status(500).json({ message: "Server error. Could not fetch feedback." });
+        res.status(500).json({ message: error.message || "Server error. Could not fetch feedback." });
     }
 });
 exports.getInstructorFeedback = getInstructorFeedback;

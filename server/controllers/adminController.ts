@@ -9,7 +9,7 @@ import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileServi
 import { userRepository } from '../repositories/userRepository';
 import { instructorRepository } from '../repositories/instructorRepository';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
-import Admin from '../models/Admin';
+import { adminRepository } from '../repositories/adminRepository';
 dotenv.config();
 
 /**
@@ -65,7 +65,7 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction): 
   const { email } = req.body;
   try {
     const emailLowerCase = email.toLowerCase();
-    const user = await Admin.findOne({ email: emailLowerCase });
+    const user = await adminRepository.findUserByEmail(emailLowerCase);
     if (!user) {
       res.status(400).json({ message: 'Email is not in database' });
       return;

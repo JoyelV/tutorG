@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPasswordService = exports.googleLoginService = exports.loginService = exports.verifyOTP = void 0;
+exports.logoutService = exports.resetPasswordService = exports.googleLoginService = exports.loginService = exports.verifyOTP = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const otpRepository_1 = require("../repositories/otpRepository");
 const userRepository_1 = require("../repositories/userRepository");
@@ -126,3 +126,13 @@ const resetPasswordService = (token, newPassword) => __awaiter(void 0, void 0, v
     }
 });
 exports.resetPasswordService = resetPasswordService;
+const logoutService = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield userRepository_1.userRepository.logoutRepository(userId);
+        return 'Logout successfully';
+    }
+    catch (error) {
+        throw new Error('Error during logout');
+    }
+});
+exports.logoutService = logoutService;

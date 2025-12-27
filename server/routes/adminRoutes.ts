@@ -19,9 +19,10 @@ import { deleteCategory, getCategoriesPagination, saveCategory, updateCategory }
 import { courseStatus, getCourseDatas, getInstructorData, getViewCourses, publishCourse, rejectCourse } from '../controllers/courseController';
 import { addReview, getReviews } from '../controllers/reviewController';
 import { verifyToken } from '../utils/VerifyToken';
-import { getOrderDetail, getOrders } from '../controllers/orderController';
+import { OrderController } from "../controllers/OrderController";
 
 const router = Router();
+const orderController = new OrderController();
 
 // AUTHENTICATION
 router.post('/login', login); 
@@ -59,7 +60,7 @@ router.get('/reviews/:courseId',verifyToken,getReviews);
 router.get('/instructorProfile/:instructorId',verifyToken,getInstructorData);
 
 //Order Management
-router.get("/orders", verifyToken,getOrders);
-router.get("/order-view/:orderId", verifyToken,getOrderDetail);
+router.get("/orders", verifyToken,orderController.getOrders.bind(orderController));
+router.get("/order-view/:orderId", verifyToken, orderController.getOrderDetail.bind(orderController));
 
 export default router;

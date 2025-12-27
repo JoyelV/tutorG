@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-interface INotification {
+export interface INotification extends Document {
   tutorId: mongoose.Schema.Types.ObjectId;
   title: string;
   subtitle: string;
@@ -17,7 +17,7 @@ const NotificationSchema = new Schema<INotification>({
   thumbnail: { type: String, default: '' },
   message: { type: String, required: true },
   isRead: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now, expires: '07d' }, //TTL 
+  createdAt: { type: Date, default: Date.now, expires: '07d' }, // TTL
 });
 
 export default mongoose.model<INotification>('Notification', NotificationSchema);

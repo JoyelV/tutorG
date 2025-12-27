@@ -22,7 +22,7 @@ const otpRepository_1 = require("../repositories/otpRepository");
 const adminService_2 = require("../services/adminService");
 const userRepository_1 = require("../repositories/userRepository");
 const instructorRepository_1 = require("../repositories/instructorRepository");
-const Admin_1 = __importDefault(require("../models/Admin"));
+const adminRepository_1 = require("../repositories/adminRepository");
 dotenv_1.default.config();
 /**
  * Resend OTP to the student email for registration.
@@ -75,7 +75,7 @@ const sendOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     const { email } = req.body;
     try {
         const emailLowerCase = email.toLowerCase();
-        const user = yield Admin_1.default.findOne({ email: emailLowerCase });
+        const user = yield adminRepository_1.adminRepository.findUserByEmail(emailLowerCase);
         if (!user) {
             res.status(400).json({ message: 'Email is not in database' });
             return;

@@ -149,3 +149,137 @@ export const uploadUserImage = async (userId: string, imageUrl: string): Promise
   }
   return user;
 }
+
+export const logoutService = async (userId: string): Promise<void> =>{
+  await instructorRepository.updateOnlineStatus(userId, false);
+}
+
+export const toggleTutorStatusService = async (tutorId: string, isBlocked: boolean): Promise<IInstructor | null> => {
+  if (!tutorId) {
+    throw new Error('Missing tutorId in request parameters');
+  }
+
+  if (typeof isBlocked !== 'boolean') {
+    throw new Error('Invalid or missing isBlocked value');
+  }
+
+  const updatedUser = await instructorRepository.updateTutorStatus(tutorId, isBlocked);
+
+  if (!updatedUser) {
+    throw new Error('User not found');
+  }
+
+  return updatedUser;
+}
+
+export const addTutorService = async (tutorData: any, file: Express.Multer.File | undefined): Promise<IInstructor | null>  =>{
+  const {
+    username,
+    email,
+    phone,
+    password,
+    headline,
+    areasOfExpertise,
+    bio,
+    highestQualification,
+    website,
+    facebook,
+    linkedin,
+    twitter,
+    instagram,
+    github,
+    isBlocked,
+    tutorRequest,
+  } = tutorData;
+
+  if (!file) {
+    throw new Error('No file uploaded');
+  }
+
+  if (!username || !email || !phone || !password) {
+    throw new Error('Required fields are missing');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const tutor = await instructorRepository.createTutor({
+    username,
+    email,
+    phone,
+    password: hashedPassword,
+    headline,
+    image: file.path,
+    areasOfExpertise,
+    bio,
+    highestQualification,
+    website,
+    facebook,
+    linkedin,
+    twitter,
+    instagram,
+    github,
+    isBlocked,
+    tutorRequest,
+  });
+
+  return tutor;
+}
+
+export const  getTopTutorsService = async () =>{
+  return await instructorRepository.getTopTutors(5);
+}
+
+export const getInstructorByIdService = async (instructorId: string)=> {
+  const instructor = await instructorRepository.findUserById(instructorId);
+  if (!instructor) {
+    throw new Error('Instructor not found');
+  }
+
+  const courses = await instructorRepository.findCoursesByInstructor(instructorId);
+  const totalCourses = courses.length;
+
+  // Collect unique student IDs
+  const uniqueStudentIds = new Set<string>();
+  courses.forEach(course => {
+    course.students.forEach(studentId => {
+      uniqueStudentIds.add(studentId.toString());
+    });
+  });
+
+  const totalStudents = uniqueStudentIds.size;
+
+  return {
+    username: instructor.username,
+    email: instructor.email,
+    image: instructor.image,
+    bio: instructor.bio,
+    about: instructor.about,
+    headline: instructor.headline,
+    areasOfExpertise: instructor.areasOfExpertise,
+    highestQualification: instructor.highestQualification,
+    averageRating: instructor.averageRating,
+    numberOfRatings: instructor.numberOfRatings,
+    website: instructor.website,
+    facebook: instructor.facebook,
+    twitter: instructor.twitter,
+    linkedin: instructor.linkedin,
+    instagram: instructor.instagram,
+    github: instructor.github,
+    totalStudents,
+    totalCourses,
+  };
+}
+
+export const getUserByEmail = async (email: string)=> {
+  if (!email) {
+    throw new Error('Email is required');
+  }
+
+  // Return user from the repository
+  const user = await instructorRepository.findUserByEmail(email);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user;
+}
