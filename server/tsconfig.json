@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES6",
     "module": "commonjs",
-    "outDir": "dist",
-    "rootDir": ".",
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": false,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist", // Output directory for compiled JS files
+    "baseUrl": "./",
+    "rootDir": "./",  // Specify the root directory of your TypeScript files
+    "paths": {
+      "*": ["*"] // Map paths for modules
+    }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["*.ts"], // Include all TS files in the src folder
+  "exclude": ["node_modules","dist"] // Exclude node_modules
 }
