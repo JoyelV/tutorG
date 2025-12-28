@@ -7,6 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export interface AuthenticatedRequest extends Request {
   userId?: string; 
+  file?: Express.Multer.File;
 }
 
 export const refreshAccessToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
