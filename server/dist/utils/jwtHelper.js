@@ -5,20 +5,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyToken = exports.generateToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const JWT_SECRET = process.env.JWT_SECRET;
-const generateToken = (payload, expiresIn) => {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET environment variable is not set');
+const getJwtSecret = () => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error("JWT_SECRET environment variable is not set");
     }
-    return jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, { expiresIn });
+    return secret;
+};
+const generateToken = (payload, expiresIn) => {
+    return jsonwebtoken_1.default.sign(payload, getJwtSecret(), { expiresIn });
 };
 exports.generateToken = generateToken;
 const verifyToken = (token) => {
     try {
-        return jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        return jsonwebtoken_1.default.verify(token, getJwtSecret());
     }
-    catch (error) {
-        return 'Invalid or expired token';
+    catch (_a) {
+        throw new Error("Invalid or expired token");
     }
 };
 exports.verifyToken = verifyToken;

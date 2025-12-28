@@ -19,7 +19,12 @@ const deleteLesson = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         res.status(200).json(result);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "An unknown error occurred" });
+        }
     }
 });
 exports.deleteLesson = deleteLesson;
@@ -30,7 +35,12 @@ const getViewChapters = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         res.status(200).json(lessons);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "An unknown error occurred" });
+        }
     }
 });
 exports.getViewChapters = getViewChapters;
@@ -41,7 +51,12 @@ const getViewChapter = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         res.status(200).json(lesson);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "An unknown error occurred" });
+        }
     }
 });
 exports.getViewChapter = getViewChapter;

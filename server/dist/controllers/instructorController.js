@@ -20,9 +20,9 @@ const instructorService_1 = require("../services/instructorService");
 const otpService_1 = require("../services/otpService");
 const otpRepository_1 = require("../repositories/otpRepository");
 const instructorService_2 = require("../services/instructorService");
-const OrderService_1 = require("../services/OrderService");
+const orderService_1 = require("../services/orderService");
 const rateInstructorService_1 = require("../services/rateInstructorService");
-const FeedbackService_1 = require("../services/FeedbackService");
+const feedbackService_1 = require("../services/feedbackService");
 dotenv_1.default.config();
 /**
  * Resend OTP to the student email for registration.
@@ -233,7 +233,7 @@ const addTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.addTutors = addTutors;
-const orderService = new OrderService_1.OrderService();
+const orderService = new orderService_1.OrderService();
 const getMyTutors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const studentId = req.userId;
@@ -334,7 +334,7 @@ const getInstructorById = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getInstructorById = getInstructorById;
-const feedbackService = new FeedbackService_1.FeedbackService();
+const feedbackService = new feedbackService_1.FeedbackService();
 const getInstructorFeedback = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { instructorId } = req.params;

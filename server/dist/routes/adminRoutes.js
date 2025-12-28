@@ -12,9 +12,9 @@ const categoryController_1 = require("../controllers/categoryController");
 const courseController_1 = require("../controllers/courseController");
 const reviewController_1 = require("../controllers/reviewController");
 const VerifyToken_1 = require("../utils/VerifyToken");
-const OrderController_1 = require("../controllers/OrderController");
+const orderController_1 = require("../controllers/orderController");
 const router = (0, express_1.Router)();
-const orderController = new OrderController_1.OrderController();
+const orderController = new orderController_1.OrderController();
 // AUTHENTICATION
 router.post('/login', adminController_1.login);
 router.post('/send-otp', adminController_1.sendOtp);

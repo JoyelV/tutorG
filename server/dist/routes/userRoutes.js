@@ -10,13 +10,13 @@ const courseController_1 = require("../controllers/courseController");
 const cartController_1 = require("../controllers/cartController");
 const wishlistController_1 = require("../controllers/wishlistController");
 const paymentController_1 = require("../controllers/paymentController");
-const OrderController_1 = require("../controllers/OrderController");
+const orderController_1 = require("../controllers/orderController");
 const VerifyToken_1 = require("../utils/VerifyToken");
 const instructorController_1 = require("../controllers/instructorController");
 const quizController_1 = require("../controllers/quizController");
 const categoryController_1 = require("../controllers/categoryController");
 const router = (0, express_1.Router)();
-const orderController = new OrderController_1.OrderController();
+const orderController = new orderController_1.OrderController();
 const quizController = new quizController_1.QuizController();
 // AUTHENTICATION
 router.post('/register', userController_1.register);

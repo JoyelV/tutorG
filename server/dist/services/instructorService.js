@@ -22,7 +22,7 @@ const verifyOTP = (email, otp) => __awaiter(void 0, void 0, void 0, function* ()
     if (!storedEntry) {
         throw new Error('OTP expired or not sent');
     }
-    const expirationTime = 1 * 60 * 1000;
+    const expirationTime = 1 * 60 * 1000; // 1 minute
     const currentTime = new Date().getTime();
     const otpCreatedTime = new Date(storedEntry.createdAt).getTime();
     if (currentTime - otpCreatedTime > expirationTime) {
@@ -43,7 +43,7 @@ const loginService = (email, password) => __awaiter(void 0, void 0, void 0, func
     if (!user) {
         throw new Error('User not found');
     }
-    if (user === null || user === void 0 ? void 0 : user.isBlocked) {
+    if (user.isBlocked) {
         throw new Error('User Blocked');
     }
     const isMatch = yield bcrypt_1.default.compare(password, user.password);
@@ -70,6 +70,9 @@ const loginService = (email, password) => __awaiter(void 0, void 0, void 0, func
 exports.loginService = loginService;
 const resetPasswordService = (token, newPassword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT secret is not configured');
+        }
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
         const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
         const user = yield instructorRepository_1.instructorRepository.findUserByEmail(decoded.email.toLowerCase());
@@ -87,23 +90,13 @@ const resetPasswordService = (token, newPassword) => __awaiter(void 0, void 0, v
     }
 });
 exports.resetPasswordService = resetPasswordService;
-//Profile Service management
+// Profile Service management
 const getUserProfileService = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const user = yield instructorRepository_1.instructorRepository.findUserById(userId);
-        if (!user) {
-            throw new Error('User not found');
-        }
-        return user;
+    const user = yield instructorRepository_1.instructorRepository.findUserById(userId);
+    if (!user) {
+        throw new Error('User not found');
     }
-    catch (error) {
-        if (error instanceof Error) {
-            throw error;
-        }
-        else {
-            throw new Error('An unexpected error occured');
-        }
-    }
+    return user;
 });
 exports.getUserProfileService = getUserProfileService;
 const updateUserProfile = (userId, userData) => __awaiter(void 0, void 0, void 0, function* () {
@@ -111,8 +104,9 @@ const updateUserProfile = (userId, userData) => __awaiter(void 0, void 0, void 0
     if (!user) {
         throw new Error('User not found');
     }
-    Object.assign(user, userData);
-    return instructorRepository_1.instructorRepository.save(user);
+    // Use the repository's updateUser method instead of .save()
+    const updatedUser = yield instructorRepository_1.instructorRepository.updateUser(userId, userData);
+    return updatedUser;
 });
 exports.updateUserProfile = updateUserProfile;
 const updatePassword = (userId, currentPassword, newPassword) => __awaiter(void 0, void 0, void 0, function* () {
@@ -198,8 +192,8 @@ const getInstructorByIdService = (instructorId) => __awaiter(void 0, void 0, voi
     const totalCourses = courses.length;
     // Collect unique student IDs
     const uniqueStudentIds = new Set();
-    courses.forEach(course => {
-        course.students.forEach(studentId => {
+    courses.forEach((course) => {
+        course.students.forEach((studentId) => {
             uniqueStudentIds.add(studentId.toString());
         });
     });
@@ -230,7 +224,6 @@ const getUserByEmail = (email) => __awaiter(void 0, void 0, void 0, function* ()
     if (!email) {
         throw new Error('Email is required');
     }
-    // Return user from the repository
     const user = yield instructorRepository_1.instructorRepository.findUserByEmail(email);
     if (!user) {
         throw new Error('User not found');

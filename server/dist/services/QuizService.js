@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuizService = void 0;
-const QuizRepository_1 = require("../repositories/QuizRepository");
+const quizRepository_1 = require("../repositories/quizRepository");
 const quizResponseRepository_1 = require("../repositories/quizResponseRepository");
 class QuizService {
     constructor() {
-        this.quizRepository = new QuizRepository_1.QuizRepository();
+        this.quizRepository = new quizRepository_1.QuizRepository();
         this.userQuizResponseRepository = new quizResponseRepository_1.UserQuizResponseRepository();
     }
     addQuiz(courseId, questions) {

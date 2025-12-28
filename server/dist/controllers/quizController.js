@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuizController = void 0;
-const QuizService_1 = require("../services/QuizService");
+const quizService_1 = require("../services/quizService");
 class QuizController {
     constructor() {
         this.addQuiz = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -79,7 +79,7 @@ class QuizController {
                 res.status(500).json({ message: 'An error occurred while submitting the quiz.' });
             }
         });
-        this.quizService = new QuizService_1.QuizService();
+        this.quizService = new quizService_1.QuizService();
     }
 }
 exports.QuizController = QuizController;

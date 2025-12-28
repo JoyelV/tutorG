@@ -20,39 +20,31 @@ exports.instructorRepository = {
         return __awaiter(this, void 0, void 0, function* () {
             const newUser = new Instructor_1.default({ username, email, password });
             yield newUser.save();
-            console.log("newUser in userrepo - vERIFTY OTP", newUser);
         });
     },
     findCoursesByInstructor(instructorId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course_1.default.find({ instructorId });
+            return Course_1.default.find({ instructorId });
         });
     },
     findUserByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Instructor_1.default.findOne({ email });
+            return Instructor_1.default.findOne({ email });
         });
     },
     updateUserPassword(email, newPassword) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield Instructor_1.default.findOne({ email });
-            if (!user)
-                return null;
-            user.password = newPassword;
-            return yield user.save();
+            return Instructor_1.default.findOneAndUpdate({ email }, { password: newPassword }, { new: true });
         });
     },
-    findUserById: (userId) => __awaiter(void 0, void 0, void 0, function* () {
-        return yield Instructor_1.default.findById(userId);
-    }),
+    findUserById(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return Instructor_1.default.findById(userId);
+        });
+    },
     updateUser(userId, updates) {
         return __awaiter(this, void 0, void 0, function* () {
             return Instructor_1.default.findByIdAndUpdate(userId, updates, { new: true });
-        });
-    },
-    save(user) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return user.save();
         });
     },
     updatePassword(userId, hashedPassword) {
@@ -62,58 +54,44 @@ exports.instructorRepository = {
     },
     updateUserOtp(email, otp, otpExpiry) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Instructor_1.default.updateOne({ email }, { otp, otpExpiry });
+            return Instructor_1.default.updateOne({ email }, { otp, otpExpiry });
         });
     },
     getAllInstructors() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                return yield Instructor_1.default.find({});
-            }
-            catch (error) {
-                throw new Error('Error fetching instructors');
-            }
+            return Instructor_1.default.find({});
         });
     },
     changeTutorStatus(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const instructor = yield Instructor_1.default.findOne({ _id: id });
-                if (!instructor) {
-                    throw new Error('Student not found');
-                }
-                instructor.isBlocked = !instructor.isBlocked;
-                yield instructor.save();
-                return instructor;
-            }
-            catch (error) {
-                throw error;
-            }
+            const instructor = yield Instructor_1.default.findById(id);
+            if (!instructor)
+                throw new Error("Instructor not found");
+            return Instructor_1.default.findByIdAndUpdate(id, { isBlocked: !instructor.isBlocked }, { new: true });
         });
     },
     updateOnlineStatus(userId, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield Instructor_1.default.findByIdAndUpdate(userId, { onlineStatus: status }, { new: true });
+            yield Instructor_1.default.findByIdAndUpdate(userId, { onlineStatus: status });
         });
     },
     updateTutorStatus(tutorId, isBlocked) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Instructor_1.default.findByIdAndUpdate(tutorId, { isBlocked }, { new: true });
+            return Instructor_1.default.findByIdAndUpdate(tutorId, { isBlocked }, { new: true });
         });
     },
     createTutor(tutorData) {
         return __awaiter(this, void 0, void 0, function* () {
             const newTutor = new Instructor_1.default(tutorData);
-            return yield newTutor.save();
+            return newTutor.save();
         });
     },
     getTopTutors(limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Instructor_1.default.find()
+            return Instructor_1.default.find()
                 .sort({ averageRating: -1 })
                 .limit(limit)
-                .select('username headline areasOfExpertise image averageRating numberOfRatings')
-                .exec();
+                .select("username headline areasOfExpertise image averageRating numberOfRatings");
         });
     },
 };

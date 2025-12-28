@@ -19,34 +19,26 @@ exports.adminRepository = {
         return __awaiter(this, void 0, void 0, function* () {
             const newUser = new Admin_1.default({ username, email, password });
             yield newUser.save();
-            console.log("newUser in userrepo - vERIFTY OTP", newUser);
         });
     },
     findUserByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Admin_1.default.findOne({ email });
+            return Admin_1.default.findOne({ email });
         });
     },
-    updateUserPassword(email, newPassword) {
+    findUserById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield Admin_1.default.findOne({ email });
-            if (!user)
-                return null;
-            user.password = newPassword;
-            return yield user.save();
+            return Admin_1.default.findById(userId);
         });
     },
-    findUserById: (userId) => __awaiter(void 0, void 0, void 0, function* () {
-        return yield Admin_1.default.findById(userId);
-    }),
     updateUser(userId, updates) {
         return __awaiter(this, void 0, void 0, function* () {
             return Admin_1.default.findByIdAndUpdate(userId, updates, { new: true });
         });
     },
-    save(user) {
+    updateUserPassword(email, newPassword) {
         return __awaiter(this, void 0, void 0, function* () {
-            return user.save();
+            return Admin_1.default.findOneAndUpdate({ email }, { password: newPassword }, { new: true });
         });
     },
     updatePassword(userId, hashedPassword) {
@@ -56,7 +48,7 @@ exports.adminRepository = {
     },
     updateUserOtp(email, otp, otpExpiry) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Admin_1.default.updateOne({ email }, { otp, otpExpiry });
+            return Admin_1.default.updateOne({ email }, { otp, otpExpiry });
         });
     },
 };

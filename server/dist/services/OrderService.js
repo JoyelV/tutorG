@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderService = void 0;
-const OrderRepository_1 = require("../repositories/OrderRepository");
+const orderRepository_1 = require("../repositories/orderRepository");
 class OrderService {
     constructor() {
-        this.orderRepository = new OrderRepository_1.OrderRepository();
+        this.orderRepository = new orderRepository_1.OrderRepository();
     }
     getUserOrders(userId) {
         return __awaiter(this, void 0, void 0, function* () {
