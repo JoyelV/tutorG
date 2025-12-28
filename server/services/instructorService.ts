@@ -10,7 +10,7 @@ export const verifyOTP = async (email: string, otp: string): Promise<string> => 
     throw new Error('OTP expired or not sent');
   }
 
-  const expirationTime = 1 * 60 * 1000;
+  const expirationTime = 1 * 60 * 1000; // 1 minute
   const currentTime = new Date().getTime();
   const otpCreatedTime = new Date(storedEntry.createdAt).getTime();
 
@@ -29,7 +29,7 @@ export const verifyOTP = async (email: string, otp: string): Promise<string> => 
   otpRepository.deleteOtp(email);
 
   return 'User registered successfully';
-}
+};
 
 export const loginService = async (
   email: string,
@@ -37,51 +37,55 @@ export const loginService = async (
 ): Promise<{ token: string; refreshToken: string; user: Partial<IInstructor> }> => {
   const user = await instructorRepository.findUserByEmail(email);
   if (!user) {
-      throw new Error('User not found');
+    throw new Error('User not found');
   }
 
-  if(user?.isBlocked){
+  if (user.isBlocked) {
     throw new Error('User Blocked');
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-      throw new Error('Invalid credentials');
+    throw new Error('Invalid credentials');
   }
 
   if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
-      throw new Error('JWT secrets are not set');
+    throw new Error('JWT secrets are not set');
   }
 
   await instructorRepository.updateUser(user._id.toString(), { onlineStatus: true });
 
   const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '15m' } 
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
   );
 
   const refreshToken = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' } 
+    { id: user._id, role: user.role },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
   );
 
   return {
-      token,
-      refreshToken,
-      user: {
-          _id: user._id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-      },
+    token,
+    refreshToken,
+    user: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    },
   };
 };
 
 export const resetPasswordService = async (token: string, newPassword: string): Promise<string> => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT secret is not configured');
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload & { email: string };
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     const user = await instructorRepository.findUserByEmail(decoded.email.toLowerCase());
@@ -100,32 +104,29 @@ export const resetPasswordService = async (token: string, newPassword: string): 
   }
 };
 
-//Profile Service management
+// Profile Service management
 export const getUserProfileService = async (userId: string): Promise<IInstructor> => {
-  try {
-    const user = await instructorRepository.findUserById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    return user;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unexpected error occured');
-    }
+  const user = await instructorRepository.findUserById(userId);
+  if (!user) {
+    throw new Error('User not found');
   }
+  return user;
 };
 
-export const updateUserProfile = async (userId: string, userData: Partial<IInstructor>): Promise<IInstructor | null> => {
+export const updateUserProfile = async (
+  userId: string,
+  userData: Partial<IInstructor>
+): Promise<IInstructor | null> => {
   const user = await instructorRepository.findUserById(userId);
   if (!user) {
     throw new Error('User not found');
   }
 
-  Object.assign(user, userData);
-  return instructorRepository.save(user);
-}
+  // Use the repository's updateUser method instead of .save()
+  const updatedUser = await instructorRepository.updateUser(userId, userData);
+
+  return updatedUser;
+};
 
 export const updatePassword = async (userId: string, currentPassword: string, newPassword: string): Promise<void> => {
   const user = await instructorRepository.findUserById(userId);
@@ -140,7 +141,7 @@ export const updatePassword = async (userId: string, currentPassword: string, ne
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await instructorRepository.updatePassword(userId, hashedPassword);
-}
+};
 
 export const uploadUserImage = async (userId: string, imageUrl: string): Promise<IInstructor | null> => {
   const user = await instructorRepository.updateUser(userId, { image: imageUrl });
@@ -148,11 +149,11 @@ export const uploadUserImage = async (userId: string, imageUrl: string): Promise
     throw new Error('User not found');
   }
   return user;
-}
+};
 
-export const logoutService = async (userId: string): Promise<void> =>{
+export const logoutService = async (userId: string): Promise<void> => {
   await instructorRepository.updateOnlineStatus(userId, false);
-}
+};
 
 export const toggleTutorStatusService = async (tutorId: string, isBlocked: boolean): Promise<IInstructor | null> => {
   if (!tutorId) {
@@ -170,9 +171,12 @@ export const toggleTutorStatusService = async (tutorId: string, isBlocked: boole
   }
 
   return updatedUser;
-}
+};
 
-export const addTutorService = async (tutorData: any, file: Express.Multer.File | undefined): Promise<IInstructor | null>  =>{
+export const addTutorService = async (
+  tutorData: any,
+  file: Express.Multer.File | undefined
+): Promise<IInstructor | null> => {
   const {
     username,
     email,
@@ -223,13 +227,13 @@ export const addTutorService = async (tutorData: any, file: Express.Multer.File 
   });
 
   return tutor;
-}
+};
 
-export const  getTopTutorsService = async () =>{
+export const getTopTutorsService = async () => {
   return await instructorRepository.getTopTutors(5);
-}
+};
 
-export const getInstructorByIdService = async (instructorId: string)=> {
+export const getInstructorByIdService = async (instructorId: string) => {
   const instructor = await instructorRepository.findUserById(instructorId);
   if (!instructor) {
     throw new Error('Instructor not found');
@@ -240,8 +244,8 @@ export const getInstructorByIdService = async (instructorId: string)=> {
 
   // Collect unique student IDs
   const uniqueStudentIds = new Set<string>();
-  courses.forEach(course => {
-    course.students.forEach(studentId => {
+  courses.forEach((course) => {
+    course.students.forEach((studentId) => {
       uniqueStudentIds.add(studentId.toString());
     });
   });
@@ -268,18 +272,17 @@ export const getInstructorByIdService = async (instructorId: string)=> {
     totalStudents,
     totalCourses,
   };
-}
+};
 
-export const getUserByEmail = async (email: string)=> {
+export const getUserByEmail = async (email: string) => {
   if (!email) {
     throw new Error('Email is required');
   }
 
-  // Return user from the repository
   const user = await instructorRepository.findUserByEmail(email);
   if (!user) {
     throw new Error('User not found');
   }
 
   return user;
-}
+};

@@ -1,5 +1,5 @@
 import { CourseRepository } from '../repositories/courseRepository';
-import { ICourse, IPopulatedCourseFeedback, IPopulatedFeedback } from '../entities/ICourse';
+import { ICourse, IPopulatedCourseFeedback } from '../entities/ICourse';
 import { IUser } from '../entities/IUser';
 import mongoose, { Types } from 'mongoose'; 
 import { instructorRepository } from '../repositories/instructorRepository';
@@ -150,11 +150,10 @@ export class CourseService {
       throw new Error('Course not found');
     }
   
-    const populated = (course.ratingsAndFeedback as unknown) as IPopulatedFeedback[];
     return {
       courseId: course._id as Types.ObjectId,
       courseTitle: course.title,
-      feedbacks: populated.map((feedback) => ({
+      feedbacks: course.ratingsAndFeedback.map((feedback) => ({
         userId: feedback.userId as unknown as IUser,
         username: (feedback.userId as unknown as IUser).username,
         email: (feedback.userId as unknown as IUser).email,
