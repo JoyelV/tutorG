@@ -19,7 +19,7 @@ import { deleteCategory, getCategoriesPagination, saveCategory, updateCategory }
 import { courseStatus, getCourseDatas, getInstructorData, getViewCourses, publishCourse, rejectCourse } from '../controllers/courseController';
 import { addReview, getReviews } from '../controllers/reviewController';
 import { verifyToken } from '../utils/VerifyToken';
-import { OrderController } from "../controllers/OrderController";
+import { OrderController } from "../controllers/orderController";
 
 const router = Router();
 const orderController = new OrderController();

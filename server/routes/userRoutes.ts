@@ -5,7 +5,7 @@ import { getCompletionCertificate, getCourses, getCourseWithFeedbacks, getIndivi
 import { addToCart, getCartItems, removeCartItem } from '../controllers/cartController';
 import { addToWishlist, getWishlistItems, removeWishlistItem } from '../controllers/wishlistController';
 import { stripePayment } from '../controllers/paymentController';
-import { OrderController } from "../controllers/OrderController";
+import { OrderController } from "../controllers/orderController";
 import { verifyToken } from '../utils/VerifyToken';
 import { addInstructorRating, getInstructorById, getInstructorFeedback, getMyTutors, getTopTutors } from '../controllers/instructorController';
 import {QuizController} from '../controllers/quizController'

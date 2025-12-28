@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { QuizService } from '../services/QuizService';
+import { QuizService } from '../services/quizService';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
 
 export class QuizController {

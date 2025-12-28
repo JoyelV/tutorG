@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { OrderService } from "../services/OrderService";
+import { OrderService } from "../services/orderService";
 import { AuthenticatedRequest } from "../utils/VerifyToken";
 
 export class OrderController {

@@ -1,4 +1,4 @@
-import { OrderRepository } from "../repositories/OrderRepository";
+import { OrderRepository } from "../repositories/orderRepository";
 
 export class OrderService {
   private orderRepository: OrderRepository;

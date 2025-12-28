@@ -1,4 +1,4 @@
-import { QuizRepository } from '../repositories/QuizRepository';
+import { QuizRepository } from '../repositories/quizRepository';
 import { UserQuizResponseRepository } from '../repositories/quizResponseRepository';
 
 export class QuizService {

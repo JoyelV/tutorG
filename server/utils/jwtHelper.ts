@@ -1,18 +1,24 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
-const JWT_SECRET = process.env.JWT_SECRET;
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
-export const generateToken = (payload: object, expiresIn: string): string=> {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is not set');
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is not set");
   }
+  return secret;
+};
 
-  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
-}
+export const generateToken = (
+  payload: string | object | Buffer,
+  expiresIn: SignOptions["expiresIn"]
+): string => {
+  return jwt.sign(payload, getJwtSecret(), { expiresIn });
+};
 
-export const verifyToken = (token: string): JwtPayload | string => {
+export const verifyToken = (token: string): JwtPayload => {
   try {
-    return jwt.verify(token, JWT_SECRET!) as JwtPayload;
-  } catch (error) {
-    return 'Invalid or expired token';
+    return jwt.verify(token, getJwtSecret()) as JwtPayload;
+  } catch {
+    throw new Error("Invalid or expired token");
   }
 };

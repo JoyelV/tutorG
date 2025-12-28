@@ -7,9 +7,9 @@ import { otpService } from '../services/otpService';
 import { otpRepository } from '../repositories/otpRepository';
 import { updateUserProfile, updatePassword, uploadUserImage, getUserProfileService,logoutService,addTutorService,getTopTutorsService,getInstructorByIdService,getUserByEmail } from '../services/instructorService';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
-import { OrderService } from '../services/OrderService';
+import { OrderService } from '../services/orderService';
 import { RateInstructorService } from '../services/rateInstructorService';
-import { FeedbackService } from '../services/FeedbackService';
+import { FeedbackService } from '../services/feedbackService';
 
 dotenv.config();
 
