@@ -61,12 +61,12 @@ class CourseRepository {
     }
     findCourseById(courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.findById(courseId).lean().exec();
+            return (yield Course.findById(courseId).lean().exec());
         });
     }
     findRelatedCourses(category, courseId, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.find({
+            return (yield Course.find({
                 category,
                 _id: { $ne: courseId },
                 status: 'published',
@@ -74,23 +74,21 @@ class CourseRepository {
             })
                 .limit(limit)
                 .lean()
-                .exec();
+                .exec());
         });
     }
     findRecentlyAddedCourses() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.find({ status: 'published', isApproved: true })
+            return (yield Course.find({ status: 'published', isApproved: true })
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .lean()
-                .exec();
+                .exec());
         });
     }
     findInstructorCourses(instructorId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.find({ instructorId, status: 'published' })
-                .lean()
-                .exec();
+            return (yield Course.find({ instructorId, status: 'published' }).lean().exec());
         });
     }
     findAllCourses(page, limit) {
@@ -138,38 +136,34 @@ class CourseRepository {
     }
     findCourseWithFeedbacks(courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.findById(courseId)
+            return (yield Course.findById(courseId)
                 .populate('ratingsAndFeedback.userId', 'username email image')
                 .lean()
-                .exec();
+                .exec());
         });
     }
     findIndividualCourse(courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.findById(courseId).lean().exec();
+            return (yield Course.findById(courseId).lean().exec());
         });
     }
     findCompletionCertificate(courseId, studentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const course = yield Course.findById(courseId).lean().exec();
-            const studentProgress = yield Progress_1.default.findOne({
+            const course = (yield Course.findById(courseId).lean().exec());
+            const studentProgress = (yield Progress_1.default.findOne({
                 courseId,
                 studentId,
             })
                 .lean()
-                .exec();
-            const student = yield Users.findById(studentId).lean().exec();
+                .exec());
+            const student = (yield Users.findById(studentId).lean().exec());
             return { course, studentProgress, student };
         });
     }
     findStudentCourseSummary(studentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const enrolledCourses = yield Course.find({ students: studentId })
-                .lean()
-                .exec();
-            const progress = yield Progress_1.default.find({ studentId })
-                .lean()
-                .exec();
+            const enrolledCourses = yield Course.find({ students: studentId }).lean().exec();
+            const progress = yield Progress_1.default.find({ studentId }).lean().exec();
             const completedCourses = progress
                 .filter((p) => p.completionDate)
                 .map((p) => enrolledCourses.find((c) => c._id.toString() === p.courseId.toString()));
@@ -185,16 +179,14 @@ class CourseRepository {
     }
     findIndividualCourseData(courseId, studentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const course = yield Course.findById(courseId).lean().exec();
-            const order = yield Orders.findOne({ courseId, studentId })
-                .lean()
-                .exec();
-            const studentProgress = yield Progress_1.default.findOne({
+            const course = (yield Course.findById(courseId).lean().exec());
+            const order = (yield Orders.findOne({ courseId, studentId }).lean().exec());
+            const studentProgress = (yield Progress_1.default.findOne({
                 courseId,
                 studentId,
             })
                 .lean()
-                .exec();
+                .exec());
             const lessons = yield Lesson_1.default.find({ courseId }).lean().exec();
             const totalLessons = lessons.length;
             return { course, order, studentProgress, totalLessons };
@@ -226,7 +218,7 @@ class CourseRepository {
     }
     findViewCourse(courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.findById(courseId).lean().exec();
+            return (yield Course.findById(courseId).lean().exec());
         });
     }
     createCourse(courseData) {
@@ -237,19 +229,17 @@ class CourseRepository {
     }
     findCategoryById(categoryId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Category_1.default.findById(categoryId).lean().exec();
+            return (yield Category_1.default.findById(categoryId).lean().exec());
         });
     }
     updateCourse(courseId, courseData) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Course.findByIdAndUpdate(courseId, courseData, { new: true })
-                .lean()
-                .exec();
+            return (yield Course.findByIdAndUpdate(courseId, courseData, { new: true }).lean().exec());
         });
     }
     deleteCourse(courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const course = yield Course.findByIdAndDelete(courseId).lean().exec();
+            const course = (yield Course.findByIdAndDelete(courseId).lean().exec());
             if (!course) {
                 throw new Error('Course not found');
             }
@@ -303,24 +293,22 @@ class CourseRepository {
     }
     deleteLesson(lessonId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Lesson_1.default.findByIdAndDelete(lessonId).lean().exec();
+            return (yield Lesson_1.default.findByIdAndDelete(lessonId).lean().exec());
         });
     }
     findLessonsByCourseId(courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Lesson_1.default.find({ courseId }).lean().exec();
+            return (yield Lesson_1.default.find({ courseId }).lean().exec());
         });
     }
     findLessonById(lessonId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Lesson_1.default.findById(lessonId).lean().exec();
+            return (yield Lesson_1.default.findById(lessonId).lean().exec());
         });
     }
     updateLesson(lessonId, lessonData) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Lesson_1.default.findByIdAndUpdate(lessonId, lessonData, { new: true })
-                .lean()
-                .exec();
+            return (yield Lesson_1.default.findByIdAndUpdate(lessonId, lessonData, { new: true }).lean().exec());
         });
     }
     updateProgress(courseId, studentId, completedLesson) {
@@ -388,7 +376,7 @@ class CourseRepository {
     }
     findNotifications() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield Notification_1.default.find().lean().exec();
+            return (yield Notification_1.default.find().lean().exec());
         });
     }
 }

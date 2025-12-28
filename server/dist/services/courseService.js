@@ -117,10 +117,11 @@ class CourseService {
             if (!course) {
                 throw new Error('Course not found');
             }
+            const populated = course.ratingsAndFeedback;
             return {
                 courseId: course._id,
                 courseTitle: course.title,
-                feedbacks: course.ratingsAndFeedback.map((feedback) => ({
+                feedbacks: populated.map((feedback) => ({
                     userId: feedback.userId,
                     username: feedback.userId.username,
                     email: feedback.userId.email,
