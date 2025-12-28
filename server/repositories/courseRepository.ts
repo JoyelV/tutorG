@@ -4,11 +4,14 @@ import Category from '../models/Category';
 import CourseProgress from '../models/Progress';
 import Notifications from '../models/Notification';
 import Lessons from '../models/Lesson';
-import { CategoryDocument } from '../models/Category'; 
+import { CategoryDocument } from '../models/Category';
 import { LessonDocument } from '../models/Lesson';
 import { INotification } from '../models/Notification';
-import { ORDER } from '../models/Orders'; 
+import { ORDER } from '../models/Orders';
 import { IUser } from '../entities/IUser';
+
+// Local helper type for lean() results (plain JS objects)
+type Lean<T> = T & Record<string, any>;
 
 // Model imports
 const Course: Model<ICourse> = mongoose.model<ICourse>('Course');
@@ -30,11 +33,11 @@ export class CourseRepository {
       .lean()
       .exec();
     const total = await Course.countDocuments(query);
-    return { courses: courses as ICourse[], total };
+    return { courses: courses as unknown as Lean<ICourse>[], total };
   }
 
-  async findCourseById(courseId: string): Promise<ICourse | null> {
-    return await Course.findById(courseId).lean().exec() as ICourse | null;
+  async findCourseById(courseId: string): Promise<Lean<ICourse> | null> {
+    return (await Course.findById(courseId).lean().exec()) as unknown as Lean<ICourse> | null;
   }
 
   async findRelatedCourses(
@@ -42,7 +45,7 @@ export class CourseRepository {
     courseId: string,
     limit: number
   ): Promise<ICourse[]> {
-    return await Course.find({
+    return (await Course.find({
       category,
       _id: { $ne: courseId },
       status: 'published',
@@ -50,21 +53,19 @@ export class CourseRepository {
     })
       .limit(limit)
       .lean()
-      .exec() as ICourse[];
+      .exec()) as unknown as Lean<ICourse>[];
   }
 
   async findRecentlyAddedCourses(): Promise<ICourse[]> {
-    return await Course.find({ status: 'published', isApproved: true })
+    return (await Course.find({ status: 'published', isApproved: true })
       .sort({ createdAt: -1 })
       .limit(5)
       .lean()
-      .exec() as ICourse[];
+      .exec()) as unknown as Lean<ICourse>[];
   }
 
-  async findInstructorCourses(instructorId: string): Promise<ICourse[]> {
-    return await Course.find({ instructorId, status: 'published' })
-      .lean()
-      .exec() as ICourse[];
+  async findInstructorCourses(instructorId: string): Promise<Lean<ICourse>[]> {
+    return (await Course.find({ instructorId, status: 'published' }).lean().exec()) as unknown as Lean<ICourse>[];
   }
 
   async findAllCourses(
@@ -80,9 +81,9 @@ export class CourseRepository {
     const allCourses = await Course.find().lean().exec();
     const total = await Course.countDocuments();
     return {
-      courses: courses as ICourse[],
+      courses: courses as unknown as Lean<ICourse>[],
       total,
-      allCourses: allCourses as ICourse[],
+      allCourses: allCourses as unknown as Lean<ICourse>[],
     };
   }
 
@@ -118,15 +119,15 @@ export class CourseRepository {
     return course.toObject() as ICourse;
   }
 
-  async findCourseWithFeedbacks(courseId: string): Promise<ICourse | null> {
-    return await Course.findById(courseId)
+  async findCourseWithFeedbacks(courseId: string): Promise<Lean<ICourse> | null> {
+    return (await Course.findById(courseId)
       .populate('ratingsAndFeedback.userId', 'username email image')
       .lean()
-      .exec() as ICourse | null;
+      .exec()) as Lean<ICourse> | null;
   }
 
-  async findIndividualCourse(courseId: string): Promise<ICourse | null> {
-    return await Course.findById(courseId).lean().exec() as ICourse | null;
+  async findIndividualCourse(courseId: string): Promise<Lean<ICourse> | null> {
+    return (await Course.findById(courseId).lean().exec()) as Lean<ICourse> | null;
   }
 
   async findCompletionCertificate(
@@ -137,14 +138,14 @@ export class CourseRepository {
     studentProgress?: ICourseProgress | null;
     student?: IUser | null;
   }> {
-    const course = await Course.findById(courseId).lean().exec() as ICourse | null;
-    const studentProgress = await CourseProgress.findOne({
+    const course = (await Course.findById(courseId).lean().exec()) as unknown as Lean<ICourse> | null;
+    const studentProgress = (await CourseProgress.findOne({
       courseId,
       studentId,
     })
       .lean()
-      .exec() as ICourseProgress | null;
-    const student = await Users.findById(studentId).lean().exec() as IUser | null;
+      .exec()) as unknown as ICourseProgress | null;
+    const student = (await Users.findById(studentId).lean().exec()) as IUser | null;
     return { course, studentProgress, student };
   }
 
@@ -154,12 +155,8 @@ export class CourseRepository {
     ongoingCourses: any[];
     uniqueTutors: string[];
   }> {
-    const enrolledCourses = await Course.find({ students: studentId })
-      .lean()
-      .exec();
-    const progress = await CourseProgress.find({ studentId })
-      .lean()
-      .exec();
+    const enrolledCourses = await Course.find({ students: studentId }).lean().exec() as unknown as Lean<ICourse>[];
+    const progress = await CourseProgress.find({ studentId }).lean().exec();
     const completedCourses = progress
       .filter((p) => p.completionDate)
       .map((p) => enrolledCourses.find((c) => c._id.toString() === p.courseId.toString()));
@@ -168,7 +165,7 @@ export class CourseRepository {
     );
     const uniqueTutors = [...new Set(enrolledCourses.map((c) => c.instructorId.toString()))];
     return {
-      enrolledCourses: enrolledCourses as ICourse[],
+      enrolledCourses: enrolledCourses as unknown as Lean<ICourse>[],
       completedCourses: completedCourses.filter(Boolean) as any[],
       ongoingCourses: ongoingCourses as any[],
       uniqueTutors,
@@ -184,17 +181,15 @@ export class CourseRepository {
     studentProgress: ICourseProgress | null;
     totalLessons: number;
   }> {
-    const course = await Course.findById(courseId).lean().exec() as ICourse | null;
-    const order = await Orders.findOne({ courseId, studentId })
-      .lean()
-      .exec() as ORDER | null;
-    const studentProgress = await CourseProgress.findOne({
+    const course = (await Course.findById(courseId).lean().exec()) as Lean<ICourse> | null;
+    const order = (await Orders.findOne({ courseId, studentId }).lean().exec()) as ORDER | null;
+    const studentProgress = (await CourseProgress.findOne({
       courseId,
       studentId,
     })
       .lean()
-      .exec() as ICourseProgress | null;
-    const lessons = await Lessons.find({ courseId }).lean().exec();
+      .exec()) as unknown as ICourseProgress | null;
+    const lessons = await Lessons.find({ courseId }).lean().exec() as unknown as Lean<LessonDocument>[];
     const totalLessons = lessons.length;
     return { course, order, studentProgress, totalLessons };
   }
@@ -210,7 +205,7 @@ export class CourseRepository {
       .lean()
       .exec();
     const total = await Course.countDocuments({ status: 'published' });
-    return { courses: courses as ICourse[], total };
+    return { courses: courses as unknown as Lean<ICourse>[], total };
   }
 
   async findMyTutorCourses(
@@ -225,11 +220,11 @@ export class CourseRepository {
       .lean()
       .exec();
     const total = await Course.countDocuments({ instructorId });
-    return { courses: courses as ICourse[], total };
+    return { courses: courses as unknown as Lean<ICourse>[], total };
   }
 
-  async findViewCourse(courseId: string): Promise<ICourse | null> {
-    return await Course.findById(courseId).lean().exec() as ICourse | null;
+  async findViewCourse(courseId: string): Promise<Lean<ICourse> | null> {
+    return (await Course.findById(courseId).lean().exec()) as Lean<ICourse> | null;
   }
 
   async createCourse(courseData: Partial<ICourse>): Promise<ICourse> {
@@ -237,22 +232,20 @@ export class CourseRepository {
     return (await course.save()).toObject() as ICourse;
   }
 
-  async findCategoryById(categoryId: string): Promise<CategoryDocument | null> {
-    return await Category.findById(categoryId).lean().exec() as CategoryDocument | null;
+  async findCategoryById(categoryId: string): Promise<Lean<CategoryDocument> | null> {
+    return (await Category.findById(categoryId).lean().exec()) as Lean<CategoryDocument> | null;
   }
 
-  async updateCourse(courseId: string, courseData: Partial<ICourse>): Promise<ICourse | null> {
-    return await Course.findByIdAndUpdate(courseId, courseData, { new: true })
-      .lean()
-      .exec() as ICourse | null;
+  async updateCourse(courseId: string, courseData: Partial<ICourse>): Promise<Lean<ICourse> | null> {
+    return (await Course.findByIdAndUpdate(courseId, courseData, { new: true }).lean().exec()) as Lean<ICourse> | null;
   }
 
   async deleteCourse(courseId: string): Promise<ICourse> {
-    const course = await Course.findByIdAndDelete(courseId).lean().exec();
+    const course = (await Course.findByIdAndDelete(courseId).lean().exec()) as Lean<ICourse> | null;
     if (!course) {
       throw new Error('Course not found');
     }
-    return course as ICourse;
+    return course;
   }
 
   async toggleCourseApproval(courseId: string): Promise<ICourse> {
@@ -311,16 +304,16 @@ export class CourseRepository {
     return (await lesson.save()).toObject() as LessonDocument;
   }
 
-  async deleteLesson(lessonId: string): Promise<LessonDocument | null> {
-    return await Lessons.findByIdAndDelete(lessonId).lean().exec() as LessonDocument | null;
+  async deleteLesson(lessonId: string): Promise<Lean<LessonDocument> | null> {
+    return (await Lessons.findByIdAndDelete(lessonId).lean().exec()) as unknown as Lean<LessonDocument> | null;
   }
 
-  async findLessonsByCourseId(courseId: string): Promise<LessonDocument[]> {
-    return await Lessons.find({ courseId }).lean().exec() as LessonDocument[];
+  async findLessonsByCourseId(courseId: string): Promise<Lean<LessonDocument>[]> {
+    return (await Lessons.find({ courseId }).lean().exec()) as unknown as Lean<LessonDocument>[];
   }
 
-  async findLessonById(lessonId: string): Promise<LessonDocument | null> {
-    return await Lessons.findById(lessonId).lean().exec() as LessonDocument | null;
+  async findLessonById(lessonId: string): Promise<Lean<LessonDocument> | null> {
+    return (await Lessons.findById(lessonId).lean().exec()) as unknown as Lean<LessonDocument> | null;
   }
 
   async updateLesson(
@@ -332,9 +325,7 @@ export class CourseRepository {
       lessonPdf?: string;
     }
   ): Promise<LessonDocument | null> {
-    return await Lessons.findByIdAndUpdate(lessonId, lessonData, { new: true })
-      .lean()
-      .exec() as LessonDocument | null;
+    return (await Lessons.findByIdAndUpdate(lessonId, lessonData, { new: true }).lean().exec()) as unknown as Lean<LessonDocument> | null;
   }
 
   async updateProgress(
@@ -356,7 +347,7 @@ export class CourseRepository {
       progress.completedLessons.push(lessonId);
     }
 
-    const lessons = await Lessons.find({ courseId }).lean().exec();
+    const lessons = await Lessons.find({ courseId }).lean().exec() as unknown as Lean<LessonDocument>[];
     const totalLessons = lessons.length;
     const completedLessons = progress.completedLessons.length;
     const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
@@ -373,7 +364,7 @@ export class CourseRepository {
   }
 
   async findEnrolledCoursesCount(instructorId: string): Promise<number> {
-    const courses = await Course.find({ instructorId }).lean().exec();
+    const courses = await Course.find({ instructorId }).lean().exec() as unknown as Lean<ICourse>[];
     return courses.reduce((acc, course) => acc + (course.students?.length || 0), 0);
   }
 
@@ -382,13 +373,13 @@ export class CourseRepository {
   }
 
   async findInstructorStudentsCount(instructorId: string): Promise<number> {
-    const courses = await Course.find({ instructorId }).lean().exec();
-    const studentIds = new Set(courses.flatMap((course) => course.students?.map((s) => s.toString()) || []));
+    const courses = await Course.find({ instructorId }).lean().exec() as unknown as Lean<ICourse>[];
+    const studentIds = new Set(courses.flatMap((course) => course.students?.map((s: Types.ObjectId | string) => s.toString()) || []));
     return studentIds.size;
   }
 
   async findInstructorEarnings(instructorId: string): Promise<number> {
-    const courses = await Course.find({ instructorId }).lean().exec();
+    const courses = await Course.find({ instructorId }).lean().exec() as unknown as Lean<ICourse>[];
     return courses.reduce((acc, course) => acc + (course.students?.length || 0) * course.courseFee, 0);
   }
 
@@ -403,8 +394,7 @@ export class CourseRepository {
   async findWithdrawalHistory(instructorId: string): Promise<any[]> {
     return [];
   }
-
-  async findNotifications(): Promise<INotification[]> {
-    return await Notifications.find().lean().exec() as INotification[];
+  async findNotifications(): Promise<Lean<INotification>[]> {
+    return (await Notifications.find().lean().exec()) as unknown as Lean<INotification>[];
   }
 }
