@@ -1,96 +1,271 @@
-# E-Learning Platform
+🎓 TutorG — Full-Stack E-Learning Platform
 
-Full-stack e-learning platform with a TypeScript React frontend and an Express + TypeScript backend.
+TutorG is a production-ready, full-stack E-Learning Platform designed for Admins, Instructors, and Students, built using React + TypeScript and Node.js + Express (TypeScript).
 
-## Project Overview
-- Purpose: A multi-role learning platform for admins, instructors, and students. Features include courses, lessons, quizzes, reviews, cart & orders, and media uploads.
-- Structure: Monorepo with two main apps — `client/` (React) and `server/` (Express API).
+It demonstrates real-world system design, clean architecture, and scalable backend practices commonly used in modern SaaS products.
+---
 
-## Tech Stack
-- Frontend: React, TypeScript, Tailwind CSS
-- Backend: Node.js, TypeScript, Express, Mongoose (MongoDB)
-- Media: Cloudinary + Multer for uploads
-- Auth: JWT-based authentication
-- Utilities: Email/OTP helpers, password hashing, role-based guards
+🌟 Why TutorG?
 
-## Repository Layout
-- `client/` — React app source in `src/`, production build in `build/`.
-- `server/` — API code: `controllers/`, `services/`, `repositories/`, `models/`, `routes/`.
-- Config & utilities: `server/config/`, `server/utils/`.
+TutorG goes beyond a simple CRUD application and showcases an end-to-end learning ecosystem:
 
-## Prerequisites
-- Node.js v16+ (or compatible LTS)
-- npm or yarn
-- MongoDB (local or Atlas)
-- Cloudinary account for media uploads (optional; can be swapped)
+🏗 Enterprise-style layered architecture
 
-## Quick Start
+🧩 Repository pattern for clean data access
 
-1. Start MongoDB or ensure Atlas access.
+🔐 Role-based access control (RBAC)
 
-2. Install and run the server
+🔑 Secure authentication & authorization
 
-```bash
-cd server
-npm install
-# create or update .env with required variables (see below)
-npm run dev
-```
+☁️ Scalable media handling
 
-3. Install and run the client
+🚀 Production-ready frontend & backend separation
 
-```bash
-cd client
-npm install
-# set client env vars if needed (e.g. API base URL)
-npm start
-```
+📈 Designed for real users, growth, and maintainability
+---
 
-Open the frontend in your browser (usually `http://localhost:3000`) and the API on the server port (commonly `5000` or as set in `.env`).
+🚀 Live Demo & Source Code
 
-## Environment Variables
+🌐 Live Application:
+https://tutorg.vercel.app/
 
-Add a `.env` file in `server/` with (example names used in project):
+💻 GitHub Repository:
+https://github.com/JoyelV/tutorG.git
 
-- `MONGO_URI` — MongoDB connection string
-- `PORT` — Server port
-- `JWT_SECRET` — Secret for JWT signing
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — Cloudinary credentials
-- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` — Email server creds (if used)
-- `CLIENT_URL` — Frontend URL for CORS or redirects
+🧠 Product Overview
+🎯 Purpose
 
-Client environment (if used):
-- `REACT_APP_API_URL` or similar base URL used by `client/src/Constants/BaseUrl.ts`.
+TutorG provides a multi-role learning platform where:
 
-## Scripts & Helpful Files
-- Frontend entry: [client/src/index.tsx](client/src/index.tsx)
-- Backend entry: [server/server.ts](server/server.ts)
-- API routes: [server/routes](server/routes)
-- Client API config: [client/src/Constants/BaseUrl.ts](client/src/Constants/BaseUrl.ts) and [client/src/infrastructure/api](client/src/infrastructure/api)
+Admins manage the ecosystem
 
-## Development Notes
-- Routes are separated by role: admin, instructor, user (see `server/routes/`).
-- Business logic resides in `server/services/`, data access in `server/repositories/`.
-- If media uploads fail, verify Cloudinary credentials in `server/config/cloudinary.ts`.
+Instructors create and manage courses
 
-## Build & Deploy
-- Build client: `cd client && npm run build` — serve the `build/` folder from a static host or from the server.
-- Deploy server: provide env vars, connect to a production MongoDB, and run compiled Node app or run via a process manager/container.
+Students browse, purchase, and consume learning content
+---
 
-## Troubleshooting
-- CORS issues: confirm `CLIENT_URL` and server CORS whitelist.
-- Auth / JWT errors: ensure `JWT_SECRET` matches across environments and tokens are not expired.
-- DB connection errors: confirm `MONGO_URI` and network access.
+👥 Supported Roles
 
-## Contributing
-- Fork → feature branch → open PR against `main` with description and testing notes.
-- Keep changes scoped to `client/` or `server/` and run local dev servers when testing.
+Admin
+Instructor
+Student
 
-## License
-Add a `LICENSE` file at the repository root with your chosen license (for example, MIT).
+Each role operates with secure, isolated permissions and workflows.
+---
 
-## Contact
+🏗 Architecture & System Design
+
+🔹 High-Level Architecture
+Frontend: React Single Page Application (SPA)
+Backend: RESTful API using Express
+Database: MongoDB (NoSQL)
+Deployment: Vercel (Frontend)
+
+🔹 Backend Architecture (Key Highlight)
+TutorG follows a Layered Architecture with Repository Pattern:
+Controller → Service → Repository → Model
+---
+
+✅ Benefits
+
+Clear separation of concerns
+
+Highly testable & maintainable code
+
+Easy feature extension and refactoring
+
+Database abstraction via repositories
+
+📁 Repository Structure
+TutorG/
+│
+├── client/                 # React + TypeScript Frontend
+│   ├── src/
+│   ├── public/
+│   └── build/
+│
+├── server/                 # Node.js + Express Backend
+│   ├── controllers/        # Request handling
+│   ├── services/           # Business logic
+│   ├── repositories/       # Data access layer
+│   ├── models/             # Mongoose schemas
+│   ├── routes/             # API routes
+│   ├── config/             # Environment & third-party configs
+│   └── utils/              # JWT, OTP, Email helpers
+---
+
+🔐 Authentication & Security
+
+JWT-based authentication
+
+Secure password hashing
+
+Role-Based Access Control (RBAC)
+
+Protected routes using middleware
+
+Environment-based secret management
+
+Secure CORS configuration
+---
+
+🎓 Core Features
+👩‍🏫 Instructor
+
+Create and manage courses
+
+Upload lessons and learning media
+
+Manage course content
+---
+
+👨‍🎓 Student
+
+Browse and enroll in courses
+
+Add courses to cart
+
+Place orders
+
+View lessons and quizzes
+
+Submit reviews
+---
+
+🛠 Admin
+
+Manage users and roles
+
+Oversee platform activity
+
+Control platform data
+---
+
+📦 Media & File Management
+
+Multer for file handling
+
+Cloudinary for secure cloud-based storage
+
+Optimized handling of image and video assets
+---
+
+🎨 Frontend Highlights
+
+Built using React + TypeScript
+
+Styled with Tailwind CSS
+
+Responsive & mobile-first UI
+
+Reusable, modular component design
+
+Clean API integration layer
+
+Accessible and user-friendly layouts
+---
+
+
+⚙️ Tech Stack
+🖥 Frontend
+
+React
+
+TypeScript
+
+Tailwind CSS
+---
+
+
+⚙️ Backend
+
+Node.js
+
+Express
+
+TypeScript
+
+MongoDB
+
+Mongoose
+---
+
+
+🧰 Tools & Services
+
+JWT Authentication
+
+Cloudinary
+
+Multer
+
+REST APIs
+
+Vercel (Deployment)
+---
+
+
+🚀 Deployment
+
+Frontend: Deployed on Vercel
+
+Backend: Production-ready Express server
+
+Secure environment variable management
+
+Optimized builds for performance
+---
+
+🧪 Code Quality & Engineering Practices
+
+Type-safe codebase (TypeScript everywhere)
+
+Clean Architecture principles
+
+SOLID design approach
+
+Reusable services & repositories
+
+Scalable and maintainable structure
+
+Ready for unit & integration testing
+---
+
+🎯 Ideal For Demonstrating
+
+MERN / Full-Stack Development
+
+Clean Architecture & Repository Pattern
+
+Role-based systems
+
+Production-ready API design
+
+Real-world SaaS product thinking
+---
+
+
+🤝 Contributing
+
+Contributions are welcome:
+
+Fork the repository
+
+Create a feature branch
+
+Commit clean, scoped changes
+
+Open a pull request with description
+---
+
+
+👨‍💻 Author
+
 Joyel Varghese
-Email: Varghesejoyel71@gmail.com
+Full-Stack Developer
+(MERN | TypeScript | React | Node.js)
+---
+
+⭐ If this project helped you understand scalable full-stack architecture, consider giving it a star.
 
 ---
