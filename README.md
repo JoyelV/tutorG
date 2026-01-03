@@ -72,20 +72,21 @@ TutorG follows a **Layered Architecture** with **Repository Pattern**:
 - Database abstraction via repositories
 
 ### 📁 Repository Structure
+```plaintext
 TutorG/
 ├── client/                 # React + TypeScript Frontend
-│   ├── src/
-│   ├── public/
-│   └── build/
+│   ├── public/             # Static assets
+│   ├── src/                # Source code
+│   └── build/              # Production build (generated)
 │
 └── server/                 # Node.js + Express Backend
-├── controllers/        # Request handling
-├── services/           # Business logic
-├── repositories/       # Data access layer
-├── models/             # Mongoose schemas
-├── routes/             # API routes
-├── config/             # Environment & third-party configs
-└── utils/              # JWT, OTP, Email helpers
+    ├── controllers/        # Request handling logic
+    ├── services/           # Business logic
+    ├── repositories/       # Data access layer
+    ├── models/             # Mongoose schemas
+    ├── routes/             # API routes
+    ├── config/             # Environment & third-party configurations
+    └── utils/              # Helpers (JWT, OTP, Email, etc.)
 ---
 
 ## 🔐 Authentication & Security
