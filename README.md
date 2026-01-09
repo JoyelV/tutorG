@@ -1,6 +1,5 @@
 # 🎓 TutorG — Full-Stack E-Learning Platform
-
-TutorG is a production-ready, full-stack E-Learning Platform designed for Admins, Instructors, and Students, built using **React + TypeScript** and **Node.js + Express (TypeScript)**.
+TutorG is a production-ready, full-stack E-Learning Platform designed for **Admins**, **Instructors**, and **Students**, built using **React + TypeScript** and **Node.js + Express (TypeScript)**.
 
 It demonstrates real-world system design, clean architecture, and scalable backend practices commonly used in modern SaaS products.
 
@@ -18,6 +17,19 @@ TutorG goes beyond a simple CRUD application and showcases an end-to-end learnin
 - 🚀 Production-ready frontend & backend separation
 - 📈 Designed for real users, growth, and maintainability
 
+---
+
+## 🌟 Screenshots
+
+Here are some real glimpses of the working platform:
+
+<div align="center">
+  <img src="screenshots/student-home.png" alt="Student HomePage" width="75%"/>
+  <br><br>
+  <em>Modern student Home Page with course recommendations & Tutors</em>
+</div>
+
+<br>
 ---
 
 ## 🚀 Live Demo & Source Code
@@ -64,15 +76,8 @@ Each role operates with secure, isolated permissions and workflows.
 TutorG follows a **Layered Architecture** with **Repository Pattern**:  
 **Controller → Service → Repository → Model**
 
-### ✅ Benefits
-
-- Clear separation of concerns
-- Highly testable & maintainable code
-- Easy feature extension and refactoring
-- Database abstraction via repositories
-
-### 📁 Repository Structure
-```plaintext
+## Repository Structure
+---
 TutorG/
 ├── client/                 # React + TypeScript Frontend
 │   ├── public/             # Static assets
@@ -88,6 +93,7 @@ TutorG/
     ├── config/             # Environment & third-party configurations
     └── utils/              # Helpers (JWT, OTP, Email, etc.)
 ---
+---
 
 ## 🔐 Authentication & Security
 
@@ -102,22 +108,19 @@ TutorG/
 
 ## 🎓 Core Features
 
-### 👩‍🏫 Instructor
-
+### 👩‍🏫 Instructor Features
 - Create and manage courses
 - Upload lessons and learning media
 - Manage course content
 
-### 👨‍🎓 Student
-
+### 👨‍🎓 Student Features
 - Browse and enroll in courses
 - Add courses to cart
 - Place orders
 - View lessons and quizzes
 - Submit reviews
 
-### 🛠 Admin
-
+### 🛠 Admin Features
 - Manage users and roles
 - Oversee platform activity
 - Control platform data
@@ -145,24 +148,14 @@ TutorG/
 
 ## ⚙️ Tech Stack
 
-### 🖥 Frontend
-- React
-- TypeScript
-- Tailwind CSS
+**Frontend**  
+React · TypeScript · Tailwind CSS
 
-### ⚙️ Backend
-- Node.js
-- Express
-- TypeScript
-- MongoDB
-- Mongoose
+**Backend**  
+Node.js · Express · TypeScript · MongoDB · Mongoose
 
-### 🧰 Tools & Services
-- JWT Authentication
-- Cloudinary
-- Multer
-- REST APIs
-- Vercel (Frontend Deployment)
+**Tools & Services**  
+JWT · Cloudinary · Multer · REST APIs · Vercel
 
 ---
 
@@ -170,8 +163,6 @@ TutorG/
 
 - Frontend: Deployed on Vercel
 - Backend: Production-ready Express server (easily deployable on Render, Railway, etc.)
-- Secure environment variable management
-- Optimized builds for performance
 
 ---
 
@@ -182,7 +173,6 @@ TutorG/
 - SOLID design approach
 - Reusable services & repositories
 - Scalable and maintainable structure
-- Ready for unit & integration testing
 
 ---
 
@@ -212,9 +202,5 @@ Contributions are welcome!
 **Joyel Varghese**  
 Full-Stack Developer  
 (MERN | TypeScript | React | Node.js)
-
----
-
-⭐ If this project helped you understand scalable full-stack architecture, consider giving it a star on GitHub!
 
 ---
