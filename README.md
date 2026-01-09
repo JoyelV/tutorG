@@ -30,6 +30,20 @@ Here are some real glimpses of the working platform:
 </div>
 
 <br>
+<div align="center">
+  <img src="screenshots/course-listing.png" alt="Student HomePage" width="75%"/>
+  <br><br>
+  <em>Modern student Home Page with course recommendations & Tutors</em>
+</div>
+
+<br>
+<div align="center">
+  <img src="screenshots/course-details.png" alt="Student HomePage" width="75%"/>
+  <br><br>
+  <em>Modern student Home Page with course recommendations & Tutors</em>
+</div>
+
+<br>
 ---
 
 ## 🚀 Live Demo & Source Code
@@ -75,24 +89,37 @@ Each role operates with secure, isolated permissions and workflows.
 
 TutorG follows a **Layered Architecture** with **Repository Pattern**:  
 **Controller → Service → Repository → Model**
+---
 
-## Repository Structure
----
-TutorG/
-├── client/                 # React + TypeScript Frontend
-│   ├── public/             # Static assets
-│   ├── src/                # Source code
-│   └── build/              # Production build (generated)
+## 📂 Project Structure
+
+tutorG/
+├── client/                        # 🎨 Frontend (React + TypeScript)
+│   ├── public/
+│   └── src/
+│       ├── components/            # Reusable UI pieces
+│       ├── pages/                 # Route-based pages
+│       ├── hooks/
+│       ├── contexts/
+│       ├── types/
+│       └── assets/
 │
-└── server/                 # Node.js + Express Backend
-    ├── controllers/        # Request handling logic
-    ├── services/           # Business logic
-    ├── repositories/       # Data access layer
-    ├── models/             # Mongoose schemas
-    ├── routes/             # API routes
-    ├── config/             # Environment & third-party configurations
-    └── utils/              # Helpers (JWT, OTP, Email, etc.)
----
+├── server/                        # ⚙️ Backend (Node.js + Express + TS)
+│   ├── src/
+│   │   ├── controllers/           # Express request handlers
+│   │   ├── services/              # Business logic layer
+│   │   ├── repositories/          # Data access (abstraction)
+│   │   ├── models/                # Mongoose schemas
+│   │   ├── routes/                # API endpoints
+│   │   ├── middlewares/           # Auth, validation, errors
+│   │   ├── config/                # Configurations & env setup
+│   │   ├── utils/                 # Helpers (jwt, mailer, otp...)
+│   │   └── server.ts              # ← Application entry
+│   └── ...
+│
+├── screenshots/                   # 📸 README images
+├── .env.example
+└── README.md
 ---
 
 ## 🔐 Authentication & Security
