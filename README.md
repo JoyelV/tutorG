@@ -33,14 +33,14 @@ Here are some real glimpses of the working platform:
 <div align="center">
   <img src="screenshots/course-listing.png" alt="Student HomePage" width="75%"/>
   <br><br>
-  <em>Modern student Home Page with course recommendations & Tutors</em>
+  <em>Modern Course Listing Page with course Listings </em>
 </div>
 
 <br>
 <div align="center">
   <img src="screenshots/course-details.png" alt="Student HomePage" width="75%"/>
   <br><br>
-  <em>Modern student Home Page with course recommendations & Tutors</em>
+  <em>Modern Course Detailed Page with course notes, reviews </em>
 </div>
 
 <br>
@@ -93,31 +93,32 @@ TutorG follows a **Layered Architecture** with **Repository Pattern**:
 
 ## 📂 Project Structure
 
+```text
 tutorG/
-├── client/                        # 🎨 Frontend (React + TypeScript)
+├── client/                        # 🎨 React + TypeScript Frontend
 │   ├── public/
 │   └── src/
-│       ├── components/            # Reusable UI pieces
-│       ├── pages/                 # Route-based pages
+│       ├── components/            # Reusable components
+│       ├── pages/                 # Page components / routes
 │       ├── hooks/
 │       ├── contexts/
 │       ├── types/
 │       └── assets/
 │
-├── server/                        # ⚙️ Backend (Node.js + Express + TS)
+├── server/                        # ⚙️ Node.js + Express + TypeScript Backend
 │   ├── src/
-│   │   ├── controllers/           # Express request handlers
-│   │   ├── services/              # Business logic layer
-│   │   ├── repositories/          # Data access (abstraction)
+│   │   ├── controllers/           # Request handlers
+│   │   ├── services/              # Business logic
+│   │   ├── repositories/          # Data access layer
 │   │   ├── models/                # Mongoose schemas
-│   │   ├── routes/                # API endpoints
+│   │   ├── routes/                # API routes
 │   │   ├── middlewares/           # Auth, validation, errors
-│   │   ├── config/                # Configurations & env setup
-│   │   ├── utils/                 # Helpers (jwt, mailer, otp...)
-│   │   └── server.ts              # ← Application entry
+│   │   ├── config/                # Env, DB, Cloudinary...
+│   │   ├── utils/                 # JWT, mailer, helpers...
+│   │   └── server.ts              # Entry point
 │   └── ...
 │
-├── screenshots/                   # 📸 README images
+├── screenshots/                   # 📸 Images for README
 ├── .env.example
 └── README.md
 ---
