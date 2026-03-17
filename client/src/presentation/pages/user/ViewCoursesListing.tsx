@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ImageCard from '../../components/users/ImageCard';
-import Navbar from '../../components/common/Navbar';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 import { CircularProgress } from '@mui/material';
 
 const ViewCoursesListing: React.FC = () => {
@@ -26,7 +25,7 @@ const ViewCoursesListing: React.FC = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/user/categories');
+      const response = await courseService.getCategories();
       const categoryNames = response.data.map((category: any) => category.categoryName);
       setCategories(categoryNames);
     } catch (error) {
@@ -42,7 +41,6 @@ const ViewCoursesListing: React.FC = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-white space-y-4 sm:space-y-0 sm:space-x-4 relative">
         <input
           type="text"

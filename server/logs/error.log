@@ -1,0 +1,9 @@
+2026-03-07 22:37:11 [error]: 	[ERROR] POST /api/instructor/login -> User not found
+2026-03-16 22:01:11 [error]: 	[ERROR] GET /api/user/top-tutors -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:18 [error]: 	[ERROR] GET /api/user/courses/recent -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:19 [error]: 	[ERROR] GET /api/user/categories -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:19 [error]: 	[ERROR] GET /api/user/stats -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:30 [error]: 	[ERROR] GET /api/user/courses -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:50 [error]: 	[ERROR] GET /api/user/categories -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:50 [error]: 	[ERROR] GET /api/user/courses -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net
+2026-03-16 22:01:50 [error]: 	[ERROR] GET /api/user/categories -> getaddrinfo ENOTFOUND cluster0-shard-00-02.9xjky.mongodb.net

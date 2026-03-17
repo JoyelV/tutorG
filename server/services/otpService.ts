@@ -1,16 +1,17 @@
 import { otpRepository } from '../repositories/forgotOtpRepository';
 import { sendOTPEmail } from '../utils/emailService';
-import {generateToken} from '../utils/jwtHelper';
+import { generateToken } from '../utils/jwtHelper';
+import { logger } from '../utils/logger';
 
 export const otpService = {
   async generateAndSendOtp(email: string): Promise<void> {
-    const otp = Math.floor(100000 + Math.random() * 900000); 
-    otpRepository.saveOtp(email, otp); 
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpRepository.saveOtp(email, otp);
     await sendOTPEmail(email, otp.toString());
   },
   verifyOtpAndGenerateToken(email: string, otp: string): string {
     const storedOtp = otpRepository.getOtp(email);
-    console.log("resend storedOtp email",storedOtp)
+    logger.info(`resend storedOtp email: ${JSON.stringify(storedOtp)}`);
 
     if (!storedOtp || storedOtp !== parseInt(otp, 10)) {
       throw new Error('Invalid OTP');

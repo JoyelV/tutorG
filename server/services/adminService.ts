@@ -204,3 +204,23 @@ export const uploadUserImage = async (
 
   return user;
 };
+
+/* =========================
+   ANALYTICS SERVICES
+========================= */
+
+export const getDashboardData = async (): Promise<any> => {
+  return await adminRepository.getOverallStats();
+};
+
+export const getRevenueData = async (): Promise<any> => {
+  return await adminRepository.getRevenueAnalytics();
+};
+
+export const getCategoryData = async (): Promise<any> => {
+  return await adminRepository.getCategoryDistribution();
+};
+
+export const getTopSellingCourses = async (): Promise<any> => {
+  return await adminRepository.getTopCourses();
+};

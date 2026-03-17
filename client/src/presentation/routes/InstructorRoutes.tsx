@@ -1,26 +1,31 @@
+import { Suspense, lazy } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import InstructorDashboard from '../pages/instructor/InstructorDashboard'
-import InstructorLogin from '../pages/instructor/InstructorLogin';
-import InstructorProfile from '../pages/instructor/instructorProfile';
-import ForgotPassword from '../pages/instructor/ForgotPassword';
-import VerifyOtp from '../pages/instructor/VerifyOtp';
-import { PasswordReset } from '../pages/instructor/PasswordReset';
-import CreateCourse from '../pages/instructor/CreateCourse';
-import MyCourses from '../pages/instructor/MyCourses';
+import Loader from '../components/common/Loader';
+import { useAuth } from '../../infrastructure/context/AuthContext';
 import ErrorBoundary from '../../utils/ErrorBoundary';
-import CourseView from '../pages/instructor/CourseView';
-import AddLesson from '../pages/instructor/AddLesson';
-import EditCourse from '../pages/instructor/EditCourse';
-import EditLesson from '../pages/instructor/EditLesson'
-import AddQuizForm from '../pages/instructor/AddQuiz';
-import EditQuizForm from '../pages/instructor/EditQuizForm';
-import StudentsList from '../pages/instructor/MyStudentsList';
-import Pagenotfound from '../components/common/PageNotFound';
-import Earnings from '../pages/instructor/MyEarnings';
-import ChatApp from '../pages/instructor/Messages';
+import InstructorLayout from '../components/instructor/InstructorLayout';
+
+const InstructorDashboard = lazy(() => import('../pages/instructor/InstructorDashboard'));
+const InstructorLogin = lazy(() => import('../pages/instructor/InstructorLogin'));
+const InstructorProfile = lazy(() => import('../pages/instructor/instructorProfile'));
+const ForgotPassword = lazy(() => import('../pages/instructor/ForgotPassword'));
+const VerifyOtp = lazy(() => import('../pages/instructor/VerifyOtp'));
+const PasswordReset = lazy(() => import('../pages/instructor/PasswordReset').then(module => ({ default: module.PasswordReset })));
+const CreateCourse = lazy(() => import('../pages/instructor/CreateCourse'));
+const MyCourses = lazy(() => import('../pages/instructor/MyCourses'));
+const CourseView = lazy(() => import('../pages/instructor/CourseView'));
+const AddLesson = lazy(() => import('../pages/instructor/AddLesson'));
+const EditCourse = lazy(() => import('../pages/instructor/EditCourse'));
+const EditLesson = lazy(() => import('../pages/instructor/EditLesson'));
+const AddQuizForm = lazy(() => import('../pages/instructor/AddQuiz'));
+const EditQuizForm = lazy(() => import('../pages/instructor/EditQuizForm'));
+const StudentsList = lazy(() => import('../pages/instructor/MyStudentsList'));
+const Pagenotfound = lazy(() => import('../components/common/PageNotFound'));
+const Earnings = lazy(() => import('../pages/instructor/MyEarnings'));
+const ChatApp = lazy(() => import('../pages/instructor/Messages'));
+
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import { useAuth } from '../../infrastructure/context/AuthContext';
 
 const stripePublicKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
 
@@ -37,63 +42,41 @@ const PrivateRoute = ({ element }: { element: JSX.Element }) => {
 
 const InstructorRoutes = () => {
     return (
-        <Routes>
-            <Route path="/" element={<InstructorLogin />} />
-            <Route path="/forgot-password" element={<ForgotPassword/>} />
-            <Route path="/verify-otp" element={<VerifyOtp/>} />
-            <Route path="/reset-password" element={<PasswordReset />} />
-            <Route
-                path="/instructor-dashboard"
-                element={<PrivateRoute element={<InstructorDashboard />} />}
-            />
-            <Route
-                path="/instructor-createCourse"
-                element={<PrivateRoute element={<CreateCourse />} />}
-            />
-            <Route
-                path="/add-lesson/:courseId"
-                element={<PrivateRoute element={<AddLesson/>} />}
-            />     
-             <Route
-                path="/edit-lesson/:lessonId"
-                element={<PrivateRoute element={<EditLesson/>} />}
-            />     
-            <Route
-                path="/my-courses"
-                element={<PrivateRoute element={ <MyCourses />} />}
-            />    
-             <Route
-                path="/messages"
-                element={<PrivateRoute element={<ChatApp />} />}
-            /> 
-            <Route
-                path="/my-students"
-                element={<PrivateRoute element={<StudentsList />} />}
-            />
-            <Route
-                path="/my-earnings"
-                element={
-                    <PrivateRoute
+        <Suspense fallback={<Loader />}>
+            <Routes>
+                {/* Public Instructor Routes */}
+                <Route path="/" element={<InstructorLogin />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/verify-otp" element={<VerifyOtp />} />
+                <Route path="/reset-password" element={<PasswordReset />} />
+
+                {/* Protected Instructor Routes with Layout */}
+                <Route element={<PrivateRoute element={<InstructorLayout />} />}>
+                    <Route path="/instructor-dashboard" element={<InstructorDashboard />} />
+                    <Route path="/instructor-createCourse" element={<CreateCourse />} />
+                    <Route path="/add-lesson/:courseId" element={<AddLesson />} />
+                    <Route path="/edit-lesson/:lessonId" element={<EditLesson />} />
+                    <Route path="/my-courses" element={<MyCourses />} />
+                    <Route path="/messages" element={<ChatApp />} />
+                    <Route path="/my-students" element={<StudentsList />} />
+                    <Route
+                        path="/my-earnings"
                         element={
                             <Elements stripe={stripePromise}>
                                 <Earnings />
                             </Elements>
                         }
                     />
-                }
-            />   
-            <Route path="/course-view/:courseId" element={<PrivateRoute element={<ErrorBoundary>< CourseView /></ErrorBoundary>}/>}
-            />
-            <Route path="/course-edit/:courseId" element={<PrivateRoute element={<EditCourse />} />} 
-            />
-            <Route path="/addQuiz/:courseId" element={<PrivateRoute element={<AddQuizForm />} />}/>
-            <Route path="/quizzes/:courseId/edit/:quizId" element={<PrivateRoute element={<EditQuizForm />} />}/>
-            <Route
-                path="/instructor-Profile"
-                element={<PrivateRoute element={<InstructorProfile />}/>}
-            />
-            <Route path="*" element={<Pagenotfound />} />
-        </Routes>
+                    <Route path="/course-view/:courseId" element={<ErrorBoundary><CourseView /></ErrorBoundary>} />
+                    <Route path="/course-edit/:courseId" element={<EditCourse />} />
+                    <Route path="/addQuiz/:courseId" element={<AddQuizForm />} />
+                    <Route path="/quizzes/:courseId/edit/:quizId" element={<EditQuizForm />} />
+                    <Route path="/instructor-Profile" element={<InstructorProfile />} />
+                </Route>
+
+                <Route path="*" element={<Pagenotfound />} />
+            </Routes>
+        </Suspense>
     );
 };
 

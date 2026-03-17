@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
 import CourseSidebar from '../../components/common/CourseSideBar';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseImage from '../../components/courses/CourseImage';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import RelatedCourses from '../../components/courses/RelatedCourses';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 import { ToastContainer } from 'react-toastify';
 import CourseHeader from '../../components/users/CourseHeader';
 import CurriculumDetailed from '../../components/courses/DetailedCurriculumPage';
@@ -30,7 +29,7 @@ const CoursePage = () => {
         if (!courseId) {
           throw new Error('Invalid Course ID.');
         }
-        const response = await api.get(`/user/courses/${courseId}`);
+        const response = await courseService.getCourseById(courseId);
         if (response.status === 200) {
           setCourseData(response.data);
           setSelectedVideoUrl(response.data.trailer);
@@ -66,7 +65,6 @@ const CoursePage = () => {
   return (
     <div className="flex flex-col w-full min-h-screen p-4">
       <ToastContainer />
-      <Navbar />
       {/* Main Content Section */}
       <div className="flex flex-col md:flex-row w-full flex-grow bg-white shadow-lg rounded-lg overflow-hidden">
         {/* Course Details Section */}

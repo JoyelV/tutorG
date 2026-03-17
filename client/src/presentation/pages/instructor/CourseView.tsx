@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import CourseHeader from '../../components/courses/courseHeader';
-import api from '../../../infrastructure/api/api';
-import Sidebar from '../../components/instructor/Sidebar';
+import { courseService } from '../../../infrastructure/api/courseService';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
 import EditQuizForm from './QuizListSection';
 import CourseVideo from '../../components/instructor/CourseVideo';
@@ -28,9 +27,10 @@ const CourseView = () => {
         if (!courseId) {
           throw new Error('Invalid Course ID.');
         }
-        const response = await api.get(`/instructor/course-view/${courseId}`);
+        const response = await courseService.getCourseView(courseId);
         if (response.status === 200) {
-          setCourseData(response.data);
+          const data = response.data.data || response.data;
+          setCourseData(data);
         } else {
           throw new Error('Course not found.');
         }
@@ -53,14 +53,20 @@ const CourseView = () => {
   };
 
   const handleAddQuiz = async () => {
-    const response = await api.get(`/user/quizzes/${courseId}`);
-    if (response.status===204) {
-      navigate(`/instructor/addQuiz/${courseId}`);
-    }
-    
-    if (response.status===200) {
-      alert('A quiz has already been added for this course.');
-      return;
+    try {
+      const response = await courseService.getQuizzesByCourse(courseId as string);
+      if (response.status === 204 || (response.data && response.data.length === 0)) {
+        navigate(`/instructor/addQuiz/${courseId}`);
+      } else if (response.status === 200) {
+        alert('A quiz has already been added for this course.');
+        return;
+      }
+    } catch (error: any) {
+      if (error.response && error.status === 404) {
+        navigate(`/instructor/addQuiz/${courseId}`);
+      } else {
+        console.error("Error checking quiz:", error);
+      }
     }
   };
 
@@ -77,86 +83,78 @@ const CourseView = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <Sidebar />
-      </aside>
+    <div className="p-6 bg-gray-50">
+      {/* Header */}
+      <CourseHeader
+        courseTitle={courseData.title}
+        courseSubtitle={courseData.subtitle}
+        instructorId={courseData.instructorId}
+      />
 
-      {/* Main Content */}
-      <div className="flex-1 p-3 bg-gray-50">
-        {/* Header */}
-        <CourseHeader
-          courseTitle={courseData.title}
-          courseSubtitle={courseData.subtitle}
-          instructorId={courseData.instructorId}
-        />
+      {/* Body Section */}
+      <div className="flex mt-6">
+        {/* Left Content */}
+        <div className="flex-1 pr-4">
+          <CourseVideo videoUrl={selectedVideoUrl} id={courseId} />
 
-        {/* Body Section */}
-        <div className="flex mt-6">
-          {/* Left Content */}
-          <div className="flex-1 pr-4">
-            <CourseVideo videoUrl={selectedVideoUrl} id={courseId} />
-
-            {/* Section Navigation */}
-            <div className="flex border-b border-gray-200 mt-6 mb-6">
-              {['Description', 'Requirements', 'Quiz', 'Feedback'].map((section) => (
-                <button
-                  key={section}
-                  className={`text-lg py-2 px-4 transition-all duration-300 ${currentSection === section
-                    ? 'font-bold border-b-4 border-blue-500 text-blue-500'
-                    : 'text-gray-600 hover:text-blue-500'
-                    }`}
-                  onClick={() => handleSectionChange(section as Section)}
-                >
-                  {section}
-                </button>
-              ))}
-            </div>
-
-            {/* Dynamic Section Display */}
-            <div className="transition-all duration-300 ease-in-out">
-              {currentSection === 'Description' && (
-                <CourseDescription
-                  description={courseData.description}
-                  learningPoints={courseData.learningPoints}
-                  targetAudience={courseData.targetAudience}
-                />
-              )}
-              {currentSection === 'Requirements' && (
-                <CourseRequirements requirements={courseData.requirements} />
-              )}
-              {currentSection === 'Feedback' && <CourseFeedbackTutor />}
-              {currentSection === 'Quiz' && <EditQuizForm />}
-            </div>
-          </div>
-
-          {/* Right Content - Curriculum */}
-          <div className="w-1/3 bg-white shadow-lg p-2">
-            <div className="flex space-x-4 mt-4">
+          {/* Section Navigation */}
+          <div className="flex border-b border-gray-200 mt-6 mb-6">
+            {['Description', 'Requirements', 'Quiz', 'Feedback'].map((section) => (
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
-                onClick={handleAddLessonClick}
-              >
-                Add Chapter
-              </button>
-              <button
-                onClick={handleAddQuiz}
-                disabled={courseData?.hasQuiz}
-                className={`px-4 py-2 rounded shadow text-white transition ${courseData?.hasQuiz
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-700'
+                key={section}
+                className={`text-lg py-2 px-4 transition-all duration-300 ${currentSection === section
+                  ? 'font-bold border-b-4 border-blue-500 text-blue-500'
+                  : 'text-gray-600 hover:text-blue-500'
                   }`}
+                onClick={() => handleSectionChange(section as Section)}
               >
-                {courseData?.hasQuiz ? 'Quiz Added' : 'Add Quiz'}
+                {section}
               </button>
-            </div>
-
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
-            <CurriculumPage onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
-            />
-            {/* Add Lesson Button */}
+            ))}
           </div>
+
+          {/* Dynamic Section Display */}
+          <div className="transition-all duration-300 ease-in-out">
+            {currentSection === 'Description' && (
+              <CourseDescription
+                description={courseData.description}
+                learningPoints={courseData.learningPoints}
+                targetAudience={courseData.targetAudience}
+              />
+            )}
+            {currentSection === 'Requirements' && (
+              <CourseRequirements requirements={courseData.requirements} />
+            )}
+            {currentSection === 'Feedback' && <CourseFeedbackTutor />}
+            {currentSection === 'Quiz' && <EditQuizForm />}
+          </div>
+        </div>
+
+        {/* Right Content - Curriculum */}
+        <div className="w-1/3 bg-white shadow-lg p-2">
+          <div className="flex space-x-4 mt-4">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition"
+              onClick={handleAddLessonClick}
+            >
+              Add Chapter
+            </button>
+            <button
+              onClick={handleAddQuiz}
+              disabled={courseData?.hasQuiz}
+              className={`px-4 py-2 rounded shadow text-white transition ${courseData?.hasQuiz
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-green-500 hover:bg-green-700'
+                }`}
+            >
+              {courseData?.hasQuiz ? 'Quiz Added' : 'Add Quiz'}
+            </button>
+          </div>
+
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
+          <CurriculumPage onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
+          />
+          {/* Add Lesson Button */}
         </div>
       </div>
     </div>

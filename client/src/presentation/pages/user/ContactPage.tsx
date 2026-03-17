@@ -2,12 +2,9 @@ import { Button, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import HeroSection from "../../components/common/HeroSection";
 import { assets } from "../../../assets/assets_user/assets";
-import Navbar from "../../components/common/Navbar";
-
 const ContactPage = () => {
   return (
     <div className="font-sans bg-white">
-      <Navbar />
       {/* Hero Section */}
       <HeroSection />
 
@@ -18,29 +15,29 @@ const ContactPage = () => {
         </h2>
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[{
-              title: "Los Angeles",
-              subtitle: "California",
-              address: "Santa Monica, CA 90404",
-              image: assets.Branches,
-            },
-            {
-              title: "Tokyo",
-              subtitle: "Japan",
-              address: "Shibuya, Tokyo",
-              image: assets.Branches2,
-            },
-            {
-              title: "Moscow",
-              subtitle: "Russia",
-              address: "Arbat Street, Moscow",
-              image: assets.Branches3,
-            },
-            {
-              title: "Mumbai",
-              subtitle: "India",
-              address: "Gateway of India",
-              image: assets.Branches4,
-            }].map((branch, index) => (
+            title: "Los Angeles",
+            subtitle: "California",
+            address: "Santa Monica, CA 90404",
+            image: assets.Branches,
+          },
+          {
+            title: "Tokyo",
+            subtitle: "Japan",
+            address: "Shibuya, Tokyo",
+            image: assets.Branches2,
+          },
+          {
+            title: "Moscow",
+            subtitle: "Russia",
+            address: "Arbat Street, Moscow",
+            image: assets.Branches3,
+          },
+          {
+            title: "Mumbai",
+            subtitle: "India",
+            address: "Gateway of India",
+            image: assets.Branches4,
+          }].map((branch, index) => (
             <div
               key={index}
               className="relative rounded-lg overflow-hidden shadow-lg group h-48 sm:h-64 cursor-pointer"
@@ -77,7 +74,7 @@ const ContactPage = () => {
             {/* Address Section */}
             <div className="space-y-4 sm:space-y-6 text-center md:text-left">
               <p className="text-gray-600 leading-relaxed">
-                Will you be in Ernakulam or any other branches any time soon? 
+                Will you be in Ernakulam or any other branches any time soon?
                 Stop by the office! We’d love to meet.
               </p>
               <div>
@@ -97,37 +94,37 @@ const ContactPage = () => {
             {/* Form Section */}
             <form className="space-y-4 bg-gray-50 p-4 sm:p-6 rounded-md shadow-md">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <TextField 
-                  label="First Name" 
-                  fullWidth 
-                  variant="outlined" 
+                <TextField
+                  label="First Name"
+                  fullWidth
+                  variant="outlined"
                   className="bg-white"
                 />
-                <TextField 
-                  label="Last Name" 
-                  fullWidth 
-                  variant="outlined" 
+                <TextField
+                  label="Last Name"
+                  fullWidth
+                  variant="outlined"
                   className="bg-white"
                 />
               </div>
-              <TextField 
-                label="Email" 
-                fullWidth 
-                variant="outlined" 
+              <TextField
+                label="Email"
+                fullWidth
+                variant="outlined"
                 className="bg-white"
               />
-              <TextField 
-                label="Subject" 
-                fullWidth 
-                variant="outlined" 
+              <TextField
+                label="Subject"
+                fullWidth
+                variant="outlined"
                 className="bg-white"
               />
-              <TextField 
-                label="Message" 
-                fullWidth 
-                variant="outlined" 
-                multiline 
-                rows={4} 
+              <TextField
+                label="Message"
+                fullWidth
+                variant="outlined"
+                multiline
+                rows={4}
                 className="bg-white"
               />
               <Button

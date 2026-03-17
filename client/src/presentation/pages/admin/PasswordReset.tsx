@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 
 interface LocationState {
   token: string;
@@ -29,7 +29,7 @@ export const PasswordReset: React.FC = () => {
     }
 
     try {
-      const response = await api.post('/admin/reset-password', {
+      const response = await authService.adminResetPassword({
         token: state.token,
         newPassword,
       });

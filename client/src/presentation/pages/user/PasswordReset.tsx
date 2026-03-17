@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../../../infrastructure/api/api'
+import { authService } from '../../../infrastructure/api/authService';
 
 interface LocationState {
   token: string;
@@ -30,18 +30,16 @@ export const PasswordReset: React.FC = () => {
     }
 
     try {
-      const response = await api.post('/user/reset-password', {
+      const response = await authService.resetPassword({
         token: state.token,
         newPassword,
       });
 
-      if(response.status===400){
+      if (response.status === 400) {
         setError('Registered Email required');
         return;
       }
 
-      const userRole = response.data.role;
-      console.log(userRole, "userRole");
       navigate('/login');
 
     } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 
 interface LocationState {
   email: string;
@@ -9,8 +9,8 @@ interface LocationState {
 const VerifyOtp: React.FC = () => {
   const [otp, setOtp] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [resendTimer, setResendTimer] = useState<number>(30); 
-  const [canResend, setCanResend] = useState<boolean>(false); 
+  const [resendTimer, setResendTimer] = useState<number>(30);
+  const [canResend, setCanResend] = useState<boolean>(false);
   const { state } = useLocation() as { state: LocationState };
   const navigate = useNavigate();
 
@@ -19,14 +19,14 @@ const VerifyOtp: React.FC = () => {
       const timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      setCanResend(true); 
+      setCanResend(true);
     }
   }, [resendTimer]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await api.post('/instructor/verify-otp', { email: state.email, otp });
+      const response = await authService.instructorVerifyOtp({ email: state.email, otp });
       navigate('/instructor/reset-password', { state: { token: response.data.token } });
     } catch (error) {
       setError('Invalid OTP');
@@ -36,11 +36,11 @@ const VerifyOtp: React.FC = () => {
 
   const handleResendOtp = async () => {
     try {
-      setCanResend(false); 
-      setResendTimer(30); 
-      await api.post('/instructor/send-otp', { email: state.email });
-      setError(''); 
-    } catch (error:any) {
+      setCanResend(false);
+      setResendTimer(30);
+      await authService.instructorSendOtp({ email: state.email });
+      setError('');
+    } catch (error: any) {
       if (error.response.status === 404) {
         setError('Email address not found in the system. Please check and try again.');
       } else {

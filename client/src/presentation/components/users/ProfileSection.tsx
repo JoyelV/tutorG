@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../../../infrastructure/api/api";
+import { courseService } from "../../../infrastructure/api/courseService";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -36,8 +36,9 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ instructorId }) => {
   useEffect(() => {
     const fetchInstructorData = async () => {
       try {
-        const response = await api.get(`/user/instructors/${instructorId}`);
-        setInstructor(response.data);
+        const response = await courseService.getInstructorProfile(instructorId);
+        const data = response.data.data || response.data;
+        setInstructor(data);
       } catch (error) {
         console.error("Failed to fetch instructor data:", error);
       } finally {

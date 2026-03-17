@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { userService } from '../../../infrastructure/api/userService';
 
 interface SummaryData {
   totalEnrolled: number;
@@ -34,8 +34,8 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchStudentSummary = async () => {
       try {
-        const response = await api.get('/user/dashboard-courseData');
-        setSummary(response.data);
+        const response = await userService.getDashboardStats();
+        setSummary(response.data.data || response.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching student summary:', error);

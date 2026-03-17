@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../../infrastructure/api/api';
+import { userService } from '../../../infrastructure/api/userService';
 
 interface Order {
   _id: string;
@@ -28,14 +28,12 @@ const PurchaseHistoryPage = () => {
   useEffect(() => {
     const fetchPurchaseHistory = async () => {
       try {
-        const response = await api.get(`/user/purchase-history`, {
-          params: {
-            userId,
-            page: currentPage,
-            limit: 7,
-            sort: sortOrder,
-            direction: sortDirection,
-          },
+        const response = await userService.getPurchaseHistory({
+          userId,
+          page: currentPage,
+          limit: 7,
+          sort: sortOrder,
+          direction: sortDirection,
         });
 
         if (response.status === 204) {
@@ -168,8 +166,8 @@ const PurchaseHistoryPage = () => {
         </>
       ) : (
         <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center text-xl">Purchase History loading...</div>
-      </div>
+          <div className="text-center text-xl">Purchase History loading...</div>
+        </div>
       )}
     </div>
   );

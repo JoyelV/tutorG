@@ -70,21 +70,16 @@ export interface ICourse extends Document {
   status: 'draft' | 'reviewed' | 'published' | 'rejected';
   createdAt: Date;
   students: Types.ObjectId[];
-  ratingsAndFeedback: {
-    userId: Types.ObjectId;
-    rating: number;
-    feedback: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
   averageRating: number;
+  reviewCount: number;
   isApproved: boolean;
-
-  calculateAverageRating: () => Promise<void>;
 }
 
 export interface IPopulatedFeedback {
   userId: IUser;
+  username?: string;
+  email?: string;
+  image?: string;
   rating: number;
   feedback: string;
   createdAt: Date;

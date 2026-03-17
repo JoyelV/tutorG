@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Swal from 'sweetalert2'; 
-import api from '../../../infrastructure/api/api';
-import Sidebar from '../../components/admin/Sidebar';
+import Swal from 'sweetalert2';
+import { adminService } from '../../../infrastructure/api/adminService';
 
 const AddReviewForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -58,11 +57,7 @@ const AddReviewForm: React.FC = () => {
     }
 
     try {
-      const response = await api.post(`/admin/courses/${courseId}`, formData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await adminService.addCourseReview(courseId as string, formData);
 
       if (response.status === 200) {
         Swal.fire('Oops!', 'Review already exists.', 'error');
@@ -85,82 +80,77 @@ const AddReviewForm: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <Sidebar />
-      </aside>
-      <div className="flex flex-1 items-center justify-center">
-        <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Add Review</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Title of Material
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="e.g., Vue Forms"
-                required
-              />
-              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-            </div>
+    <div className="bg-gray-100 min-h-full flex items-center justify-center p-6">
+      <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Add Review</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              Title of Material
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="e.g., Vue Forms"
+              required
+            />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+          </div>
 
-            <div>
-              <label htmlFor="material" className="block text-sm font-medium text-gray-700">
-                Review
-              </label>
-              <input
-                type="text"
-                id="material"
-                name="material"
-                value={formData.material}
-                onChange={handleInputChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="e.g., Bad Video Quality"
-                required
-              />
-              {errors.material && <p className="text-red-500 text-sm mt-1">{errors.material}</p>}
-            </div>
+          <div>
+            <label htmlFor="material" className="block text-sm font-medium text-gray-700">
+              Review
+            </label>
+            <input
+              type="text"
+              id="material"
+              name="material"
+              value={formData.material}
+              onChange={handleInputChange}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="e.g., Bad Video Quality"
+              required
+            />
+            {errors.material && <p className="text-red-500 text-sm mt-1">{errors.material}</p>}
+          </div>
 
-            <div>
-              <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
-                Comment
-              </label>
-              <textarea
-                id="comment"
-                name="comment"
-                value={formData.comment}
-                onChange={handleInputChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Write your comments here..."
-                rows={4}
-                required
-              ></textarea>
-              {errors.comment && <p className="text-red-500 text-sm mt-1">{errors.comment}</p>}
-            </div>
+          <div>
+            <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
+              Comment
+            </label>
+            <textarea
+              id="comment"
+              name="comment"
+              value={formData.comment}
+              onChange={handleInputChange}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Write your comments here..."
+              rows={4}
+              required
+            ></textarea>
+            {errors.comment && <p className="text-red-500 text-sm mt-1">{errors.comment}</p>}
+          </div>
 
-            <div className="flex justify-between">
-              <button
-                type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                Submit
-              </button>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Close
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              Close
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

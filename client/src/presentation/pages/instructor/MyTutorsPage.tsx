@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../../infrastructure/api/api';
+import { userService } from '../../../infrastructure/api/userService';
 import { useNavigate } from 'react-router-dom';
 
 interface Tutor {
@@ -24,7 +24,7 @@ const MyTutorsPage: React.FC = () => {
       }
 
       try {
-        const response = await api.get(`/user/my-tutors`);
+        const response = await userService.getMyTutors();
         const orders = response.data;
 
         const tutorsList = orders.map((order: any) => ({
@@ -100,8 +100,8 @@ const MyTutorsPage: React.FC = () => {
               key={index}
               onClick={() => paginate(index + 1)}
               className={`mx-1 px-3 py-1 rounded-full ${currentPage === index + 1
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
             >
               {index + 1}

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: `${process.env.REACT_APP_SOCKET_URL}/api`,
-    withCredentials: true, 
+    withCredentials: true,
 });
 
 const refreshAccessToken = async () => {
@@ -13,33 +13,39 @@ const refreshAccessToken = async () => {
         return token;
     } catch (error) {
         console.error('Failed to refresh token:', error);
-        throw error; 
+        throw error;
     }
 };
 
 api.interceptors.response.use(
-    (response) => response, 
+    (response) => {
+        // Automatically extract data from the ApiResponse wrapper for the frontend
+        if (response.data && response.data.success === true && response.data.data !== undefined) {
+            return { ...response, data: response.data.data };
+        }
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
-        if(error.response.status === 403 ){
+        if (error.response.status === 403) {
             const message = error.response?.data?.message || "Forbidden";
             localStorage.clear();
-            alert(message); 
+            alert(message);
             window.location.href = '/login';
         }
         if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true; 
+            originalRequest._retry = true;
             try {
                 const newToken = await refreshAccessToken();
                 api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
                 originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-                return api(originalRequest); 
+                return api(originalRequest);
             } catch (refreshError) {
                 console.error('Token refresh failed:', refreshError);
                 window.location.href = '/login';
             }
         }
-        return Promise.reject(error); 
+        return Promise.reject(error);
     }
 );
 

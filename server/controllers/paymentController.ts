@@ -3,9 +3,15 @@ import Course from "../models/Course";
 import Stripe from "stripe";
 import orderModel from "../models/Orders";
 import CartModel from "../models/Cart";
+import { OrderController } from './orderController';
+import { logger } from '../utils/logger';
 import Instructor from "../models/Instructor";
+import { asyncHandler } from "../utils/asyncHandler";
+import { AppError } from "../utils/AppError";
+import { ApiResponse } from "../utils/ApiResponse";
+import { socketService } from "../utils/socketService";
 
-const stripeSecretKey = process.env.STRIPE_KEY as string;
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY as string;
 
 if (!stripeSecretKey) {
   throw new Error("Stripe secret key not provided");
@@ -15,110 +21,99 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2024-11-20.acacia",
 });
 
-export const stripePayment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { cartItems } = req.body;    
+export const stripePayment = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { cartItems } = req.body;
 
-    if (!Array.isArray(cartItems) || cartItems.length === 0) {
-      res.status(400).json({ error: "Cart items are required." });
-      return;
-    }
-    
-    const lineItems = cartItems.map((item: any) => {
-      const { courseId, courseFee, title, thumbnail } = item;
-
-      return {
-        price_data: {
-          currency: "INR",
-          product_data: {
-            name: title,
-            images: thumbnail ? [thumbnail] : [],
-            metadata: {
-              courseId,
-            },
-          },
-          unit_amount: courseFee * 100, 
-        },
-        quantity: 1,
-      };
-    });
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      billing_address_collection: 'auto',
-      success_url: `${process.env.CLIENT_URL}/paymentSuccess?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/cart`,
-      metadata: {
-        type: 'course_purchase',
-        cartItems: JSON.stringify(
-          cartItems.map(({ courseId, studentId }) => ({
-            courseId,
-            studentId,
-          })), 
-        )
-      }
-    });
-
-    res.json({
-      status: true,
-      url: session.url,
-    });
-  } catch (error) {
-    console.error("Stripe Payment Error:", error);
-    res.status(500).json({ error: "Payment processing failed." });
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    throw new AppError(400, "Cart items are required");
   }
-};
 
-let endpointSecret:any;
+  const lineItems = cartItems.map((item: any) => {
+    const { courseId, courseFee, title, thumbnail } = item;
 
-export const handleStripeWebhook = async (req: Request, res: Response) => {
+    return {
+      price_data: {
+        currency: "INR",
+        product_data: {
+          name: title,
+          images: thumbnail ? [thumbnail] : [],
+          metadata: {
+            courseId,
+          },
+        },
+        unit_amount: courseFee * 100,
+      },
+      quantity: 1,
+    };
+  });
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: lineItems,
+    mode: "payment",
+    billing_address_collection: 'auto',
+    success_url: `${process.env.CLIENT_URL}/paymentSuccess?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.CLIENT_URL}/cart`,
+    metadata: {
+      type: 'course_purchase',
+      cartItems: JSON.stringify(
+        cartItems.map(({ courseId, studentId }) => ({
+          courseId,
+          studentId,
+        })),
+      )
+    }
+  });
+
+  res.status(200).json(new ApiResponse(200, { url: session.url }, "Stripe session created successfully"));
+});
+
+let endpointSecret: any;
+
+export const handleStripeWebhook = asyncHandler(async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"];
-    let eventType;
-    let data;
+  let eventType;
+  let data;
 
-    if (endpointSecret) {
-      let event;
-      try {
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          sig as string, 
-          endpointSecret
-        );
+  if (endpointSecret) {
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig as string,
+        endpointSecret
+      );
 
-      } catch (err:any) {
-        res.status(400).send(`Webhook Error: ${err.message}`);
+    } catch (err: any) {
+      throw new AppError(400, `Webhook Error: ${err.message}`);
+    }
+    data = event.data.object;
+    eventType = event.type;
+  } else {
+    data = req.body.data.object;
+    eventType = req.body.type;
+  }
+
+  if (eventType === "checkout.session.completed") {
+    const flowType = data.metadata?.type;
+
+    if (flowType === 'instructor_payout') {
+      const result = await handleInstructorPayout(data);
+      if (result) {
+        res.status(200).json({ status: 'success' });
         return;
       }
-      data = event.data.object;
-      eventType = event.type;
-    } else {
-      data = req.body.data.object;
-      eventType = req.body.type;
-    }
-
-    if (eventType === "checkout.session.completed") {
-      const flowType = data.metadata?.type;
-
-      if (flowType === 'instructor_payout') {
-        const result = await handleInstructorPayout(data);
-        if(result){
-          res.json({ status: 'success'});
-        }
-      }else if (flowType === 'course_purchase') {
+    } else if (flowType === 'course_purchase') {
       const session = data as Stripe.Checkout.Session;
-
       const cartItems = session.metadata?.cartItems ? JSON.parse(session.metadata.cartItems) : [];
-      
-      const sessionId = session.id; 
-      
+      const sessionId = session.id;
+
       const orderPromises = cartItems.map(async (item: any) => {
         const { courseId, studentId } = item;
 
         const courseData = await Course.findById(courseId);
         if (!courseData) {
-          throw new Error('Course not found');
+          throw new AppError(404, 'Course not found in purchase flow');
         }
 
         const order = await orderModel.create({
@@ -127,7 +122,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           tutorId: courseData.instructorId,
           amount: courseData.courseFee,
           paymentMethod: 'Stripe',
-          sessionId, 
+          sessionId,
         });
 
         await Course.findByIdAndUpdate(courseData._id, {
@@ -135,53 +130,60 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         });
 
         const instructor = await Instructor.findById(courseData.instructorId);
-        if (!instructor) throw new Error('Instructor not found');
-        
+        if (!instructor) throw new AppError(404, 'Instructor not found for earnings update');
+
         const earnings = courseData.courseFee * 0.2;
         instructor.currentBalance = (instructor.currentBalance as number) + earnings;
         await instructor.save();
 
         if (order) {
-        const deletedCart = await CartModel.findOneAndDelete({ user: studentId });
-  
-        if (deletedCart) {
-          console.log("Cart cleared for user:", studentId);
-        } else {
-          console.warn("No cart found for user:", studentId);
+          // Real-time notification for instructor
+          socketService.emitNotification(courseData.instructorId.toString(), {
+            title: 'New Student Enrollment!',
+            message: `A new student has enrolled in your course "${courseData.title}".`,
+            type: 'info'
+          });
+
+          const deletedCart = await CartModel.findOneAndDelete({ user: studentId });
+          if (deletedCart) {
+            logger.info(`Cart cleared for user: ${studentId}`);
+          } else {
+            logger.warn("No cart found for user:", studentId);
+          }
         }
-      }
         return order;
       });
 
       const orders = await Promise.all(orderPromises);
-      res.json({ status: 'success', orders });
-    }else {
-      console.log('Unknown flow type:', flowType);
+      res.status(200).json({ status: 'success', orders });
+      return;
+    } else {
+      logger.warn(`Unknown flow type: ${flowType}`);
     }
-    }
-    res.status(200).end();
-};
+  }
+  res.status(200).json({ received: true });
+});
 
 const handleInstructorPayout = async (session: any) => {
   const { email, amount } = session.metadata;
   const instructor = await Instructor.findOne({ email });
-  const withdrawnAmount = (amount*1) / 100; 
+  const withdrawnAmount = (amount * 1) / 100;
 
-  if(!instructor){
+  if (!instructor) {
     return false;
   }
-  instructor.earnings = (Number(instructor.earnings) + withdrawnAmount) as number; 
-  instructor.totalWithdrawals = (Number(instructor.totalWithdrawals) + 1) as number; 
-  instructor.currentBalance = (Number(instructor.currentBalance) - withdrawnAmount) as number; 
+  instructor.earnings = (Number(instructor.earnings) + withdrawnAmount) as number;
+  instructor.totalWithdrawals = (Number(instructor.totalWithdrawals) + 1) as number;
+  instructor.currentBalance = (Number(instructor.currentBalance) - withdrawnAmount) as number;
 
   const newTransaction = {
-    date: new Date(),  
-    method: 'Stripe',    
-    status: 'completed', 
+    date: new Date(),
+    method: 'Stripe',
+    status: 'completed',
     amount: withdrawnAmount
   };
 
-  instructor.transactions = instructor.transactions || []; 
+  instructor.transactions = instructor.transactions || [];
   instructor.transactions.push(newTransaction);
   await instructor.save();
   return true;

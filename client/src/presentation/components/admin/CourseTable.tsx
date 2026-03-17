@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../admin/Sidebar";
-import TopNav from "./TopNav";
-import api from "../../../infrastructure/api/api";
+import { adminService } from "../../../infrastructure/api/adminService";
 import { CircularProgress, Box, Typography, TextField, Pagination } from '@mui/material';
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
@@ -34,16 +31,14 @@ const CourseTable: React.FC = () => {
     const fetchCourses = async () => {
       setLoading(true);
       try {
-        const response = await api.get("/admin/courseData", {
-          params: {
-            page: currentPage,
-            limit: coursesPerPage,
-          },
+        const response = await adminService.getCourseStats({
+          page: currentPage,
+          limit: coursesPerPage,
         });
-        const data = response.data;
-        setCourses(data.courses);
-        setFilteredCourses(data.courses); 
-        setTotalPages(data.totalPages); 
+        const data = response.data.data || response.data;
+        setCourses(data.courses || data.data || []);
+        setFilteredCourses(data.courses || data.data || []);
+        setTotalPages(data.totalPages || 1);
       } catch (error) {
         toast.error("Failed to fetch courses");
       } finally {
@@ -52,7 +47,7 @@ const CourseTable: React.FC = () => {
     };
 
     fetchCourses();
-  }, [currentPage]); 
+  }, [currentPage]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.toLowerCase();
@@ -65,7 +60,7 @@ const CourseTable: React.FC = () => {
     );
 
     setFilteredCourses(filtered);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const toggleBlockStatus = async (courseId: string, isCurrentlyApproved: boolean) => {
@@ -80,8 +75,8 @@ const CourseTable: React.FC = () => {
       });
 
       if (result.isConfirmed) {
-        const response = await api.patch(`/admin/course-status/${courseId}`);
-        const updatedCourse = response.data;
+        const response = await adminService.updateCourseStatus(courseId);
+        const updatedCourse = response.data.data || response.data;
         setCourses((prevCourses) =>
           prevCourses.map((course) =>
             course._id === courseId
@@ -113,31 +108,26 @@ const CourseTable: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <Sidebar />
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col ml-64">
-        <TopNav />
-        <div className="pt-16 p-6 overflow-y-auto h-full">
-          {loading ? (
-            <Box
-              display="flex"
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="center"
-              height="100vh"
-              bgcolor="#f9f9f9"
-            >
-              <CircularProgress color="primary" size={50} />
-              <Typography variant="h6" color="textSecondary" mt={2}>
-                Loading, please wait...
-              </Typography>
-            </Box>
-          ) : (
-            <>
-              {/* Search and Table */}
-              <div className="pt-10 p-2 overflow-y-auto h-full">
+    <div className="bg-gray-100 min-h-full">
+      <div className="p-6 overflow-y-auto">
+        {loading ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            height="100vh"
+            bgcolor="#f9f9f9"
+          >
+            <CircularProgress color="primary" size={50} />
+            <Typography variant="h6" color="textSecondary" mt={2}>
+              Loading, please wait...
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            {/* Search and Table */}
+            <div className="p-2">
               <div className="mb-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">COURSE MANAGEMENT</h1>
                 <TextField
@@ -215,10 +205,9 @@ const CourseTable: React.FC = () => {
                   color="primary"
                 />
               </Box>
-              </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

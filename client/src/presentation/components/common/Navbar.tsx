@@ -43,9 +43,9 @@ const Navbar: React.FC = () => {
     const handleLogout = async () => {
         const response = await api.post('/user/logout', { withCredentials: true });
         console.log('API Response:', response);
-        if(response.status===200){
-        logout();
-        navigate('/login');
+        if (response.status === 200) {
+            logout();
+            navigate('/login');
         }
     };
 
@@ -94,6 +94,54 @@ const Navbar: React.FC = () => {
                     Welcome, {isLoggedIn ? username : 'Guest'}!
                 </Typography>
 
+                {/* Navigation Links (Desktop) */}
+                <Box sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 3 }}>
+                    <Typography
+                        variant="body1"
+                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        onClick={() => navigate('/')}
+                    >
+                        Home
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        onClick={() => navigate('/course-listing')}
+                    >
+                        Courses
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        onClick={() => navigate('/about')}
+                    >
+                        About
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        onClick={() => navigate('/contact')}
+                    >
+                        Contact
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        onClick={() => navigate('/become-an-instructor')}
+                    >
+                        Become Instructor
+                    </Typography>
+                    {isLoggedIn && (
+                        <Typography
+                            variant="body1"
+                            sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                            onClick={() => navigate('/user-profile')}
+                        >
+                            Profile
+                        </Typography>
+                    )}
+                </Box>
+
                 {/* Icons and Auth Buttons */}
                 {isMobile ? (
                     <>
@@ -113,15 +161,24 @@ const Navbar: React.FC = () => {
                                 horizontal: 'right',
                             }}
                         >
-                            <MenuItem onClick={() => navigate('/notifications')}>Notifications</MenuItem>
-                            <MenuItem onClick={() => navigate('/user-profile')}>Wish List</MenuItem>
-                            <MenuItem onClick={() => navigate('/cart')}>Add to Cart</MenuItem>
+                            <MenuItem onClick={() => { navigate('/'); handleMenuClose(); }}>Home</MenuItem>
+                            <MenuItem onClick={() => { navigate('/course-listing'); handleMenuClose(); }}>Courses</MenuItem>
+                            <MenuItem onClick={() => { navigate('/about'); handleMenuClose(); }}>About</MenuItem>
+                            <MenuItem onClick={() => { navigate('/contact'); handleMenuClose(); }}>Contact</MenuItem>
+                            <MenuItem onClick={() => { navigate('/become-an-instructor'); handleMenuClose(); }}>Become Instructor</MenuItem>
+                            {isLoggedIn && (
+                                <MenuItem onClick={() => { navigate('/user-profile'); handleMenuClose(); }}>Profile</MenuItem>
+                            )}
+                            <hr />
+                            <MenuItem onClick={() => { navigate('/notifications'); handleMenuClose(); }}>Notifications</MenuItem>
+                            <MenuItem onClick={() => { navigate('/wishlist'); handleMenuClose(); }}>Wish List</MenuItem>
+                            <MenuItem onClick={() => { navigate('/cart'); handleMenuClose(); }}>Cart</MenuItem>
                             {isLoggedIn ? (
-                                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                                <MenuItem onClick={() => { handleLogout(); handleMenuClose(); }}>Logout</MenuItem>
                             ) : (
                                 <>
-                                    <MenuItem onClick={() => navigate('/register')}>Create Account</MenuItem>
-                                    <MenuItem onClick={() => navigate('/login')}>Sign In</MenuItem>
+                                    <MenuItem onClick={() => { navigate('/register'); handleMenuClose(); }}>Create Account</MenuItem>
+                                    <MenuItem onClick={() => { navigate('/login'); handleMenuClose(); }}>Sign In</MenuItem>
                                 </>
                             )}
                         </Menu>
@@ -136,7 +193,7 @@ const Navbar: React.FC = () => {
                                 </Badge>
                             </IconButton>
                         </Link>
-                        <Link to="/user-profile">
+                        <Link to="/wishlist">
                             <IconButton color="default">
                                 <FavoriteBorderIcon />
                             </IconButton>

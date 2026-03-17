@@ -11,6 +11,7 @@ import api from '../../../infrastructure/api/api';
 import CourseHeader from './CourseHeader';
 import CurriculumBox from '../courses/CourseCurriculumBox';
 import CourseVideo from './CourseVideo';
+import { userService } from '../../../infrastructure/api/userService';
 
 const CoursePage = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -107,13 +108,32 @@ const CoursePage = () => {
 
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
-  const handleDownloadClick = () => {
+  const handleDownloadClick = async () => {
     if (progressPercentage === 100) {
-      navigate(`/completion-certificate/${courseId}`);
+      try {
+        toast.info("Preparing your certificate for download...");
+        const response = await userService.downloadCertificate(courseId as string);
+
+        // Create a blob URL for the PDF
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Certificate-${courseData.title.replace(/\s+/g, '_')}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success("Certificate downloaded successfully!");
+      } catch (error) {
+        console.error("Error downloading certificate:", error);
+        toast.error("Failed to download certificate. Please try again.");
+      }
     } else {
       toast.error('You must complete the course to download the certificate.');
     }
-  }
+  };
 
   return (
     <div className="flex flex-col w-full min-h-screen">

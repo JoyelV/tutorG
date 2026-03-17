@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Paper, Box, Alert, Link, Grid } from '@mui/material';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 import { assets } from '../../../assets/assets_user/assets';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -16,8 +16,9 @@ const InstructorLogin: React.FC = () => {
     const handleInstructorLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await api.post('/instructor/login', { email, password }, { withCredentials: true });
-            const { token, user } = response.data;
+            const response = await authService.instructorLogin({ email, password });
+            const data = response.data.data || response.data;
+            const { token, user } = data;
             if (user.role !== 'instructor') {
                 setError('Access denied. Enter valid credentials.');
                 toast.error('Access denied. Enter valid credentials.');
@@ -26,7 +27,7 @@ const InstructorLogin: React.FC = () => {
 
             login({
                 token,
-                userId: user.id,
+                userId: user.id || user._id,
                 role: user.role,
                 username: user.username,
             });

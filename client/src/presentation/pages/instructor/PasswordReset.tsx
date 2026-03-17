@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 
 interface LocationState {
   token: string;
@@ -29,15 +29,15 @@ export const PasswordReset: React.FC = () => {
     }
 
     try {
-      const response = await api.post('/instructor/reset-password', {
+      const response = await authService.instructorResetPassword({
         token: state.token,
         newPassword,
       });
-       
-      if(!response){
-         setError('Password cannot be reset right now');
+
+      if (!response) {
+        setError('Password cannot be reset right now');
       }
-      const userRole = response.data.role; 
+      const userRole = response.data.role;
       console.log(userRole, "userRole");
       navigate('/instructor/');
 
@@ -51,7 +51,7 @@ export const PasswordReset: React.FC = () => {
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Reset Your Password</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-600">New Password</label>
@@ -85,7 +85,7 @@ export const PasswordReset: React.FC = () => {
           >
             Reset Password
           </button>
-          
+
           {error && (
             <div className="mt-4 text-center">
               <p className="text-red-500 text-sm">{error}</p>

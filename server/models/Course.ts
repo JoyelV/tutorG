@@ -20,28 +20,18 @@ const CourseSchema = new Schema<ICourse>({
   status: { type: String, enum: ['draft', 'reviewed', 'published', 'rejected'], default: 'draft' },
   createdAt: { type: Date, default: Date.now },
   students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  ratingsAndFeedback: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-      rating: { type: Number, required: true, min: 1, max: 5 },
-      feedback: { type: String, default: '' },
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date },
-    },
-  ],
   averageRating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
   isApproved: { type: Boolean, default: false },
 });
 
-CourseSchema.methods.calculateAverageRating = async function () {
-  if (this.ratingsAndFeedback.length === 0) {
-    this.averageRating = 0;
-  } else {
-    const totalRating = this.ratingsAndFeedback.reduce((sum: number, entry: any) => sum + entry.rating, 0);
-    this.averageRating = totalRating / this.ratingsAndFeedback.length;
-  }
-  await this.save();
-};
+// Performance Indexes
+CourseSchema.index({ instructorId: 1 });
+CourseSchema.index({ status: 1 });
+CourseSchema.index({ category: 1 });
+CourseSchema.index({ isApproved: 1, status: 1 });
+CourseSchema.index({ title: 'text' });
+
 
 const Course = mongoose.model<ICourse>('Course', CourseSchema);
 

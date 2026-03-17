@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 
 const EditLessonPage: React.FC = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -20,7 +20,7 @@ const EditLessonPage: React.FC = () => {
   useEffect(() => {
     const fetchLesson = async () => {
       try {
-        const response = await api.get(`/instructor/view-lesson/${lessonId}`);
+        const response = await courseService.getLesson(lessonId as string);
         const {
           lessonTitle,
           lessonDescription,
@@ -48,14 +48,14 @@ const EditLessonPage: React.FC = () => {
 
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if(file){
+    if (file) {
       if (file.type === 'application/pdf') {
         setPdf(file);
       } else {
         Swal.fire('Error', 'Invalid file type. Please upload a PDF file.', 'error');
       }
-    }else {
-    setPdf(null);
+    } else {
+      setPdf(null);
     }
   };
 
@@ -69,7 +69,7 @@ const EditLessonPage: React.FC = () => {
   };
 
   const uploadPdfToCloudinary = async () => {
-    if (!pdf||pdf===null) return '';
+    if (!pdf || pdf === null) return '';
     const formData = new FormData();
     formData.append('file', pdf);
     formData.append('upload_preset', 'pdf_preset');
@@ -109,7 +109,7 @@ const EditLessonPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    
+
     const titleregex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
     const descriptionRegex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
 
@@ -141,7 +141,7 @@ const EditLessonPage: React.FC = () => {
         lessonPdf: pdfUrl,
       };
 
-      await api.put(`/instructor/update-lesson/${lessonId}`, updatedLesson);
+      await courseService.updateLesson(lessonId as string, updatedLesson);
 
       Swal.fire('Success', 'Lesson updated successfully!', 'success');
       navigate(`/instructor/course-view/${courseId}`);
@@ -216,14 +216,14 @@ const EditLessonPage: React.FC = () => {
             />
           </div>
           <div className="flex space-x-4">
-          <button
-            type="submit"
-            className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={loading}
-          >
-            {loading ? 'Updating...' : 'Update Lesson'}
-          </button>
-          <button
+            <button
+              type="submit"
+              className={`bg-blue-500 text-white py-2 px-4 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading}
+            >
+              {loading ? 'Updating...' : 'Update Lesson'}
+            </button>
+            <button
               type="button"
               onClick={handleCancel}
               className="bg-gray-500 text-white py-2 px-4 rounded"
@@ -231,7 +231,7 @@ const EditLessonPage: React.FC = () => {
             >
               Cancel
             </button>
-            </div>
+          </div>
         </form>
       </div>
     </div>

@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Avatar, TextField, IconButton, Typography, Box, ListItem, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Badge } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
-import Sidebar from '../../components/instructor/Sidebar';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 interface Instructor {
   id: string;
@@ -61,6 +59,8 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<{ [userId: string]: number }>({});
   const [lastMessages, setLastMessages] = useState<{ [userId: string]: { content: string; time: string } }>({});
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     socket.current = io(`${process.env.REACT_APP_SOCKET_URL}`, {
@@ -103,16 +103,48 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
       );
     });
 
+    if (userId) {
+      socket.current.emit('joinNotifications', userId);
+    }
+
+    socket.current.on('user_status_update', ({ userId: updatedUserId, status }) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === updatedUserId ? { ...u, onlineStatus: status === 'online' } : u
+        )
+      );
+    });
+
+    socket.current.on('user_typing', ({ sender }: { sender: string }) => {
+      if (selectedUser?.id === sender) {
+        setIsTyping(true);
+      }
+    });
+
+    socket.current.on('user_stop_typing', ({ sender }: { sender: string }) => {
+      if (selectedUser?.id === sender) {
+        setIsTyping(false);
+      }
+    });
+
+    socket.current.on('incoming_call', (data: { senderName: string, roomId: string }) => {
+      toast.info(`Incoming video call from ${data.senderName}. Click to join!`, {
+        onClick: () => window.open(`/chat/${data.roomId}`, '_blank'),
+        autoClose: 10000,
+        position: 'top-center'
+      });
+    });
+
     return () => {
       socket.current?.disconnect();
     };
-  }, []);
+  }, [userId, selectedUser]);
 
   useEffect(() => {
     const fetchTutors = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/instructor/students-chat');
+        const response = await courseService.getStudentsChat();
         const studentsMap: { [key: string]: Instructor } = {};
         const lastMessagesMap: { [userId: string]: { content: string; time: string } } = {};
 
@@ -130,11 +162,9 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
               // Fetch the last message for the current student
               try {
                 const userId = localStorage.getItem('userId');
-                const messageResponse = await api.get('/instructor/messages', {
-                  params: {
-                    senderId: userId,
-                    receiverId: studentId,
-                  },
+                const messageResponse = await courseService.getMessages({
+                  senderId: userId,
+                  receiverId: studentId,
                 });
                 const messages = messageResponse.data;
                 if (messages.length > 0) {
@@ -236,6 +266,20 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
     setIsRecording(false);
   };
 
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setNewMessage(e.target.value);
+
+    if (!socket.current || !selectedUser || !userId) return;
+
+    socket.current?.emit('typing', { sender: userId, receiver: selectedUser.id });
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.current?.emit('stop_typing', { sender: userId, receiver: selectedUser.id });
+    }, 2000);
+  };
+
   const handleSendMessage = async () => {
     if (newMessage.trim() || image || audioBlob) {
       let mediaUrl = '';
@@ -306,11 +350,9 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
           receiver: user.id,
         });
       }
-      const response = await api.get('/instructor/messages', {
-        params: {
-          senderId: userId,
-          receiverId: user.id,
-        },
+      const response = await courseService.getMessages({
+        senderId: userId,
+        receiverId: user.id,
       });
       const fetchedMessages = response.data.map((message: any) => ({
         sender: message.sender,
@@ -404,6 +446,17 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   const handleVideoCallClick = async (user: Instructor) => {
     setSelectedUser(user);
     const roomId = [user.id, userId].sort().join("-");
+
+    const username = localStorage.getItem('username') || (userType === 'Instructor' ? 'Instructor' : 'Student');
+
+    // Emit call notification
+    socket.current?.emit('start_call', {
+      senderId: userId,
+      receiverId: user.id,
+      roomId: roomId,
+      senderName: username
+    });
+
     const videoCallUrl = `/chat/${roomId}`;
     window.open(videoCallUrl, '_blank');
   };
@@ -421,302 +474,297 @@ const TutorChatInterface: React.FC<Props> = ({ userType = 'Instructor' }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <Sidebar />
-      </aside>
-      {/* Main content area */}
-      <div className="flex-1 bg-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-r from-red-100 to-purple-200">
+      {/* Chat Sidebar (User List) */}
+      <aside className="w-64 bg-gradient-to-b from-yellow-400 to-blue-300 text-black flex flex-col sticky top-0 h-[calc(100vh-64px)] z-10">
+        <Typography variant="h6" className="p-4 font-bold text-white">
+          {userType === 'User' ? 'User' : 'Instructor'}
+        </Typography>
+        <div className="flex p-4">
+          <TextField
+            fullWidth
+            placeholder={`Search ${userType === 'User' ? 'Instructor' : 'User'}...`}
+            variant="outlined"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
+        <div className="overflow-y-auto space-y-2">
+          {sortedUsers.map((user) => (
+            <ListItem
+              key={user.id}
+              button
+              selected={selectedUser?.id === user.id}
+              onClick={() => handleUserSelect(user)}
+              style={{
+                borderBottom: '1px solid #f0f0f0',
+                padding: '10px',
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar src={user.image} style={{ width: '50px', height: '50px' }} />
+              </ListItemAvatar>
 
-        <div className="flex min-h-screen bg-gradient-to-r from-red-100 to-purple-200">
-          {/* Sidebar */}
-          <aside className="w-64 bg-gradient-to-b from-yellow-400 to-blue-300 text-black flex flex-col fixed top-0 h-screen z-50">
-            <Typography variant="h6" className="p-4 font-bold text-white">
-              {userType === 'User' ? 'User' : 'Instructor'}
-            </Typography>
-            <div className="flex p-4">
-              <TextField
-                fullWidth
-                placeholder={`Search ${userType === 'User' ? 'Instructor' : 'User'}...`}
-                variant="outlined"
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </div>
-            <div className="overflow-y-auto space-y-2">
-              {sortedUsers.map((user) => (
-                <ListItem
-                  key={user.id}
-                  button
-                  selected={selectedUser?.id === user.id}
-                  onClick={() => handleUserSelect(user)}
-                  style={{
-                    borderBottom: '1px solid #f0f0f0',
-                    padding: '10px',
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar src={user.image} style={{ width: '50px', height: '50px' }} />
-                  </ListItemAvatar>
-
-                  <ListItemText
-                    primary={
-                      <div>
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          style={{ marginBottom: '4px' }}
-                        >
-                          <Typography style={{ fontWeight: 'bold', fontSize: '16px' }}>{user.name}</Typography>
-                          <Tooltip title="Video Call">
-                            <IconButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleVideoCallClick(user);
-                              }}
-                              style={{ marginLeft: '10px' }}
-                            >
-                              <VideoCall style={{ color: '#4caf50' }} />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography
-                            variant="body2"
-                            noWrap
-                            style={{
-                              color: '#FFFFFF',
-                              maxWidth: '70%',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {lastMessages[user.id]?.content || 'No message yet'}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            style={{
-                              color: '#FFFFFF',
-                              whiteSpace: 'nowrap',
-                              marginLeft: '10px',
-                            }}
-                          >
-                            {lastMessages[user.id]?.time && (() => {
-                              const messageTime = new Date(lastMessages[user.id]?.time);
-                              const now = new Date();
-                              const isToday =
-                                messageTime.getDate() === now.getDate() &&
-                                messageTime.getMonth() === now.getMonth() &&
-                                messageTime.getFullYear() === now.getFullYear();
-
-                              return isToday
-                                ? messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                : messageTime.toLocaleDateString('en-GB');
-                            })()}
-
-                          </Typography>
-                          <Badge
-                            badgeContent={unreadCounts[user.id] || 0}
-                            color="secondary"
-                            invisible={unreadCounts[user.id] === 0}
-                          />
-                        </Box>
-                      </div>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </div>
-          </aside>
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col pl-64">
-            {/* Chat Header */}
-            <div className="bg-gradient-to-r from-blue-700 to-green-700 p-4 flex items-center border-b">
-              {selectedUser ? (
-                <>
-                  <Avatar src={selectedUser.image} />
-                  <div className="ml-3">
-                    <Typography variant="h6" className="font-bold">
-                      {selectedUser.name}
-                    </Typography>
-                    <Typography variant="h6" className="font-bold">
-                      <div>
-                        <span
-                          style={{
-                            height: "15px",
-                            width: "15px",
-                            borderRadius: "100%",
-                            display: "inline-block",
-                            backgroundColor: selectedUser.onlineStatus ? "green" : "red",
-                            marginRight: "5px",
+              <ListItemText
+                primary={
+                  <div>
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      style={{ marginBottom: '4px' }}
+                    >
+                      <Typography style={{ fontWeight: 'bold', fontSize: '16px' }}>{user.name}</Typography>
+                      <Tooltip title="Video Call">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleVideoCallClick(user);
                           }}
-                        ></span>
-                        {selectedUser.onlineStatus === true ? "Online" : "Offline"}
-                      </div>
-                    </Typography>
-                  </div>
-                </>
-              ) : (
-                <Typography>Select a user to start chatting</Typography>
-              )}
-            </div>
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 max-h-[570px]">
-              <div className="space-y-4">
-                {messages.map((message, index) => (
-                  <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start' : '')}`}>
-                    <div className={`max-w-lg ${message.sender === userId ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
-                      <Typography>{message.content}</Typography>
-                      {message.mediaUrl && (
-                        <>
-                          {message.mediaUrl.type === "image" && (
-                            <img src={message.mediaUrl.url} alt="Message Media" />
-                          )}
-                          {message.mediaUrl.type === "video" && (
-                            <video controls src={message.mediaUrl.url}></video>
-                          )}
-                          {message.mediaUrl.type === "audio" && (
-                            <video controls src={message.mediaUrl.url} ></video>
-                          )}
-                        </>
-                      )}
-                      <div className="flex justify-between text-sm mt-1">
-                        <span>
-                          {(() => {
-                            const messageTime = new Date(message.time);
-                            const day = String(messageTime.getDate()).padStart(2, '0');
-                            const month = String(messageTime.getMonth() + 1).padStart(2, '0');
-                            const year = String(messageTime.getFullYear()).slice(-2);
-                            const hours = String(messageTime.getHours()).padStart(2, '0');
-                            const minutes = String(messageTime.getMinutes()).padStart(2, '0');
-                            return `${day}/${month}/${year} ${hours}:${minutes}`;
-                          })()}
-                        </span>
-
-                        {message.status === 'read' ? (
-                          <DoneAll style={{ color: 'blue' }} />
-                        ) : message.status === 'sent' ? (
-                          <Check />
-                        ) : (
-                          <DoneAll />
-                        )}
-                      </div>
-
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-            {/* Message Input */}
-            <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 border-t">
-              <div className="flex items-center space-x-2">
-                {/* Text Input Field */}
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton onClick={() => setShowEmojiPicker((prev) => !prev)}>
-                          😀
+                          style={{ marginLeft: '10px' }}
+                        >
+                          <VideoCall style={{ color: '#4caf50' }} />
                         </IconButton>
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <div className="flex items-center space-x-2">
-                          <Tooltip title={isRecording ? "Stop Recording" : "Record Audio"}>
-                            <IconButton onClick={isRecording ? handleStopRecording : handleStartRecording}>
-                              {isRecording ? <Stop /> : <Mic />}
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Attach Image...">
-                            <IconButton
-                              onClick={() => imageInputRef.current?.click()}
-                              color="primary"
-                            >
-                              <AttachFile />
-                            </IconButton>
-                          </Tooltip>
-                          {audioBlob && (
-                            <>
-                              <IconButton onClick={handleDeleteAudio} color="secondary">
-                                <Delete />
-                              </IconButton>
-                            </>
-                          )}
-                        </div>
-                        <IconButton onClick={handleSendMessage}>
-                          <Send />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                {showEmojiPicker && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '200px',
-                      bottom: '20px',
-                      left: '510px',
-                    }}
-                  >
-                    <EmojiPicker
-                      onEmojiClick={(emojiData) => {
-                        setNewMessage((prevMessage) => prevMessage + emojiData.emoji);
-                        setShowEmojiPicker(false);
+                      </Tooltip>
+                    </Box>
+
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        style={{
+                          color: '#FFFFFF',
+                          maxWidth: '70%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {lastMessages[user.id]?.content || 'No message yet'}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        style={{
+                          color: '#FFFFFF',
+                          whiteSpace: 'nowrap',
+                          marginLeft: '10px',
+                        }}
+                      >
+                        {lastMessages[user.id]?.time && (() => {
+                          const messageTime = new Date(lastMessages[user.id]?.time);
+                          const now = new Date();
+                          const isToday =
+                            messageTime.getDate() === now.getDate() &&
+                            messageTime.getMonth() === now.getMonth() &&
+                            messageTime.getFullYear() === now.getFullYear();
+
+                          return isToday
+                            ? messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : messageTime.toLocaleDateString('en-GB');
+                        })()}
+
+                      </Typography>
+                      <Badge
+                        badgeContent={unreadCounts[user.id] || 0}
+                        color="secondary"
+                        invisible={unreadCounts[user.id] === 0}
+                      />
+                    </Box>
+                  </div>
+                }
+              />
+            </ListItem>
+          ))}
+        </div>
+      </aside>
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Chat Header */}
+        <div className="bg-gradient-to-r from-blue-700 to-green-700 p-4 flex items-center border-b">
+          {selectedUser ? (
+            <>
+              <Avatar src={selectedUser.image} />
+              <div className="ml-3">
+                <Typography variant="h6" className="font-bold">
+                  {selectedUser.name}
+                </Typography>
+                <Typography variant="h6" className="font-bold">
+                  <div>
+                    <span
+                      style={{
+                        height: "15px",
+                        width: "15px",
+                        borderRadius: "100%",
+                        display: "inline-block",
+                        backgroundColor: selectedUser.onlineStatus ? "green" : "red",
+                        marginRight: "5px",
                       }}
-                    />
+                    ></span>
+                    {selectedUser.onlineStatus === true ? "Online" : "Offline"}
                   </div>
-                )}
+                  {isTyping && (
+                    <Typography variant="caption" sx={{ color: '#fff', fontStyle: 'italic', ml: 1 }}>
+                      is typing...
+                    </Typography>
+                  )}
+                </Typography>
               </div>
-              {/* Image Preview Section */}
-              {imagePreview && (
-                <div className="mt-2 flex justify-center items-center relative">
-                  {/* Image Preview */}
-                  <img src={imagePreview} alt="preview" className="rounded-lg" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'cover' }}
-                  />
+            </>
+          ) : (
+            <Typography>Select a user to start chatting</Typography>
+          )}
+        </div>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 max-h-[570px]">
+          <div className="space-y-4">
+            {messages.map((message, index) => (
+              <div key={index} className={`flex ${message.sender === userId ? 'justify-end' : (selectedUser?.id === message.sender ? 'justify-start' : '')}`}>
+                <div className={`max-w-lg ${message.sender === userId ? 'bg-blue-500 text-white' : 'bg-gray-300'} p-2 rounded-lg`}>
+                  <Typography>{message.content}</Typography>
+                  {message.mediaUrl && (
+                    <>
+                      {message.mediaUrl.type === "image" && (
+                        <img src={message.mediaUrl.url} alt="Message Media" />
+                      )}
+                      {message.mediaUrl.type === "video" && (
+                        <video controls src={message.mediaUrl.url}></video>
+                      )}
+                      {message.mediaUrl.type === "audio" && (
+                        <video controls src={message.mediaUrl.url} ></video>
+                      )}
+                    </>
+                  )}
+                  <div className="flex justify-between text-sm mt-1">
+                    <span>
+                      {(() => {
+                        const messageTime = new Date(message.time);
+                        const day = String(messageTime.getDate()).padStart(2, '0');
+                        const month = String(messageTime.getMonth() + 1).padStart(2, '0');
+                        const year = String(messageTime.getFullYear()).slice(-2);
+                        const hours = String(messageTime.getHours()).padStart(2, '0');
+                        const minutes = String(messageTime.getMinutes()).padStart(2, '0');
+                        return `${day}/${month}/${year} ${hours}:${minutes}`;
+                      })()}
+                    </span>
 
-                  {/* Close (X) Button */}
-                  <button
-                    onClick={() => {
-                      setImagePreview(null);
-                      setImage(null);
-                    }}
-                    className="absolute top-0 right-0 p-2 bg-black text-white rounded-full"
-                  >
-                    X
-                  </button>
+                    {message.status === 'read' ? (
+                      <DoneAll style={{ color: 'blue' }} />
+                    ) : message.status === 'sent' ? (
+                      <Check />
+                    ) : (
+                      <DoneAll />
+                    )}
+                  </div>
+
                 </div>
-              )}
-            </div>
-            {/* Attach File Button */}
-            <input
-              type="file"
-              ref={imageInputRef}
-              style={{ display: 'none' }}
-              onChange={handleFileUpload}
-            />
-            {/* Progress Bar */}
-            {uploading && (
-              <LinearProgress variant="determinate" value={uploadProgress} />
-            )}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
           </div>
         </div>
+        {/* Message Input */}
+        <div className="bg-gradient-to-r from-indigo-100 to-purple-50 p-4 border-t">
+          <div className="flex items-center space-x-2">
+            {/* Text Input Field */}
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={newMessage}
+              onChange={handleTyping}
+              placeholder="Type a message..."
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IconButton onClick={() => setShowEmojiPicker((prev) => !prev)}>
+                      😀
+                    </IconButton>
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <div className="flex items-center space-x-2">
+                      <Tooltip title={isRecording ? "Stop Recording" : "Record Audio"}>
+                        <IconButton onClick={isRecording ? handleStopRecording : handleStartRecording}>
+                          {isRecording ? <Stop /> : <Mic />}
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Attach Image...">
+                        <IconButton
+                          onClick={() => imageInputRef.current?.click()}
+                          color="primary"
+                        >
+                          <AttachFile />
+                        </IconButton>
+                      </Tooltip>
+                      {audioBlob && (
+                        <>
+                          <IconButton onClick={handleDeleteAudio} color="secondary">
+                            <Delete />
+                          </IconButton>
+                        </>
+                      )}
+                    </div>
+                    <IconButton onClick={handleSendMessage}>
+                      <Send />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {showEmojiPicker && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '200px',
+                  bottom: '20px',
+                  left: '510px',
+                }}
+              >
+                <EmojiPicker
+                  onEmojiClick={(emojiData) => {
+                    setNewMessage((prevMessage) => prevMessage + emojiData.emoji);
+                    setShowEmojiPicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          {/* Image Preview Section */}
+          {imagePreview && (
+            <div className="mt-2 flex justify-center items-center relative">
+              {/* Image Preview */}
+              <img src={imagePreview} alt="preview" className="rounded-lg" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'cover' }}
+              />
+
+              {/* Close (X) Button */}
+              <button
+                onClick={() => {
+                  setImagePreview(null);
+                  setImage(null);
+                }}
+                className="absolute top-0 right-0 p-2 bg-black text-white rounded-full"
+              >
+                X
+              </button>
+            </div>
+          )}
+        </div>
+        {/* Attach File Button */}
+        <input
+          type="file"
+          ref={imageInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+        />
+        {/* Progress Bar */}
+        {uploading && (
+          <LinearProgress variant="determinate" value={uploadProgress} />
+        )}
       </div>
     </div>
   );

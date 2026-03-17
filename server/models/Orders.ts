@@ -57,6 +57,13 @@ const orderSchema = new Schema<ORDER>({
   },
 }, { timestamps: true });
 
+// Performance Indexes
+orderSchema.index({ studentId: 1 });
+orderSchema.index({ courseId: 1 });
+orderSchema.index({ tutorId: 1 });
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ status: 1 });
+
 const orderModel: Model<ORDER> = mongoose.model<ORDER>('Orders', orderSchema);
 
 export default orderModel;

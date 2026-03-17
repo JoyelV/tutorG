@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import 'sweetalert2/dist/sweetalert2.min.css';
-import api from '../../../infrastructure/api/api';
-import Navbar from '../../components/common/Navbar';
+import { userService } from '../../../infrastructure/api/userService';
 import { CircularProgress } from '@mui/material';
 
 interface Notification {
@@ -26,7 +23,7 @@ const NotificationPage = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await api.get('/user/notifications');
+                const response = await userService.getNotifications();
                 setNotifications(response.data.notifications);
             } catch {
                 setError('Failed to fetch notifications. Please try again later.');
@@ -58,16 +55,15 @@ const NotificationPage = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
             </div>
-          );
+        );
     }
 
     if (error) return <div className="text-center text-red-500">{error}</div>;
 
     return (
         <div>
-            <Navbar />
             <section className="py-8 lg:py-24 relative min-h-screen flex flex-col">
                 <div className="w-full max-w-7xl px-4 md:px-5 lg:px-6 mx-auto flex-grow">
                     <h2 className="text-2xl font-bold text-center text-sky-500">NOTIFICATIONS</h2>
@@ -86,7 +82,7 @@ const NotificationPage = () => {
                                                 className="w-80 h-30 rounded-md"
                                             />
                                         </div>
-                                        <div className="ml-5"> 
+                                        <div className="ml-5">
                                             <p className="font-bold text-sky-600">{notification.title}</p>
                                             <p className="font-bold text-sky-600">{notification.subtitle}</p>
                                             <p className="text-gray-500">{notification.message}</p>

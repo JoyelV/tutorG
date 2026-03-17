@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 
 interface LocationState {
   email: string;
@@ -22,14 +22,15 @@ const VerifyOtp: React.FC = () => {
     } else {
       setCanResend(true);
     }
-    return () => clearTimeout(timer); 
+    return () => clearTimeout(timer);
   }, [resendTimer]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await api.post('/user/verify-otp', { email: state.email, otp });
-      navigate('/reset-password', { state: { token: response.data.token } });
+      const response = await authService.verifyOtp({ email: state.email, otp });
+      const data = response.data.data || response.data;
+      navigate('/reset-password', { state: { token: data.token || response.data.token } });
     } catch (error) {
       setError('Invalid OTP');
       console.error('Error:', error);
@@ -38,8 +39,8 @@ const VerifyOtp: React.FC = () => {
 
   const handleResendOtp = async () => {
     try {
-      await api.post('/user/send-otp', { email: state.email });
-      setResendTimer(30); 
+      await authService.sendOtp({ email: state.email });
+      setResendTimer(30);
       setCanResend(false);
     } catch (err) {
       setError('Failed to resend OTP. Please try again.');
@@ -78,11 +79,10 @@ const VerifyOtp: React.FC = () => {
           <button
             onClick={handleResendOtp}
             disabled={!canResend}
-            className={`w-full px-4 py-3 font-semibold rounded-lg focus:outline-none focus:ring-2 ${
-              canResend
-                ? 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className={`w-full px-4 py-3 font-semibold rounded-lg focus:outline-none focus:ring-2 ${canResend
+              ? 'bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
           >
             {canResend ? 'Resend OTP' : `Resend OTP in ${resendTimer}s`}
           </button>

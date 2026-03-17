@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
-import api from '../../../infrastructure/api/api';
+import { courseService } from "../../../infrastructure/api/courseService";
 import axios from "axios";
 
 function AddCourse() {
@@ -41,7 +41,7 @@ function AddCourse() {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/instructor/categories');
+      const response = await courseService.getCategories();
       setCategories(response.data);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
@@ -175,7 +175,7 @@ function AddCourse() {
         trailer: trailerUrl,
       };
 
-      const response = await api.post('/instructor/addCourse', courseData);
+      const response = await courseService.addCourse(courseData);
       toast.success("Course added successfully!");
       const courseId = response.data.courseId;
       navigate(`/instructor/add-lesson/${courseId}`);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 
 interface Quiz {
   _id: string;
@@ -16,9 +16,9 @@ const QuizList: React.FC = () => {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await api.get(`/instructor/quizzes/${courseId}`);
-        console.log(response,"quizes")
-        setQuizzes(response.data);
+        const response = await courseService.getQuizzesByCourse(courseId as string);
+        const data = response.data.data || response.data;
+        setQuizzes(data);
       } catch (error) {
         console.error('Error fetching quizzes:', error);
         Swal.fire({
@@ -45,7 +45,7 @@ const QuizList: React.FC = () => {
       });
 
       if (result.isConfirmed) {
-        await api.delete(`/instructor/quizzes/${courseId}/${quizId}`);
+        await courseService.deleteQuiz(courseId as string, quizId);
         setQuizzes((prev) => prev.filter((quiz) => quiz._id !== quizId));
         Swal.fire('Deleted!', 'Quiz has been deleted.', 'success');
       }
@@ -64,40 +64,38 @@ const QuizList: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 p-6">
-        <h1 className="text-xl font-semibold text-blue-600 mb-4">Quiz List</h1>
-        {quizzes.length > 0 ? (
-          <div className="space-y-4">
-            {quizzes.map((quiz) => (
-              <div
-                key={quiz._id}
-                className="flex items-center justify-between bg-white p-4 shadow-md rounded-md"
-              >
-                <span className="text-gray-800">{quiz._id}</span>
-                <div className="space-x-2">
-                  <button
-                    onClick={() => handleEdit(quiz._id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-4 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(quiz._id)}
-                    className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-4 rounded"
-                  >
-                    Delete
-                  </button>
-                </div>
+    <div className="p-6">
+      <h1 className="text-xl font-semibold text-blue-600 mb-4">Quiz List</h1>
+      {quizzes.length > 0 ? (
+        <div className="space-y-4">
+          {quizzes.map((quiz) => (
+            <div
+              key={quiz._id}
+              className="flex items-center justify-between bg-white p-4 shadow-md rounded-md"
+            >
+              <span className="text-gray-800">{quiz._id}</span>
+              <div className="space-x-2">
+                <button
+                  onClick={() => handleEdit(quiz._id)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-4 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(quiz._id)}
+                  className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-4 rounded"
+                >
+                  Delete
+                </button>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 text-center font-semibold text-lg mt-6">
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500 text-center font-semibold text-lg mt-6">
           <span className="text-green-500">No Quiz Found.</span>
         </p>
-        )}
-      </div>
+      )}
     </div>
   );
 };

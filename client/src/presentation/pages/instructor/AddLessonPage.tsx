@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 
 const AddLessonPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -14,7 +14,7 @@ const AddLessonPage: React.FC = () => {
   const navigate = useNavigate();
 
   const validateInput = (input: string): boolean => {
-    const regex =/^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
+    const regex = /^[a-zA-Z0-9\s\-\:!()&,\.\[\]\/\+]+$/;
     return regex.test(input) && input.trim() !== '';
   };
 
@@ -115,7 +115,7 @@ const AddLessonPage: React.FC = () => {
         courseId,
       };
 
-      await api.post('/instructor/addLesson', newLesson);
+      await courseService.addLesson(newLesson);
 
       Swal.fire('Success', 'Lesson added successfully!', 'success');
       navigate('/instructor/my-courses');

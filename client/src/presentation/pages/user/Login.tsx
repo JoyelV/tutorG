@@ -13,9 +13,8 @@ import {
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 import { useAuth } from '../../../infrastructure/context/AuthContext'
 
 const Login: React.FC = () => {
@@ -28,9 +27,9 @@ const Login: React.FC = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await api.post('/user/login', { email, password }, { withCredentials: true });
-
-            const { token, user } = response.data;
+            const response = await authService.login({ email, password });
+            const data = response.data.data || response.data;
+            const { token, user } = data;
 
             if (user.role !== 'user') {
                 setError('Access denied. Enter valid credentials.');
@@ -39,7 +38,7 @@ const Login: React.FC = () => {
             }
             login({
                 token,
-                userId: user.id,
+                userId: user.id || user._id,
                 role: user.role,
                 username: user.username,
             });
@@ -52,11 +51,12 @@ const Login: React.FC = () => {
 
     const handleGoogleSuccess = async (response: any) => {
         try {
-            const res = await api.post('/user/google-login', { token: response.credential });
-            const { token, user } = res.data;
+            const res = await authService.googleLogin({ token: response.credential });
+            const data = res.data.data || res.data;
+            const { token, user } = data;
             login({
                 token,
-                userId: user.id,
+                userId: user.id || user._id,
                 role: user.role,
                 username: user.username,
             });
@@ -88,13 +88,13 @@ const Login: React.FC = () => {
                             height="100%"
                         >
                             <img
-                                src={assets.appointment_img} 
+                                src={assets.appointment_img}
                                 alt="Brand Illustration"
                                 style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }}
                             />
                         </Box>
                     </Grid>
-    
+
                     {/* Right Column: Brand Name and Login Form */}
                     <Grid item xs={12} md={6}>
                         <Box display="flex" flexDirection="column" alignItems="center">
@@ -117,7 +117,7 @@ const Login: React.FC = () => {
                                     Welcome to Your Ultimate E-Learning Platform!
                                 </Typography>
                             </Box>
-    
+
                             {/* Login Form */}
                             <Typography component="h1" variant="h5" gutterBottom>
                                 Sign In
@@ -198,7 +198,7 @@ const Login: React.FC = () => {
             </Paper>
         </Container>
     );
-    
+
 };
 
 export default Login;

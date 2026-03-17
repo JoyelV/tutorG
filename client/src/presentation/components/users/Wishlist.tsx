@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import api from '../../../infrastructure/api/api';
+import { userService } from '../../../infrastructure/api/userService';
 import Swal from 'sweetalert2';
-import 'sweetalert2/dist/sweetalert2.min.css';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 interface Course {
   _id: string;
@@ -31,25 +29,20 @@ interface WishlistItem {
 function WishList() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
 
-  const userId = localStorage.getItem('userId');
-
   const fetchWishlistItems = useCallback(async () => {
     try {
-      const response = await api.get(`/user/wishlist`);
-      if (response.data) {
-        setWishlistItems(response.data);
-      } else {
-        setWishlistItems([]);
-      }
+      const response = await userService.getWishlist();
+      const data = response.data.data || response.data;
+      setWishlistItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching wishlist items:', error);
       toast.error('Failed to load wishlist items.');
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
-    if (userId) fetchWishlistItems();
-  }, [userId, fetchWishlistItems]);
+    fetchWishlistItems();
+  }, [fetchWishlistItems]);
 
   const handleRemove = useCallback(async (wishlistItemId: string) => {
     try {
@@ -64,7 +57,7 @@ function WishList() {
       });
 
       if (result.isConfirmed) {
-        await api.delete(`/user/removeitem/${wishlistItemId}`);
+        await userService.removeFromWishlist(wishlistItemId);
         setWishlistItems((prev) => prev.filter((item) => item._id !== wishlistItemId));
         Swal.fire('Deleted!', 'Your item has been removed.', 'success');
       }
@@ -76,13 +69,8 @@ function WishList() {
 
   const handleAddToCart = useCallback(
     async (wishlistItemId: string, courseId: string) => {
-      if (!userId) {
-        toast.error('Please log in to add items to your cart.');
-        return;
-      }
-
       try {
-        const response = await api.post(`/user/cart/add`, { userId, courseId });
+        const response = await userService.addToCart(courseId);
         const { message } = response.data;
 
         if (message === "Student is already enrolled in this course") {
@@ -92,9 +80,9 @@ function WishList() {
           toast.info(message);
           return;
         } else {
-          toast.success(message);
+          toast.success(message || 'Added to cart!');
         }
-        await api.delete(`/user/removeitem/${wishlistItemId}`);
+        await userService.removeFromWishlist(wishlistItemId);
         setWishlistItems((prev) => prev.filter((item) => item._id !== wishlistItemId));
         Swal.fire('Moved!', 'The item has been added to your cart.', 'success');
       } catch (error: any) {
@@ -102,12 +90,12 @@ function WishList() {
         toast.error(error.response?.data?.message || 'Failed to add the item to the cart.');
       }
     },
-    [userId]
+    []
   );
 
   return (
     <>
-      <section className="py-8 lg:py-24 relative -mt-9">
+      <section className="py-8 lg:py-24 relative">
         <div className="w-full max-w-7xl px-4 md:px-5 mx-auto">
           <div className="border-t border-sky-200 py-3">
             {wishlistItems.length > 0 ? (

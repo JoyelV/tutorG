@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { QuizService } from '../services/quizService';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AppError } from '../utils/AppError';
+import { ApiResponse } from '../utils/ApiResponse';
 
 export class QuizController {
   private quizService: QuizService;
@@ -9,69 +12,63 @@ export class QuizController {
     this.quizService = new QuizService();
   }
 
-  addQuiz = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { questions } = req.body;
-      const { courseId } = req.params;
-      const response = await this.quizService.addQuiz(courseId, questions);
-      res.status(response.status).json(response.message);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
-    }
-  };
-
-  getQuizzesByCourse = async (req: Request, res: Response): Promise<void> => {
+  addQuiz = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { questions } = req.body;
     const { courseId } = req.params;
-    try {
-      const response = await this.quizService.getQuizzesByCourse(courseId);
-      res.status(response.status).json(response.message);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch quizzes.' });
+    if (!courseId) {
+      throw new AppError(400, 'Course ID is required');
     }
-  };
+    const response = await this.quizService.addQuiz(courseId, questions);
+    res.status(response.status).json(new ApiResponse(response.status, null, response.message));
+  });
 
-  getQuizById = async (req: Request, res: Response): Promise<void> => {
+  getQuizzesByCourse = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { courseId } = req.params;
+    if (!courseId) {
+      throw new AppError(400, 'Course ID is required');
+    }
+    const response = await this.quizService.getQuizzesByCourse(courseId);
+    res.status(response.status).json(new ApiResponse(response.status, response.message));
+  });
+
+  getQuizById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { courseId, quizId } = req.params;
-    try {
-      const response = await this.quizService.getQuizById(courseId, quizId);
-      res.status(response.status).json(response.message);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch quiz.' });
+    if (!courseId || !quizId) {
+      throw new AppError(400, 'Course ID and Quiz ID are required');
     }
-  };
+    const response = await this.quizService.getQuizById(courseId, quizId);
+    res.status(response.status).json(new ApiResponse(response.status, response.message));
+  });
 
-  updateQuiz = async (req: Request, res: Response): Promise<void> => {
+  updateQuiz = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { courseId, quizId } = req.params;
     const { questions } = req.body;
-    try {
-      const response = await this.quizService.updateQuiz(courseId, quizId, questions);
-      res.status(response.status).json(response.message);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to update quiz.' });
+    if (!courseId || !quizId) {
+      throw new AppError(400, 'Course ID and Quiz ID are required');
     }
-  };
+    const response = await this.quizService.updateQuiz(courseId, quizId, questions);
+    res.status(response.status).json(new ApiResponse(response.status, null, response.message));
+  });
 
-  deleteQuiz = async (req: Request, res: Response): Promise<void> => {
+  deleteQuiz = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { courseId, quizId } = req.params;
-    try {
-      const response = await this.quizService.deleteQuiz(courseId, quizId);
-      res.status(response.status).json(response.message);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to delete quiz.' });
+    if (!courseId || !quizId) {
+      throw new AppError(400, 'Course ID and Quiz ID are required');
     }
-  };
+    const response = await this.quizService.deleteQuiz(courseId, quizId);
+    res.status(response.status).json(new ApiResponse(response.status, null, response.message));
+  });
 
-  submitQuiz = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  submitQuiz = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const { quizId, answers } = req.body;
     const userId = req.userId;
-    try {
-      if(userId){
-        const response = await this.quizService.submitQuiz(quizId, userId, answers);
-        res.status(response.status).json(response.message);
-      }
-    } catch (error) {
-      res.status(500).json({ message: 'An error occurred while submitting the quiz.' });
+    if (!userId) {
+      throw new AppError(401, 'Unauthorized');
     }
-  };
+    if (!quizId) {
+      throw new AppError(400, 'Quiz ID is required');
+    }
+    const response = await this.quizService.submitQuiz(quizId, userId, answers);
+    res.status(response.status).json(new ApiResponse(response.status, response.message));
+  });
 }

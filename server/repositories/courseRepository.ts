@@ -7,6 +7,7 @@ import Lessons from '../models/Lesson';
 import { CategoryDocument } from '../models/Category';
 import { LessonDocument } from '../models/Lesson';
 import { INotification } from '../models/Notification';
+import Feedback from '../models/Feedback';
 import { ORDER } from '../models/Orders';
 import { IUser } from '../entities/IUser';
 
@@ -93,37 +94,57 @@ export class CourseRepository {
     rating: number,
     feedback: string
   ): Promise<ICourse> {
-    const course = await Course.findById(courseId);
-    if (!course) {
-      throw new Error('Course not found');
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      // 1. Create/Update Feedback
+      await Feedback.findOneAndUpdate(
+        { courseId: new Types.ObjectId(courseId), userId: new Types.ObjectId(userId) },
+        { rating, feedback },
+        { upsert: true, session }
+      );
+
+      // 2. Recalculate Course Stats
+      const feedbacks = await Feedback.find({ courseId: new Types.ObjectId(courseId) }).session(session);
+      const reviewCount = feedbacks.length;
+      const averageRating = reviewCount > 0
+        ? feedbacks.reduce((acc, curr) => acc + curr.rating, 0) / reviewCount
+        : 0;
+
+      const updatedCourse = await Course.findByIdAndUpdate(
+        courseId,
+        { averageRating, reviewCount },
+        { new: true, session }
+      );
+
+      if (!updatedCourse) {
+        throw new Error('Course not found');
+      }
+
+      await session.commitTransaction();
+      return updatedCourse.toObject() as ICourse;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
     }
-
-    course.ratingsAndFeedback.push({
-      userId: new Types.ObjectId(userId),
-      rating,
-      feedback,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    // Fallback if calculateAverageRating is missing
-    if (typeof course.calculateAverageRating === 'function') {
-      await course.calculateAverageRating();
-    } else {
-      const totalRatings = course.ratingsAndFeedback.length;
-      const sumRatings = course.ratingsAndFeedback.reduce((sum, r) => sum + r.rating, 0);
-      course.averageRating = totalRatings > 0 ? sumRatings / totalRatings : 0;
-    }
-
-    await course.save();
-    return course.toObject() as ICourse;
   }
 
-  async findCourseWithFeedbacks(courseId: string): Promise<Lean<ICourse> | null> {
-    return (await Course.findById(courseId)
-      .populate('ratingsAndFeedback.userId', 'username email image')
+  async findCourseWithFeedbacks(courseId: string): Promise<any | null> {
+    const course = await Course.findById(courseId).lean().exec();
+    if (!course) return null;
+
+    const feedbacks = await Feedback.find({ courseId: new Types.ObjectId(courseId) })
+      .populate('userId', 'username email image')
+      .sort({ createdAt: -1 })
       .lean()
-      .exec()) as Lean<ICourse> | null;
+      .exec();
+
+    return {
+      ...course,
+      ratingsAndFeedback: feedbacks,
+    };
   }
 
   async findIndividualCourse(courseId: string): Promise<Lean<ICourse> | null> {

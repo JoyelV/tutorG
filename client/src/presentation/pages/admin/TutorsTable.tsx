@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../../infrastructure/api/api';
+import { adminService } from '../../../infrastructure/api/adminService';
 import Swal from 'sweetalert2';
 import {
   CircularProgress,
@@ -45,12 +45,13 @@ const TutorsTable: React.FC = () => {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    api
-      .get('/admin/instructors')
+    adminService
+      .getAllInstructors()
       .then((response) => {
-        setTutors(response.data);
-        setFilteredTutors(response.data);
-        setTotalTutors(response.data.length);
+        const data = response.data.data || response.data;
+        setTutors(data);
+        setFilteredTutors(data);
+        setTotalTutors(data.length);
         setLoading(false);
       })
       .catch(() => {
@@ -92,10 +93,11 @@ const TutorsTable: React.FC = () => {
         }
 
         const updatedStatus = !tutorToToggle.isBlocked;
-        const response = await api.patch(`/admin/instructors/${tutorId}`, { isBlocked: updatedStatus });
+        const response = await adminService.toggleInstructorStatus(tutorId);
+        const data = response.data.data || response.data;
 
         setTutors((prevTutors) =>
-          prevTutors.map((tutor) => (tutor._id === tutorId ? response.data : tutor))
+          prevTutors.map((tutor) => (tutor._id === tutorId ? data : tutor))
         );
       }
     } catch (err) {
@@ -152,7 +154,7 @@ const TutorsTable: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              {['Image','Name', 'Email', 'Phone', 'Role', 'Status'].map((header) => (
+              {['Image', 'Name', 'Email', 'Phone', 'Role', 'Status'].map((header) => (
                 <TableCell key={header} align="left" sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
                   {header}
                 </TableCell>

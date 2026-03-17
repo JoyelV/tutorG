@@ -1,23 +1,9 @@
 import React, { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react';
 import { Avatar, Button, Grid, TextField, Box, Typography, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import api from '../../../infrastructure/api/api'
+import { userService } from '../../../infrastructure/api/userService';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { assets } from '../../../assets/assets_user/assets';
-
-interface UserProfileData {
-  username: string;
-  email: string;
-  phone: string;
-  address: {
-    line1: string;
-    line2: string;
-  };
-  gender: string;
-  dob: string;
-  image: string;
-}
 
 const AccountSettings: React.FC = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -117,13 +103,8 @@ const AccountSettings: React.FC = () => {
 
   const fetchUserData = useCallback(async () => {
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        toast.error('User not logged in');
-        return;
-      }
-      const response = await api.get<UserProfileData>(`/user/profile`);
-      const data = response.data;
+      const response = await userService.getProfile();
+      const data = response.data.data || response.data;
 
       setUsername(data.username || '');
       setEmail(data.email || '');
@@ -155,21 +136,12 @@ const AccountSettings: React.FC = () => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        toast.error('User not logged in');
-        return;
-      }
+      const response = await userService.updateImage(formData);
+      const data = response.data.data || response.data;
 
-      const response = await api.put(`/user/upload-image`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.data.success) {
+      if (response.data.success || response.status === 200) {
         toast.success('Image uploaded successfully!');
-        setImage(response.data.imageUrl);
+        setImage(data.imageUrl || data.image);
       } else {
         toast.error('Failed to upload image');
       }
@@ -196,17 +168,7 @@ const AccountSettings: React.FC = () => {
     };
 
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        toast.error('User not logged in');
-        return;
-      }
-      const response = await api.put(`/user/update`, profileData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
+      await userService.updateProfile(profileData);
       toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -225,17 +187,7 @@ const AccountSettings: React.FC = () => {
     };
 
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        toast.error('User not logged in');
-        return;
-      }
-
-      await api.put(`/user/update-password`, passwordData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      await userService.updatePassword(passwordData);
       toast.success('Password updated successfully!');
     } catch (error) {
       console.error('Error updating password:', error);

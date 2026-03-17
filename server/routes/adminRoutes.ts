@@ -1,17 +1,21 @@
 import { Router } from 'express';
-import { 
-    login, 
-    sendOtp, 
-    resetPassword,
-    verifyPasswordOtp,
-    fetchUserProfile,
-    editUserProfile,
-    editPassword,
-    uploadImage,
-    getAllUsers,
-    getAllInstructors,
-  } 
-from '../controllers/adminController';
+import {
+  login,
+  sendOtp,
+  resetPassword,
+  verifyPasswordOtp,
+  fetchUserProfile,
+  editUserProfile,
+  editPassword,
+  uploadImage,
+  getAllUsers,
+  getAllInstructors,
+  getAnalytics,
+  getRevenueAnalytics,
+  getCategoryDistribution,
+  getTopCourses,
+}
+  from '../controllers/adminController';
 import upload from '../config/multerConfig';
 import { toggleUserStatus } from '../controllers/userController';
 import { addTutors, toggleTutorStatus } from '../controllers/instructorController';
@@ -25,42 +29,48 @@ const router = Router();
 const orderController = new OrderController();
 
 // AUTHENTICATION
-router.post('/login', login); 
+router.post('/login', login);
 router.post('/send-otp', sendOtp);
-router.post('/verify-otp',verifyPasswordOtp );
+router.post('/verify-otp', verifyPasswordOtp);
 router.post('/reset-password', resetPassword);
 
 //PROFILE MANAGEMENT
-router.get('/profile',verifyToken, fetchUserProfile);
-router.put('/update', verifyToken,editUserProfile);
-router.put('/update-password',verifyToken, editPassword);
-router.put('/upload-image', upload.single('image'), verifyToken,uploadImage);
+router.get('/profile', verifyToken, fetchUserProfile);
+router.put('/profile', verifyToken, editUserProfile);
+router.put('/profile/password', verifyToken, editPassword);
+router.put('/profile/image', upload.single('image'), verifyToken, uploadImage);
 
 //Student,QA & Tutor Management
-router.get('/users',verifyToken,getAllUsers);
-router.get('/instructors',verifyToken,getAllInstructors);
-router.patch('/users/:userId', verifyToken,toggleUserStatus);
-router.patch('/instructors/:tutorId',verifyToken,toggleTutorStatus);
+router.get('/users', verifyToken, getAllUsers);
+router.get('/instructors', verifyToken, getAllInstructors);
+router.patch('/users/:userId', verifyToken, toggleUserStatus);
+router.patch('/instructors/:tutorId', verifyToken, toggleTutorStatus);
 router.post('/add-tutor', upload.single('image'), addTutors);
 
 //Category Management
-router.get('/categories',verifyToken, getCategoriesPagination);
-router.post('/categories',verifyToken,saveCategory);
-router.put('/categories/:id',verifyToken,updateCategory);
-router.patch('/categories/block/:id', verifyToken,deleteCategory);
+router.get('/categories', verifyToken, getCategoriesPagination);
+router.post('/categories', verifyToken, saveCategory);
+router.put('/categories/:id', verifyToken, updateCategory);
+router.patch('/categories/block/:id', verifyToken, deleteCategory);
 
 //Course Management
-router.patch('/course-status/:courseId',verifyToken,courseStatus);
-router.get('/courseData',verifyToken,getCourseDatas);
-router.get('/courseDetailview/:courseId',verifyToken,getViewCourses);
-router.put('/publish/:courseId',verifyToken,publishCourse);
-router.put('/reject/:courseId',verifyToken,rejectCourse);
-router.post('/courses/:courseId',verifyToken,addReview);
-router.get('/reviews/:courseId',verifyToken,getReviews);
-router.get('/instructorProfile/:instructorId',verifyToken,getInstructorData);
+router.patch('/courses/:courseId/status', verifyToken, courseStatus);
+router.get('/courses/stats', verifyToken, getCourseDatas);
+router.get('/courses/:courseId', verifyToken, getViewCourses);
+router.patch('/courses/:courseId/publish', verifyToken, publishCourse);
+router.patch('/courses/:courseId/reject', verifyToken, rejectCourse);
+router.post('/courses/:courseId/reviews', verifyToken, addReview);
+router.get('/courses/:courseId/reviews', verifyToken, getReviews);
+router.get('/instructors/:instructorId/profile', verifyToken, getInstructorData);
 
 //Order Management
-router.get("/orders", verifyToken,orderController.getOrders.bind(orderController));
-router.get("/order-view/:orderId", verifyToken, orderController.getOrderDetail.bind(orderController));
+router.get("/orders", verifyToken, orderController.getOrders.bind(orderController));
+router.get("/orders/:orderId", verifyToken, orderController.getOrderDetail.bind(orderController));
+
+//Analytics Management
+router.get('/analytics/dashboard-stats', verifyToken, getAnalytics);
+router.get('/analytics/revenue-analytics', verifyToken, getRevenueAnalytics);
+router.get('/analytics/category-distribution', verifyToken, getCategoryDistribution);
+router.get('/analytics/top-courses', verifyToken, getTopCourses);
 
 export default router;

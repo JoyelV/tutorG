@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Avatar } from '@mui/material';
 import { Section } from '../../pages/user/userProfile';
-import api from '../../../infrastructure/api/api';
+import { userService } from '../../../infrastructure/api/userService';
 import { assets } from '../../../assets/assets_user/assets';
 
 type ProfileDashboardProps = {
@@ -17,8 +17,9 @@ const ProfileDashboard = ({ onSectionChange }: ProfileDashboardProps) => {
   useEffect(() => {
     const fetchUserImage = async () => {
       try {
-        const response = await api.get('/user/image');
-        setUserImage(response.data.imageUrl); 
+        const response = await userService.getProfileImage();
+        const data = response.data.data || response.data;
+        setUserImage(data.imageUrl || data.image);
       } catch (error) {
         console.error('Error fetching user image:', error);
       }
@@ -53,9 +54,8 @@ const ProfileDashboard = ({ onSectionChange }: ProfileDashboardProps) => {
           <div
             key={section}
             onClick={() => handleSectionClick(section)}
-            className={`cursor-pointer ${
-              activeSection === section ? 'text-blue-600 border-b-2 border-blue-600' : ''
-            }`}
+            className={`cursor-pointer ${activeSection === section ? 'text-blue-600 border-b-2 border-blue-600' : ''
+              }`}
           >
             {section}
           </div>
@@ -66,7 +66,7 @@ const ProfileDashboard = ({ onSectionChange }: ProfileDashboardProps) => {
         <h3 className="text-base sm:text-lg font-semibold">{activeSection}</h3>
       </div>
     </div>
-  );  
+  );
 };
 
 export default ProfileDashboard;

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 import { useNavigate, useParams } from 'react-router-dom';
-import Sidebar from '../../components/instructor/Sidebar';
 
 interface Question {
   question: string;
@@ -23,10 +22,13 @@ const EditQuizForm: React.FC = () => {
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
-        const response = await api.get(`/instructor/quizzes/${courseId}/${quizId}`);
-        if (response.data && response.data.questions) {
-        setFormData({ questions: response.data.questions });
-        }else {
+        const response = await courseService.getQuizById(courseId as string, quizId as string);
+        const data = response.data.data || response.data;
+        if (data && data.questions) {
+          setFormData({ questions: data.questions });
+        } else if (data && Array.isArray(data)) {
+          setFormData({ questions: data });
+        } else {
           throw new Error('Invalid quiz data received');
         }
       } catch (error) {
@@ -59,12 +61,12 @@ const EditQuizForm: React.FC = () => {
     setFormData((prev) => {
       const updatedQuestions = [...prev.questions];
       if (field === 'question' || field === 'answer') {
-        updatedQuestions[index][field] = value; 
+        updatedQuestions[index][field] = value;
       } else if (field.startsWith('option')) {
         const optionIndex = parseInt(field.replace('option', ''), 10) - 1;
         updatedQuestions[index].options[optionIndex] = value;
       }
-      
+
       return { ...prev, questions: updatedQuestions };
     });
 
@@ -105,8 +107,8 @@ const EditQuizForm: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await api.put(`/instructor/quizzes/${courseId}/${quizId}`,  {questions: formData.questions});
-      if(response.status===200){
+      const response = await courseService.updateQuiz(courseId as string, quizId as string, { questions: formData.questions });
+      if (response.status === 200) {
         Swal.fire({
           icon: 'success',
           title: 'Success',
@@ -114,7 +116,7 @@ const EditQuizForm: React.FC = () => {
         });
         navigate(`/instructor/course-view/${courseId}`);
       }
-      
+
     } catch (error) {
       console.error('Error updating quiz:', error);
       Swal.fire({
@@ -130,85 +132,77 @@ const EditQuizForm: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
-      <aside className="w-full lg:w-64 bg-gray-800 text-white">
-        <Sidebar />
-      </aside>
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl md:max-w-4xl">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Edit Quiz</h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {formData.questions.map((q, index) => (
-              <div key={index} className="space-y-4">
-                <div>
-                  <label htmlFor={`question-${index}`} className="block text-sm font-medium text-gray-700">
-                    Question {index + 1}
-                  </label>
-                  <input
-                    type="text"
-                    id={`question-${index}`}
-                    value={q.question}
-                    onChange={(e) => handleInputChange(e, index, 'question')}
-                    className={`mt-1 block w-full p-2 border ${
-                      errors[`${index}-question`] ? 'border-red-500' : 'border-gray-300'
+    <div className="flex-1 items-center justify-center p-4">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl md:max-w-4xl mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Edit Quiz</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {formData.questions.map((q, index) => (
+            <div key={index} className="space-y-4">
+              <div>
+                <label htmlFor={`question-${index}`} className="block text-sm font-medium text-gray-700">
+                  Question {index + 1}
+                </label>
+                <input
+                  type="text"
+                  id={`question-${index}`}
+                  value={q.question}
+                  onChange={(e) => handleInputChange(e, index, 'question')}
+                  className={`mt-1 block w-full p-2 border ${errors[`${index}-question`] ? 'border-red-500' : 'border-gray-300'
                     } rounded-md`}
-                  />
-                  {errors[`${index}-question`] && (
-                    <p className="text-red-500 text-xs mt-1">{errors[`${index}-question`]}</p>
-                  )}
-                </div>
-                {q.options.map((option, optIndex) => (
-                  <div key={optIndex}>
-                    <label htmlFor={`option-${index}-${optIndex}`} className="block text-sm font-medium text-gray-700">
-                      Option {optIndex + 1}
-                    </label>
-                    <input
-                      type="text"
-                      id={`option-${index}-${optIndex}`}
-                      value={option}
-                      onChange={(e) => handleInputChange(e, index, `option${optIndex + 1}`)}
-                      className={`mt-1 block w-full p-2 border ${
-                        errors[`${index}-options`] ? 'border-red-500' : 'border-gray-300'
-                      } rounded-md`}
-                    />
-                  </div>
-                ))}
-                <div>
-                  <label htmlFor={`answer-${index}`} className="block text-sm font-medium text-gray-700">
-                    Answer
-                  </label>
-                  <input
-                    type="text"
-                    id={`answer-${index}`}
-                    value={q.answer}
-                    onChange={(e) => handleInputChange(e, index, 'answer')}
-                    className={`mt-1 block w-full p-2 border ${
-                      errors[`${index}-answer`] ? 'border-red-500' : 'border-gray-300'
-                    } rounded-md`}
-                  />
-                  {errors[`${index}-answer`] && (
-                    <p className="text-red-500 text-xs mt-1">{errors[`${index}-answer`]}</p>
-                  )}
-                </div>
+                />
+                {errors[`${index}-question`] && (
+                  <p className="text-red-500 text-xs mt-1">{errors[`${index}-question`]}</p>
+                )}
               </div>
-            ))}
-            <div className="flex flex-wrap gap-4 justify-between">
-              <button
-                type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
-              >
-                Save Changes
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
-              >
-                Cancel
-              </button>
+              {q.options.map((option, optIndex) => (
+                <div key={optIndex}>
+                  <label htmlFor={`option-${index}-${optIndex}`} className="block text-sm font-medium text-gray-700">
+                    Option {optIndex + 1}
+                  </label>
+                  <input
+                    type="text"
+                    id={`option-${index}-${optIndex}`}
+                    value={option}
+                    onChange={(e) => handleInputChange(e, index, `option${optIndex + 1}`)}
+                    className={`mt-1 block w-full p-2 border ${errors[`${index}-options`] ? 'border-red-500' : 'border-gray-300'
+                      } rounded-md`}
+                  />
+                </div>
+              ))}
+              <div>
+                <label htmlFor={`answer-${index}`} className="block text-sm font-medium text-gray-700">
+                  Answer
+                </label>
+                <input
+                  type="text"
+                  id={`answer-${index}`}
+                  value={q.answer}
+                  onChange={(e) => handleInputChange(e, index, 'answer')}
+                  className={`mt-1 block w-full p-2 border ${errors[`${index}-answer`] ? 'border-red-500' : 'border-gray-300'
+                    } rounded-md`}
+                />
+                {errors[`${index}-answer`] && (
+                  <p className="text-red-500 text-xs mt-1">{errors[`${index}-answer`]}</p>
+                )}
+              </div>
             </div>
-          </form>
-        </div>
+          ))}
+          <div className="flex flex-wrap gap-4 justify-between">
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

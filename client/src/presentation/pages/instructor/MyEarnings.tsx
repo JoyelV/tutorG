@@ -1,13 +1,30 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { Bar, Pie } from "react-chartjs-2";
-import DashboardHeader from "../../components/instructor/DashboardHeader";
-import Sidebar from "../../components/instructor/Sidebar";
-import api from "../../../infrastructure/api/api";
+import { courseService } from "../../../infrastructure/api/courseService";
 import { useElements, useStripe } from '@stripe/react-stripe-js';
 import { useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface ChartData {
   bar: {
@@ -47,11 +64,11 @@ const Earnings = () => {
 
   const [openModal, setOpenModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawalHistory, setWithdrawalHistory] = useState<any[]>([]);  
+  const [withdrawalHistory, setWithdrawalHistory] = useState<any[]>([]);
   const location = useLocation();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5; 
+  const rowsPerPage = 5;
   const totalPages = Math.ceil(withdrawalHistory.length / rowsPerPage);
 
   const paginatedData = withdrawalHistory.slice(
@@ -60,7 +77,7 @@ const Earnings = () => {
   );
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -87,7 +104,7 @@ const Earnings = () => {
       toast.error("Please enter a valid withdrawal amount.", { position: "top-right" });
       return;
     }
-  
+
     if (withdrawalAmount > stats.currentBalance) {
       toast.error("Insufficient balance. You cannot withdraw more than your current balance.", {
         position: "top-right",
@@ -96,7 +113,7 @@ const Earnings = () => {
     }
 
     try {
-      const response = await api.post("/instructor/create-checkout-session", {
+      const response = await courseService.createCheckoutSession({
         amount: withdrawAmount,
       });
 
@@ -119,12 +136,12 @@ const Earnings = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const coursesResponse = await api.get("/instructor/coursesCount");
-        const myCoursesResponse = await api.get("/instructor/my-courses/coursesCount");
-        const studentsResponse = await api.get("/instructor/studentsCount");
-        const earningsResponse = await api.get("/instructor/earningsCount");
-        const response = await api.get("/instructor/getEarningDetails");
-        const historyResponse = await api.get("/instructor/getWithdrawalHistory");  
+        const coursesResponse = await courseService.getPublishedCoursesCount();
+        const myCoursesResponse = await courseService.getTotalCoursesCount();
+        const studentsResponse = await courseService.getStudentsStats();
+        const earningsResponse = await courseService.getEarningsStats();
+        const response = await courseService.getEarningsDetails();
+        const historyResponse = await courseService.getWithdrawals();
 
         const currentBalance = response.data.currentBalance;
         const totalWithdrawals = response.data.totalWithdrawals;
@@ -181,14 +198,14 @@ const Earnings = () => {
     };
 
     fetchStats();
-    
+
     const queryParams = new URLSearchParams(location.search);
     if (queryParams.get("session_id")) {
       toast.success("Payment successful! Your withdrawal has been processed.", {
-        position: "top-right", 
+        position: "top-right",
       });
     }
-  }, [location.search]); 
+  }, [location.search]);
 
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
@@ -197,146 +214,130 @@ const Earnings = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className={`w-full md:w-64 bg-gray-800 text-white flex flex-col ${isSidebarOpen ? "block" : "hidden md:block"}`}>
-        <Sidebar />
-      </aside>
+    <div className="p-2">
+      <Typography variant="h5" className="mb-4">
+        My Earnings
+      </Typography>
 
-      {/* Main content area */}
-      <div className="flex-1 bg-gray-100 pt-20 md:ml-10">
-        {/* Fixed Dashboard Header */}
-        <div className="fixed top-0 left-0 right-0 bg-gray-800">
-          <DashboardHeader toggleSidebar={toggleSidebar} />
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {[{ label: "Total Revenue", value: stats.totalRevenue },
+        { label: "Current Balance", value: stats.currentBalance },
+        { label: "Total Withdrawals", value: stats.totalWithdrawals },
+        ].map((stat, index) => (
+          <Card
+            key={index}
+            className={`p-2 text-white ${index % 2 === 0
+              ? "bg-gradient-to-r from-blue-500 to-purple-600"
+              : "bg-gradient-to-r from-green-400 to-teal-500"
+              }`}
+          >
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div
+                  className={`h-12 w-12 rounded-full flex items-center justify-center ${index % 2 === 0 ? "bg-blue-700" : "bg-green-600"
+                    }`}
+                >
+                  <span className="text-xl font-bold">{index + 1}</span>
+                </div>
+                <Typography variant="h6" className="font-bold text-right">
+                  {Math.round(stat.value)}
+                </Typography>
+              </div>
+              <Typography variant="subtitle2" className="mt-4 opacity-90">
+                {stat.label}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Graph Section */}
+      <div className="bg-white p-6 rounded shadow-md mb-8">
+        <Typography variant="subtitle1" className="font-semibold mb-4">
+          Statistics Overview
+        </Typography>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="h-60">
+            <Bar data={chartData.bar} options={{ maintainAspectRatio: false }} />
+          </div>
+          <div className="h-60">
+            <Pie data={chartData.pie} options={{ maintainAspectRatio: false }} />
+          </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <main className="ml-2 p-2">
-          <Typography variant="h5" className="mb-4">
-            My Earnings
+      {/* Withdraw Section */}
+      <Button variant="contained" color="warning" onClick={handleOpenModal}>
+        Withdraw Money
+      </Button>
+
+      {/* Withdraw Modal */}
+      <Dialog open={openModal} onClose={handleCloseModal}>
+        <DialogTitle>Withdraw Money</DialogTitle>
+        <DialogContent>
+          <Typography variant="subtitle1" className="mb-4">
+            Enter the amount you want to withdraw
           </Typography>
-
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            {[{ label: "Total Revenue", value: stats.totalRevenue },
-              { label: "Current Balance", value: stats.currentBalance },
-              { label: "Total Withdrawals", value: stats.totalWithdrawals },
-            ].map((stat, index) => (
-              <Card
-                key={index}
-                className={`p-2 text-white ${index % 2 === 0
-                    ? "bg-gradient-to-r from-blue-500 to-purple-600"
-                    : "bg-gradient-to-r from-green-400 to-teal-500"
-                  }`}
-              >
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`h-12 w-12 rounded-full flex items-center justify-center ${index % 2 === 0 ? "bg-blue-700" : "bg-green-600"
-                        }`}
-                    >
-                      <span className="text-xl font-bold">{index + 1}</span>
-                    </div>
-                    <Typography variant="h6" className="font-bold text-right">
-                    {Math.round(stat.value)}
-                    </Typography>
-                  </div>
-                  <Typography variant="subtitle2" className="mt-4 opacity-90">
-                    {stat.label}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Graph Section */}
-          <div className="bg-white p-6 rounded shadow-md mb-8">
-            <Typography variant="subtitle1" className="font-semibold mb-4">
-              Statistics Overview
-            </Typography>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="h-60">
-                <Bar data={chartData.bar} options={{ maintainAspectRatio: false }} />
-              </div>
-              <div className="h-60">
-                <Pie data={chartData.pie} options={{ maintainAspectRatio: false }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Withdraw Section */}
-          <Button variant="contained" color="warning" onClick={handleOpenModal}>
-            Withdraw Money
+          <TextField
+            label="Amount"
+            variant="outlined"
+            type="number"
+            fullWidth
+            value={withdrawAmount}
+            onChange={(e) => setWithdrawAmount(e.target.value)}
+            margin="normal"
+          />
+          <Typography variant="body2" className="mt-2">
+            Note: Your withdrawal will be processed through Stripe.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="primary">
+            Cancel
           </Button>
+          <Button onClick={handleWithdrawSubmit} color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-          {/* Withdraw Modal */}
-          <Dialog open={openModal} onClose={handleCloseModal}>
-            <DialogTitle>Withdraw Money</DialogTitle>
-            <DialogContent>
-              <Typography variant="subtitle1" className="mb-4">
-                Enter the amount you want to withdraw
-              </Typography>
-              <TextField
-                label="Amount"
-                variant="outlined"
-                type="number"
-                fullWidth
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-                margin="normal"
-              />
-              <Typography variant="body2" className="mt-2">
-                Note: Your withdrawal will be processed through Stripe.
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={handleWithdrawSubmit} color="primary">
-                Submit
-              </Button>
-            </DialogActions>
-          </Dialog>
+      {/* Withdrawal History Table */}
+      <div className="mt-8 overflow-x-auto">
+        <table className="min-w-full table-auto text-center">
+          <thead>
+            <tr>
+              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Amount</th>
+              <th className="px-4 py-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedData.map((historyItem, index) => (
+              <tr key={index} className="border-t text-center">
+                <td className="px-4 py-2">  {new Date(historyItem.date).toLocaleDateString("en-GB")} </td>
+                <td className="px-4 py-2">${historyItem.amount}</td>
+                <td className="px-4 py-2">{historyItem.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-          {/* Withdrawal History Table */}
-          <div className="mt-8 overflow-x-auto">
-            <table className="min-w-full table-auto text-center">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">Amount</th>
-                  <th className="px-4 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((historyItem, index) => (
-                  <tr key={index} className="border-t text-center">
-                    <td className="px-4 py-2">  {new Date(historyItem.date).toLocaleDateString("en-GB")} </td>
-                    <td className="px-4 py-2">${historyItem.amount}</td>
-                    <td className="px-4 py-2">{historyItem.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Pagination Controls */}
-            <div className="flex justify-center mt-4">
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </main>
+        {/* Pagination Controls */}
+        <div className="flex justify-center mt-4">
+          <Button
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            Previous
+          </Button>
+          <Button
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Next
+          </Button>
+        </div>
       </div>
       <ToastContainer />
     </div>

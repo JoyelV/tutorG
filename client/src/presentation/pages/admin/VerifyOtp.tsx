@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 
 interface LocationState {
   email: string;
@@ -19,14 +19,14 @@ const VerifyOtp: React.FC = () => {
       const timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      setCanResend(true); 
+      setCanResend(true);
     }
   }, [resendTimer]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await api.post('/admin/verify-otp', { email: state.email, otp });
+      const response = await authService.adminVerifyOtp({ email: state.email, otp });
       navigate('/admin/reset-password', { state: { token: response.data.token } });
     } catch (error) {
       setError('Invalid OTP');
@@ -36,10 +36,10 @@ const VerifyOtp: React.FC = () => {
 
   const handleResendOtp = async () => {
     try {
-      setCanResend(false); 
-      setResendTimer(30); 
-      await api.post('/admin/send-otp', { email: state.email });
-      setError(''); 
+      setCanResend(false);
+      setResendTimer(30);
+      await authService.adminSendOtp({ email: state.email });
+      setError('');
     } catch (error) {
       setError('Failed to resend OTP. Please try again later.');
       console.error('Error:', error);

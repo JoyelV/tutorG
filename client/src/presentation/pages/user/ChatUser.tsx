@@ -2,12 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Avatar, TextField, IconButton, Typography, Badge, ListItem, List, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Box } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
-import api from '../../../infrastructure/api/api';
+import { userService } from '../../../infrastructure/api/userService';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 interface User {
   id: string;
@@ -59,6 +58,8 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<{ [userId: string]: number }>({});
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     socket.current = io(`${process.env.REACT_APP_SOCKET_URL}`, {
@@ -102,16 +103,48 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
       );
     });
 
+    if (userId) {
+      socket.current.emit('joinNotifications', userId);
+    }
+
+    socket.current.on('user_status_update', ({ userId: updatedUserId, status }) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === updatedUserId ? { ...u, onlineStatus: status === 'online' } : u
+        )
+      );
+    });
+
+    socket.current.on('user_typing', ({ sender }: { sender: string }) => {
+      if (selectedUser?.id === sender) {
+        setIsTyping(true);
+      }
+    });
+
+    socket.current.on('user_stop_typing', ({ sender }: { sender: string }) => {
+      if (selectedUser?.id === sender) {
+        setIsTyping(false);
+      }
+    });
+
+    socket.current.on('incoming_call', (data: { senderName: string, roomId: string }) => {
+      toast.info(`Incoming video call from ${data.senderName}. Click to join!`, {
+        onClick: () => window.open(`/chat/${data.roomId}`, '_blank'),
+        autoClose: 10000,
+        position: 'top-center'
+      });
+    });
+
     return () => {
       socket.current?.disconnect();
     };
-  }, []);
+  }, [userId, selectedUser]);
 
   useEffect(() => {
     const fetchTutors = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/user/my-tutors');
+        const response = await userService.getMyTutors();
         const data = response.data.map((item: any) => ({
           id: item.tutorId._id,
           name: item.tutorId.username,
@@ -125,12 +158,9 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
             try {
               const userId = localStorage.getItem('userId');
               if (!userId) throw new Error('User not logged in');
-
-              const messageResponse = await api.get('/user/messages', {
-                params: {
-                  senderId: userId,
-                  receiverId: tutor.id,
-                },
+              const messageResponse = await userService.getMessages({
+                senderId: userId,
+                receiverId: tutor.id,
               });
               const messages = messageResponse.data;
               if (messages.length > 0) {
@@ -229,6 +259,20 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
     setIsRecording(false);
   };
 
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setNewMessage(e.target.value);
+
+    if (!socket.current || !selectedUser || !userId) return;
+
+    socket.current.emit('typing', { sender: userId, receiver: selectedUser.id });
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.current?.emit('stop_typing', { sender: userId, receiver: selectedUser.id });
+    }, 2000);
+  };
+
   const handleSendMessage = async () => {
     if (newMessage.trim() || image || audioBlob) {
       let mediaUrl = '';
@@ -300,11 +344,9 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
         });
       }
 
-      const response = await api.get('/user/messages', {
-        params: {
-          senderId: userId,
-          receiverId: user.id,
-        },
+      const response = await userService.getMessages({
+        senderId: userId,
+        receiverId: user.id,
       });
       const fetchedMessages = response.data.map((message: any) => ({
         sender: message.sender,
@@ -398,6 +440,17 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   const handleVideoCallClick = async (user: User) => {
     setSelectedUser(user);
     const roomId = [user.id, userId].sort().join("-");
+
+    const username = localStorage.getItem('username') || (userType === 'User' ? 'Student' : 'Instructor');
+
+    // Emit call notification
+    socket.current?.emit('start_call', {
+      senderId: userId,
+      receiverId: user.id,
+      roomId: roomId,
+      senderName: username
+    });
+
     const videoCallUrl = `/chat/${roomId}`;
     window.open(videoCallUrl, '_blank');
   };
@@ -559,6 +612,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                     ></span>
                     {selectedUser.onlineStatus === true ? "Online" : "Offline"}
                   </div>
+                  {isTyping && (
+                    <Typography variant="caption" sx={{ color: '#fff', fontStyle: 'italic', ml: 1 }}>
+                      is typing...
+                    </Typography>
+                  )}
                 </Typography>
               </div>
             </>
@@ -594,8 +652,8 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
                     {(() => {
                       const messageTime = new Date(message.time);
                       const day = String(messageTime.getDate()).padStart(2, '0');
-                      const month = String(messageTime.getMonth() + 1).padStart(2, '0'); 
-                      const year = String(messageTime.getFullYear()).slice(-2); 
+                      const month = String(messageTime.getMonth() + 1).padStart(2, '0');
+                      const year = String(messageTime.getFullYear()).slice(-2);
                       const hours = String(messageTime.getHours()).padStart(2, '0');
                       const minutes = String(messageTime.getMinutes()).padStart(2, '0');
                       return `${day}/${month}/${year} ${hours}:${minutes}`;
@@ -622,7 +680,7 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
           <TextField
             variant="outlined"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleTyping}
             fullWidth
             placeholder="Type a message"
             InputProps={{

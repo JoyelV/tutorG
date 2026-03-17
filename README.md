@@ -9,13 +9,13 @@ It demonstrates real-world system design, clean architecture, and scalable backe
 
 TutorG goes beyond a simple CRUD application and showcases an end-to-end learning ecosystem:
 
-- 🏗 Enterprise-style layered architecture
-- 🧩 Repository pattern for clean data access
-- 🔐 Role-based access control (RBAC)
-- 🔑 Secure authentication & authorization
-- ☁️ Scalable media handling
-- 🚀 Production-ready frontend & backend separation
-- 📈 Designed for real users, growth, and maintainability
+- 🏗 **Enterprise-style Layered Architecture**: Controller → Service → Repository → Model
+- 🧩 **Repository Pattern**: Clean data access and separation of concerns
+- ⚡ **Service-Oriented Frontend**: Decoupled business logic into reusable service layers
+- 🔐 **Advanced Security**: Zod validation, Rate limiting, and RBAC
+- 📈 **Scalable System Design**: Decoupled Feedback system to handle millions of reviews
+- 🛡 **Production Reliability**: Centralized Winston logging and strict Environment validation
+- 🐳 **Dockerized**: One-command deployment for both local and production environments
 
 ---
 
@@ -87,8 +87,16 @@ Each role operates with secure, isolated permissions and workflows.
 
 ### 🔹 Backend Architecture (Key Highlight)
 
-TutorG follows a **Layered Architecture** with **Repository Pattern**:  
-**Controller → Service → Repository → Model**
+TutorG follows a **Clean Layered Architecture** with **Repository Pattern**:  
+`Controller → Service → Repository → Model`
+
+#### Advanced Engineering Practices Implemented:
+1. **Frontend Service Layer**: Abstracted all API calls into services, making components lean and UI-focused.
+2. **Input Validation (Zod)**: Robust, schema-based validation for all API endpoints.
+3. **Rate Limiting**: Protection against brute-force and DoS attacks (100 req/15min).
+4. **Scalable MongoDB Design**: Decoupled student feedback from the Course document to prevent unbounded growth.
+5. **Observability (Winston)**: Centralized logging with persistent error files.
+6. **Strict Config Management**: Type-safe environment variable validation at startup.
 ---
 
 ## 📂 Project Structure
@@ -177,20 +185,27 @@ tutorG/
 ## ⚙️ Tech Stack
 
 **Frontend**  
-React · TypeScript · Tailwind CSS
+React · TypeScript · Tailwind CSS · Axios (Service Layer)
 
 **Backend**  
-Node.js · Express · TypeScript · MongoDB · Mongoose
+Node.js · Express · TypeScript · MongoDB · Mongoose · **Zod** · **Winston**
 
-**Tools & Services**  
-JWT · Cloudinary · Multer · REST APIs · Vercel
+**Infrastructure**  
+**Docker** · **Docker Compose** · JWT · Cloudinary · Multer · Stripe
 
 ---
 
 ## 🚀 Deployment
 
 - Frontend: Deployed on Vercel
-- Backend: Production-ready Express server (easily deployable on Render, Railway, etc.)
+- Backend: Production-ready Express server
+- **Docker**: Both services are containerized for easy deployment on AWS, DigitalOcean, or any VPS.
+
+### 🐳 Run with Docker
+```bash
+docker-compose up --build
+```
+This starts the Frontend (3000), Backend (5000), and MongoDB (27017).
 
 ---
 

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import Swal from 'sweetalert2';
-import 'react-toastify/dist/ReactToastify.css';
-import 'sweetalert2/dist/sweetalert2.min.css';
+import { userService } from '../../../infrastructure/api/userService';
 import api from '../../../infrastructure/api/api';
 
 interface Course {
@@ -32,8 +31,8 @@ const CartPage = () => {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await api.get(`/user/getcart`);
-        setCartItems(response.data);
+        const response = await userService.getCart();
+        setCartItems(response.data.data || response.data); // Handle both old and new ApiResponse format
       } catch {
         setError('Failed to fetch cart items. Please try again later.');
       } finally {
@@ -41,7 +40,7 @@ const CartPage = () => {
       }
     };
     fetchCartItems();
-  }, [studentId]);
+  }, []);
 
   const handleRemove = async (cartItemId: string) => {
     try {
@@ -56,7 +55,7 @@ const CartPage = () => {
       });
 
       if (result.isConfirmed) {
-        await api.delete(`/user/removecartitem/${cartItemId}`);
+        await userService.removeFromCart(cartItemId);
         setCartItems((prevItems) => prevItems.filter((item) => item._id !== cartItemId));
         Swal.fire('Deleted!', 'The item has been removed from your cart.', 'success');
       }
@@ -67,8 +66,8 @@ const CartPage = () => {
 
   const handleMoveToWishlist = async (cartItemId: string, courseId: string) => {
     try {
-      await api.post(`/user/addtowishlist`, { userId: studentId, courseId });
-      await api.delete(`/user/removecartitem/${cartItemId}`);
+      await userService.addToWishlist(courseId);
+      await userService.removeFromCart(cartItemId);
       setCartItems((prevItems) => prevItems.filter((item) => item._id !== cartItemId));
       Swal.fire('Moved!', 'The item has been added to your wishlist.', 'success');
     } catch {

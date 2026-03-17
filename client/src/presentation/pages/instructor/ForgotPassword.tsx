@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../infrastructure/api/api';
+import { authService } from '../../../infrastructure/api/authService';
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -10,8 +10,8 @@ const ForgotPassword: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await api.post('/instructor/send-otp', { email });
-     
+      const response = await authService.instructorSendOtp({ email });
+
       setMessage('OTP sent to your email.');
       navigate('/instructor/verify-otp', { state: { email } });
     } catch (error) {

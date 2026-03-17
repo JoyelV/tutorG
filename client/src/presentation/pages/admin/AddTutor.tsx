@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, FormControlLabel, Checkbox, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import 'tailwindcss/tailwind.css';
-import api from '../../../infrastructure/api/api';
-import Sidebar from '../../components/admin/Sidebar';
+import { adminService } from '../../../infrastructure/api/adminService';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 interface FormData {
     username: string;
@@ -17,12 +14,12 @@ interface FormData {
     areasOfExpertise: string;
     bio: string;
     highestQualification: string;
-    website:string;
+    website: string;
     facebook: string;
     twitter: string;
     linkedin: string;
     instagram: string;
-    github:string;
+    github: string;
     isBlocked: boolean;
     tutorRequest: string | null;
 }
@@ -38,12 +35,12 @@ const AddForm: React.FC = () => {
         areasOfExpertise: '',
         bio: '',
         highestQualification: '',
-        website:'',
+        website: '',
         facebook: '',
         twitter: '',
         linkedin: '',
         instagram: '',
-        github:'',
+        github: '',
         isBlocked: false,
         tutorRequest: null,
     });
@@ -178,7 +175,7 @@ const AddForm: React.FC = () => {
                 formDataToSend.append('tutorRequest', formData.tutorRequest || '');
 
                 // Send the data to the backend
-                const response = await api.post('/admin/add-tutor', formDataToSend);
+                const response = await adminService.addTutor(formDataToSend);
 
                 if (response.status === 201) {
                     toast.success('Tutor added successfully!');
@@ -192,12 +189,12 @@ const AddForm: React.FC = () => {
                         areasOfExpertise: '',
                         bio: '',
                         highestQualification: '',
-                        website:'',
+                        website: '',
                         facebook: '',
                         twitter: '',
                         linkedin: '',
                         instagram: '',
-                        github:'',
+                        github: '',
                         isBlocked: false,
                         tutorRequest: null,
                     });
@@ -217,248 +214,240 @@ const AddForm: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
-            {/* Sidebar */}
-            <div className="w-full md:w-1/4 bg-white shadow-md fixed md:static">
-                <Sidebar />
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex-1 p-2 md:ml-1/4">
-                <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-                    <form onSubmit={handleSubmit} className="bg-white p-1 rounded-lg shadow-lg">
-                        <h2 className="text-2xl font-bold mb-4">Add Tutor Details</h2>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="User Name"
-                                    variant="outlined"
-                                    fullWidth
-                                    required
-                                    name="username"
-                                    value={formData.username}
-                                    onChange={handleChange}
-                                    error={!!errors.username}
-                                    helperText={errors.username}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="Email"
-                                    variant="outlined"
-                                    fullWidth
-                                    required
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    error={!!errors.email}
-                                    helperText={errors.email}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="Phone"
-                                    variant="outlined"
-                                    fullWidth
-                                    required
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    error={!!errors.phone}
-                                    helperText={errors.phone}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="Password"
-                                    variant="outlined"
-                                    fullWidth
-                                    required
-                                    name="password"
-                                    type={showPassword ? "text" : "password"} 
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    error={!!errors.password}
-                                    helperText={errors.password}
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    edge="end"
-                                                >
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
-                            </Grid>
-                            {/* Other fields */}
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Headline"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="headline"
-                                    value={formData.headline}
-                                    onChange={handleChange}
-                                    error={!!errors.headline}
-                                    helperText={errors.headline}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <label className="block mb-2 text-gray-700">Upload Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/jpeg, image/png"
-                                    onChange={handleImageChange}
-                                    className="mb-4"
-                                />
-                                {imagePreview && (
-                                    <div className="mb-4">
-                                        <img src={imagePreview} alt="Preview" className="h-32 w-32 object-cover rounded-md" />
-                                    </div>
-                                )}
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Areas of Expertise"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="areasOfExpertise"
-                                    value={formData.areasOfExpertise}
-                                    onChange={handleChange}
-                                    error={!!errors.areasOfExpertise}
-                                    helperText={errors.areasOfExpertise}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Bio"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="bio"
-                                    value={formData.bio}
-                                    onChange={handleChange}
-                                    error={!!errors.bio}
-                                    helperText={errors.bio}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Highest Qualification"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="highestQualification"
-                                    value={formData.highestQualification}
-                                    onChange={handleChange}
-                                    error={!!errors.highestQualification}
-                                    helperText={errors.highestQualification}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="website Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="website"
-                                    value={formData.website}
-                                    onChange={handleChange}
-                                    error={!!errors.website}
-                                    helperText={errors.website}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="facebook Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="facebook"
-                                    value={formData.facebook}
-                                    onChange={handleChange}
-                                    error={!!errors.facebook}
-                                    helperText={errors.facebook}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="twitter Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="twitter"
-                                    value={formData.twitter}
-                                    onChange={handleChange}
-                                    error={!!errors.twitter}
-                                    helperText={errors.twitter}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="linkedin Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="linkedin"
-                                    value={formData.linkedin}
-                                    onChange={handleChange}
-                                    error={!!errors.linkedin}
-                                    helperText={errors.linkedin}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="instagram Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="instagram"
-                                    value={formData.instagram}
-                                    onChange={handleChange}
-                                    error={!!errors.instagram}
-                                    helperText={errors.instagram}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="github Link"
-                                    variant="outlined"
-                                    fullWidth
-                                    name="github"
-                                    value={formData.github}
-                                    onChange={handleChange}
-                                    error={!!errors.github}
-                                    helperText={errors.github}
-                                    className="mb-4"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            name="isBlocked"
-                                            checked={formData.isBlocked}
-                                            onChange={handleChange}
-                                        />
-                                    }
-                                    label="Is Blocked"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Button type="submit" variant="contained" color="primary" fullWidth>
-                                    Add Tutor
-                                </Button>
-                            </Grid>
+        <div className="bg-gray-100 min-h-full p-4 overflow-y-auto">
+            <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+                <form onSubmit={handleSubmit} className="bg-white p-1 rounded-lg">
+                    <h2 className="text-2xl font-bold mb-4">Add Tutor Details</h2>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="User Name"
+                                variant="outlined"
+                                fullWidth
+                                required
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                error={!!errors.username}
+                                helperText={errors.username}
+                            />
                         </Grid>
-                    </form>
-                </div>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Email"
+                                variant="outlined"
+                                fullWidth
+                                required
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                error={!!errors.email}
+                                helperText={errors.email}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Phone"
+                                variant="outlined"
+                                fullWidth
+                                required
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                error={!!errors.phone}
+                                helperText={errors.phone}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Password"
+                                variant="outlined"
+                                fullWidth
+                                required
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                value={formData.password}
+                                onChange={handleChange}
+                                error={!!errors.password}
+                                helperText={errors.password}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Grid>
+                        {/* Other fields */}
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Headline"
+                                variant="outlined"
+                                fullWidth
+                                name="headline"
+                                value={formData.headline}
+                                onChange={handleChange}
+                                error={!!errors.headline}
+                                helperText={errors.headline}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <label className="block mb-2 text-gray-700">Upload Image</label>
+                            <input
+                                type="file"
+                                accept="image/jpeg, image/png"
+                                onChange={handleImageChange}
+                                className="mb-4"
+                            />
+                            {imagePreview && (
+                                <div className="mb-4">
+                                    <img src={imagePreview} alt="Preview" className="h-32 w-32 object-cover rounded-md" />
+                                </div>
+                            )}
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Areas of Expertise"
+                                variant="outlined"
+                                fullWidth
+                                name="areasOfExpertise"
+                                value={formData.areasOfExpertise}
+                                onChange={handleChange}
+                                error={!!errors.areasOfExpertise}
+                                helperText={errors.areasOfExpertise}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Bio"
+                                variant="outlined"
+                                fullWidth
+                                name="bio"
+                                value={formData.bio}
+                                onChange={handleChange}
+                                error={!!errors.bio}
+                                helperText={errors.bio}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Highest Qualification"
+                                variant="outlined"
+                                fullWidth
+                                name="highestQualification"
+                                value={formData.highestQualification}
+                                onChange={handleChange}
+                                error={!!errors.highestQualification}
+                                helperText={errors.highestQualification}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="website Link"
+                                variant="outlined"
+                                fullWidth
+                                name="website"
+                                value={formData.website}
+                                onChange={handleChange}
+                                error={!!errors.website}
+                                helperText={errors.website}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="facebook Link"
+                                variant="outlined"
+                                fullWidth
+                                name="facebook"
+                                value={formData.facebook}
+                                onChange={handleChange}
+                                error={!!errors.facebook}
+                                helperText={errors.facebook}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="twitter Link"
+                                variant="outlined"
+                                fullWidth
+                                name="twitter"
+                                value={formData.twitter}
+                                onChange={handleChange}
+                                error={!!errors.twitter}
+                                helperText={errors.twitter}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="linkedin Link"
+                                variant="outlined"
+                                fullWidth
+                                name="linkedin"
+                                value={formData.linkedin}
+                                onChange={handleChange}
+                                error={!!errors.linkedin}
+                                helperText={errors.linkedin}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="instagram Link"
+                                variant="outlined"
+                                fullWidth
+                                name="instagram"
+                                value={formData.instagram}
+                                onChange={handleChange}
+                                error={!!errors.instagram}
+                                helperText={errors.instagram}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="github Link"
+                                variant="outlined"
+                                fullWidth
+                                name="github"
+                                value={formData.github}
+                                onChange={handleChange}
+                                error={!!errors.github}
+                                helperText={errors.github}
+                                className="mb-4"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        name="isBlocked"
+                                        checked={formData.isBlocked}
+                                        onChange={handleChange}
+                                    />
+                                }
+                                label="Is Blocked"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button type="submit" variant="contained" color="primary" fullWidth>
+                                Add Tutor
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </form>
             </div>
             <ToastContainer />
         </div>

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
-import api from '../../../infrastructure/api/api';
+import { courseService } from '../../../infrastructure/api/courseService';
 import { useNavigate, useParams } from 'react-router-dom';
-import Sidebar from '../../components/instructor/Sidebar';
 
 interface Question {
   question: string;
@@ -93,7 +92,7 @@ const AddQuizForm: React.FC = () => {
     }
 
     try {
-      await api.post(`/instructor/quizzes/${courseId}`, { questions });
+      await courseService.addQuiz(courseId as string, { questions });
       Swal.fire({
         icon: 'success',
         title: 'Success',
@@ -115,79 +114,71 @@ const AddQuizForm: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-gray-800 text-white">
-        <Sidebar />
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="bg-white shadow-lg rounded-lg p-6 max-w-full md:max-w-2xl w-full">
-          <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4 text-center md:text-left">
-            Add Quiz
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {questions.map((question, index) => (
-              <div key={index} className="space-y-2 border p-4 rounded-md">
+    <div className="flex flex-1 items-center justify-center p-4">
+      <div className="bg-white shadow-lg rounded-lg p-6 max-w-full md:max-w-2xl w-full">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4 text-center md:text-left">
+          Add Quiz
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {questions.map((question, index) => (
+            <div key={index} className="space-y-2 border p-4 rounded-md">
+              <input
+                type="text"
+                value={question.question}
+                onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
+                placeholder={`Question ${index + 1}`}
+                className="block w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+              {question.options.map((option, i) => (
                 <input
+                  key={i}
                   type="text"
-                  value={question.question}
-                  onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
-                  placeholder={`Question ${index + 1}`}
-                  className="block w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-                {question.options.map((option, i) => (
-                  <input
-                    key={i}
-                    type="text"
-                    value={option}
-                    onChange={(e) => handleQuestionChange(index, `option${i}`, e.target.value)}
-                    placeholder={`Option ${i + 1}`}
-                    className="block w-full p-2 border border-gray-300 rounded-md mt-1"
-                    required
-                  />
-                ))}
-                <input
-                  type="text"
-                  value={question.answer}
-                  onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
-                  placeholder="Answer"
+                  value={option}
+                  onChange={(e) => handleQuestionChange(index, `option${i}`, e.target.value)}
+                  placeholder={`Option ${i + 1}`}
                   className="block w-full p-2 border border-gray-300 rounded-md mt-1"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => removeQuestion(index)}
-                  className="text-red-500 mt-2"
-                >
-                  Remove Question
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="bg-green-500 text-white py-2 px-4 rounded-md w-full md:w-auto"
-            >
-              Add Another Question
-            </button>
-            <button
-              type="submit"
-              className="bg-indigo-600 text-white py-2 px-4 rounded-md w-full md:w-auto mt-4"
-            >
-              Save & Submit
-            </button>
-            <button
+              ))}
+              <input
+                type="text"
+                value={question.answer}
+                onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
+                placeholder="Answer"
+                className="block w-full p-2 border border-gray-300 rounded-md mt-1"
+                required
+              />
+              <button
                 type="button"
-                onClick={handleCancel}
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
+                onClick={() => removeQuestion(index)}
+                className="text-red-500 mt-2"
               >
-                Cancel
+                Remove Question
               </button>
-          </form>
-        </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addQuestion}
+            className="bg-green-500 text-white py-2 px-4 rounded-md w-full md:w-auto"
+          >
+            Add Another Question
+          </button>
+          <button
+            type="submit"
+            className="bg-indigo-600 text-white py-2 px-4 rounded-md w-full md:w-auto mt-4"
+          >
+            Save & Submit
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md w-full md:w-auto"
+          >
+            Cancel
+          </button>
+        </form>
       </div>
     </div>
   );

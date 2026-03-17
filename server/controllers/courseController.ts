@@ -1,659 +1,414 @@
 import { Request, Response, NextFunction } from 'express';
 import { CourseService } from '../services/courseService';
 import { AuthenticatedRequest } from '../utils/VerifyToken';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AppError } from '../utils/AppError';
+import { ApiResponse } from '../utils/ApiResponse';
+import { certificateService } from '../services/certificateService';
+import { instructorRepository } from '../repositories/instructorRepository';
+import { socketService } from '../utils/socketService';
 
 const courseService = new CourseService();
 
-export const createCourse = async (
+export const createCourse = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const courseData = req.body;
-    const course = await courseService.createCourse(courseData);
-    res.status(201).json({
-      message: 'Course created successfully',
-      courseId: course._id,
-      course,
-    });
-  } catch (error: any) {
-    console.error('Error creating course:', error);
-    res
-      .status(error.message.includes('Category') ? 400 : 500)
-      .json({ message: error.message || 'Failed to create course' });
-  }
-};
+  const courseData = req.body;
+  const course = await courseService.createCourse(courseData);
 
-export const getCourses = async (
+  res.status(201).json(
+    new ApiResponse(201, { courseId: course._id, course }, 'Course created successfully')
+  );
+});
+
+export const getCourses = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const {
-      page = '1',
-      limit = '10',
-      searchTerm = '',
-      filter = '',
-      sortOption = '',
-    } = req.query;
+  const {
+    page = '1',
+    limit = '10',
+    searchTerm = '',
+    filter = '',
+    sortOption = '',
+  } = req.query;
 
-    const result = await courseService.getCourses(
-      Number(page),
-      Number(limit),
-      searchTerm as string,
-      filter as string,
-      sortOption as string
-    );
+  const result = await courseService.getCourses(
+    Number(page),
+    Number(limit),
+    searchTerm as string,
+    filter as string,
+    sortOption as string
+  );
 
-    res.status(200).json(result);
-  } catch (error: any) {
-    console.error('Error fetching courses:', error);
-    res.status(500).json({ message: error.message || 'Error fetching courses' });
-  }
-};
+  res.status(200).json(new ApiResponse(200, result));
+});
 
-export const getRelatedCourses = async (
+export const getRelatedCourses = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const relatedCourses = await courseService.getRelatedCourses(courseId);
-    res.status(200).json(relatedCourses);
-  } catch (error: any) {
-    console.error('Error fetching related courses:', error);
-    res
-      .status(error.message === 'Course not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to fetch related courses' });
-  }
-};
+  const { courseId } = req.params;
+  const relatedCourses = await courseService.getRelatedCourses(courseId);
+  res.status(200).json(new ApiResponse(200, relatedCourses));
+});
 
-export const getRecentlyAddedCourses = async (
+export const getRecentlyAddedCourses = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const courses = await courseService.getRecentlyAddedCourses();
-    res.status(200).json(courses);
-  } catch (error: any) {
-    console.error('Error fetching recently added courses:', error);
-    res.status(500).json({ message: 'Server error. Could not fetch courses.' });
-  }
-};
+  const courses = await courseService.getRecentlyAddedCourses();
+  res.status(200).json(new ApiResponse(200, courses));
+});
 
-export const getInstructorCourses = async (
+export const getInstructorCourses = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const { instructorId } = req.params;
-    const courses = await courseService.getInstructorCourses(instructorId);
-    res.status(200).json(courses);
-  } catch (error: any) {
-    console.error('Error fetching instructor courses:', error);
-    res
-      .status(error.message === 'Instructor ID is required' ? 400 : 500)
-      .json({ message: error.message || 'Server error. Could not fetch courses.' });
-  }
-};
+  const { instructorId } = req.params;
+  const courses = await courseService.getInstructorCourses(instructorId);
+  res.status(200).json(new ApiResponse(200, courses));
+});
 
-export const getCourseDatas = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
-    const result = await courseService.getCourseDatas(page, limit);
-    res.status(200).json(result);
-  } catch (error: any) {
-    console.error('Error fetching course data:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+export const getCourseDatas = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
+  const result = await courseService.getCourseDatas(page, limit);
+  res.status(200).json(new ApiResponse(200, result));
+});
 
-export const updateCourseRating = async (
+export const updateCourseRating = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const { rating, feedback } = req.body;
-    const userId = req.userId!;
+  const { courseId } = req.params;
+  const { rating, feedback } = req.body;
+  const userId = req.userId!;
 
-    const course = await courseService.updateCourseRating(
-      courseId,
-      userId,
-      rating,
-      feedback
-    );
-    res.status(200).json({
-      message: 'Course rating updated successfully',
-      course,
-    });
-  } catch (error: any) {
-    console.error('Error updating course rating:', error);
-    res
-      .status(
-        error.message.includes('Invalid') || error.message.includes('not found')
-          ? 400
-          : 500
-      )
-      .json({ message: error.message || 'Error updating course rating' });
-  }
-};
+  const course = await courseService.updateCourseRating(
+    courseId,
+    userId,
+    rating,
+    feedback
+  );
+  res.status(200).json(new ApiResponse(200, course, 'Course rating updated successfully'));
+});
 
-export const getCourseWithFeedbacks = async (
+export const getCourseWithFeedbacks = asyncHandler(async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const courseData = await courseService.getCourseWithFeedbacks(courseId);
-    res.status(200).json(courseData);
-  } catch (error: any) {
-    console.error('Error fetching course details:', error);
-    res
-      .status(error.message === 'Course not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to fetch course details' });
-  }
-};
+  const { courseId } = req.params;
+  const courseData = await courseService.getCourseWithFeedbacks(courseId);
+  res.status(200).json(new ApiResponse(200, courseData));
+});
 
-export const getInstructorData = async (
+export const getInstructorData = asyncHandler(async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { instructorId } = req.params;
-    const user = await courseService.getInstructorData(instructorId);
-    res.status(200).json(user);
-  } catch (error: any) {
-    console.error('Error fetching instructor data:', error);
-    res
-      .status(error.message.includes('missing') || error.message.includes('not found') ? 400 : 500)
-      .json({ message: error.message || 'An unknown error occurred' });
-  }
-};
+  const { instructorId } = req.params;
+  const user = await courseService.getInstructorData(instructorId);
+  res.status(200).json(new ApiResponse(200, user));
+});
 
-export const getIndividualCourses = async (
+export const getIndividualCourses = asyncHandler(async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const course = await courseService.getIndividualCourse(courseId);
-    res.status(200).json(course);
-  } catch (error: any) {
-    console.error('Error fetching individual course:', error);
-    res
-      .status(error.message === 'Course not found' ? 400 : 500)
-      .json({ message: error.message || 'Error fetching course' });
-  }
-};
+  const { courseId } = req.params;
+  const course = await courseService.getIndividualCourse(courseId);
+  res.status(200).json(new ApiResponse(200, course));
+});
 
-export const getCompletionCertificate = async (
+export const getCompletionCertificate = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const studentId = req.userId!;
-    const certificate = await courseService.getCompletionCertificate(
-      courseId,
-      studentId
-    );
-    res.status(200).json(certificate);
-  } catch (error: any) {
-    console.error('Error fetching certificate:', error);
-    res
-      .status(error.message.includes('not found') ? 404 : 500)
-      .json({ message: error.message || 'Internal Server Error' });
-  }
-};
+  const { courseId } = req.params;
+  const studentId = req.userId!;
+  const certificate = await courseService.getCompletionCertificate(
+    courseId,
+    studentId
+  );
+  res.status(200).json(new ApiResponse(200, certificate));
+});
 
-export const getStudentCourseSummary = async (
+export const getStudentCourseSummary = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const studentId = req.userId!;
-    const summary = await courseService.getStudentCourseSummary(studentId);
-    res.status(200).json(summary);
-  } catch (error: any) {
-    console.error('Error fetching student summary:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
+  const studentId = req.userId!;
+  const summary = await courseService.getStudentCourseSummary(studentId);
+  res.status(200).json(new ApiResponse(200, summary));
+});
 
-export const getIndividualCourseData = async (
+export const downloadCertificate = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const studentId = req.userId!;
-    const courseData = await courseService.getIndividualCourseData(
-      courseId,
-      studentId
-    );
-    res.status(200).json(courseData);
-  } catch (error: any) {
-    console.error('Error fetching individual course data:', error);
-    res
-      .status(
-        error.message.includes('not found') || error.message.includes('purchased')
-          ? 400
-          : 500
-      )
-      .json({ message: error.message || 'Error fetching course data' });
-  }
-};
+  const { courseId } = req.params;
+  const studentId = req.userId!;
 
-export const courseStatus = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const course = await courseService.toggleCourseApproval(courseId);
-    res.status(200).json(course);
-  } catch (error: any) {
-    console.error('Error toggling course approval status:', error);
-    res
-      .status(error.message === 'Course not found' ? 404 : 500)
-      .json({ message: error.message || 'Error toggling course approval status' });
-  }
-};
+  const certificateData = await courseService.getCompletionCertificate(
+    courseId,
+    studentId
+  );
 
-export const getTutorCourses = async (
+  // We need the instructor name too for the certificate layout
+  const course = await courseService.getIndividualCourse(courseId);
+  const instructor = await instructorRepository.findUserById(course.instructorId.toString());
+
+  await certificateService.generateCertificate(res, {
+    ...certificateData,
+    instructorName: instructor?.username || 'TutorG Instructor'
+  });
+});
+
+export const getIndividualCourseData = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 6;
-    const result = await courseService.getTutorCourses(page, limit);
-    res.status(200).json(result);
-  } catch (error: any) {
-    console.error('Error fetching tutor courses:', error);
-    res
-      .status(error.message.includes('Invalid') ? 400 : 500)
-      .json({ message: error.message || 'Server error' });
-  }
-};
+  const { courseId } = req.params;
+  const studentId = req.userId!;
+  const courseData = await courseService.getIndividualCourseData(
+    courseId,
+    studentId
+  );
+  res.status(200).json(new ApiResponse(200, courseData));
+});
 
-export const getMyTutorCourses = async (
+export const courseStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { courseId } = req.params;
+  const course = await courseService.toggleCourseApproval(courseId);
+  res.status(200).json(new ApiResponse(200, course, "Course approval status toggled"));
+});
+
+export const getTutorCourses = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 6;
-    const result = await courseService.getMyTutorCourses(instructorId, page, limit);
-    res.status(200).json(result);
-  } catch (error: any) {
-    console.error('Error fetching my tutor courses:', error);
-    res
-      .status(error.message.includes('Invalid') ? 400 : 500)
-      .json({ message: error.message || 'Server error' });
-  }
-};
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 6;
+  const result = await courseService.getTutorCourses(page, limit);
+  res.status(200).json(new ApiResponse(200, result));
+});
 
-export const getViewCourses = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const course = await courseService.getViewCourse(courseId);
-    res.status(200).json(course);
-  } catch (error: any) {
-    console.error('Error fetching course:', error);
-    res
-      .status(error.message === 'Course not found' ? 400 : 500)
-      .json({ message: error.message || 'Error fetching course' });
-  }
-};
-
-export const addLesson = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { lessonTitle, lessonDescription, lessonVideo, lessonPdf, courseId } = req.body;
-    const lesson = await courseService.addLesson({
-      lessonTitle,
-      lessonDescription,
-      lessonVideo,
-      lessonPdf,
-      courseId,
-    });
-    res.status(201).json({ message: 'Lesson added successfully!', lesson });
-  } catch (error: any) {
-    console.error('Error adding lesson:', error);
-    res
-      .status(error.message.includes('required') ? 400 : 500)
-      .json({ message: error.message || 'Error adding lesson' });
-  }
-};
-
-export const deleteLesson = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { lessonId } = req.body;
-    await courseService.deleteLesson(lessonId);
-    res.status(200).json({ message: 'Lesson deleted successfully.' });
-  } catch (error: any) {
-    console.error('Error deleting lesson:', error);
-    res
-      .status(error.message === 'Lesson not found' ? 404 : 500)
-      .json({ message: error.message || 'Internal server error.' });
-  }
-};
-
-export const getViewChapters = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const lessons = await courseService.getLessonsByCourseId(courseId);
-    res.status(200).json(lessons);
-  } catch (error: any) {
-    console.error('Error fetching lessons:', error);
-    res
-      .status(error.message.includes('found') ? 400 : 500)
-      .json({ message: error.message || 'Error fetching lessons' });
-  }
-};
-
-export const getViewChapter = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { lessonId } = req.params;
-    const lesson = await courseService.getLessonById(lessonId);
-    res.status(200).json(lesson);
-  } catch (error: any) {
-    console.error('Error fetching lesson:', error);
-    res
-      .status(error.message === 'Lesson not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to fetch lesson details.' });
-  }
-};
-
-export const updateChapter = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { lessonId } = req.params;
-    const { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
-
-    const updatedLesson = await courseService.updateLesson(lessonId, {
-      lessonTitle,
-      lessonDescription,
-      lessonVideo,
-      lessonPdf,
-    });
-    res.status(200).json({
-      message: 'Lesson updated successfully.',
-      updatedLesson,
-    });
-  } catch (error: any) {
-    console.error('Error updating lesson:', error);
-    res
-      .status(error.message.includes('not found') ? 404 : 500)
-      .json({ message: error.message || 'Failed to update lesson.' });
-  }
-};
-
-export const editCourse = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const courseData = req.body;
-    const updatedCourse = await courseService.editCourse(courseId, courseData);
-    res.status(200).json({
-      message: 'Course updated successfully',
-      course: updatedCourse,
-    });
-  } catch (error: any) {
-    console.error('Error updating course:', error);
-    res
-      .status(error.message.includes('not found') ? 404 : 500)
-      .json({ message: error.message || 'Failed to update course' });
-  }
-};
-
-export const deleteCourse = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const deletedCourse = await courseService.deleteCourse(courseId);
-    res.status(200).json({
-      message: 'Course deleted successfully',
-      course: deletedCourse,
-    });
-  } catch (error: any) {
-    console.error('Error deleting course:', error);
-    res
-      .status(error.message.includes('not found') || error.message.includes('Invalid') ? 404 : 500)
-      .json({ message: error.message || 'Failed to delete course' });
-  }
-};
-
-export const publishCourse = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const course = await courseService.publishCourse(courseId);
-    res.status(200).json({ message: 'Course published successfully', course });
-  } catch (error: any) {
-    console.error('Error publishing course:', error);
-    res
-      .status(error.message === 'Course not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to publish course' });
-  }
-};
-
-export const rejectCourse = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { courseId } = req.params;
-    const course = await courseService.rejectCourse(courseId);
-    res.status(200).json({ message: 'Course rejected successfully', course });
-  } catch (error: any) {
-    console.error('Error rejecting course:', error);
-    res
-      .status(error.message === 'Course not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to reject course' });
-  }
-};
-
-export const updateProgress = async (
+export const getMyTutorCourses = asyncHandler(async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const { completedLesson, videoSource } = req.body;
-    const { id: courseId } = req.params;
-    const studentId = req.userId!;
+  const instructorId = req.userId!;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 6;
+  const result = await courseService.getMyTutorCourses(instructorId, page, limit);
+  res.status(200).json(new ApiResponse(200, result));
+});
 
-    const result = await courseService.updateProgress(
-      courseId,
-      studentId,
-      completedLesson,
-      videoSource
-    );
-    res.status(result.message.includes('completed') ? 201 : 200).json(result);
-  } catch (error: any) {
-    console.error('Error updating progress:', error);
-    res
-      .status(error.message === 'Course not found' ? 404 : 500)
-      .json({ message: error.message || 'Error updating progress' });
-  }
-};
-
-export const getEnrolledMyCourses = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const count = await courseService.getEnrolledCoursesCount(instructorId);
-    res.json({ count });
-  } catch (error: any) {
-    console.error('Error fetching enrolled courses count:', error);
-    res
-      .status(500)
-      .json({ message: error.message || 'Failed to fetch courses count' });
-  }
-};
-
-export const getMyCourses = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const count = await courseService.getMyCoursesCount(instructorId);
-    res.json({ count });
-  } catch (error: any) {
-    console.error('Error fetching my courses count:', error);
-    res
-      .status(500)
-      .json({ message: error.message || 'Failed to fetch my courses count' });
-  }
-};
-
-export const getMyStudents = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const count = await courseService.getMyStudentsCount(instructorId);
-    res.json({ count });
-  } catch (error: any) {
-    console.error('Error fetching students count:', error);
-    res
-      .status(500)
-      .json({ message: error.message || 'Failed to fetch students count' });
-  }
-};
-
-export const getMyEarnings = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const earnings = await courseService.getMyEarnings(instructorId);
-    res.json({ totalEarnings: earnings });
-  } catch (error: any) {
-    console.error('Error fetching earnings:', error);
-    res
-      .status(error.message === 'Instructor not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to fetch earnings' });
-  }
-};
-
-export const getEarningDetails = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const details = await courseService.getEarningDetails(instructorId);
-    res.json(details);
-  } catch (error: any) {
-    console.error('Error fetching earning details:', error);
-    res
-      .status(error.message === 'Instructor not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to fetch earnings' });
-  }
-};
-
-export const getWithdrawalHistory = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const instructorId = req.userId!;
-    const withdrawalHistory = await courseService.getWithdrawalHistory(instructorId);
-    res.json({ withdrawalHistory });
-  } catch (error: any) {
-    console.error('Error fetching withdrawal history:', error);
-    res
-      .status(error.message === 'Instructor not found' ? 404 : 500)
-      .json({ message: error.message || 'Failed to fetch withdrawal history' });
-  }
-};
-
-export const getNotifications = async (
+export const getViewCourses = asyncHandler(async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
-  try {
-    const notifications = await courseService.getNotifications();
-    res.status(200).json({
-      message: 'Notifications retrieved successfully',
-      notifications,
-    });
-  } catch (error: any) {
-    console.error('Error fetching notifications:', error);
-    res
-      .status(500)
-      .json({ message: error.message || 'Failed to fetch notifications' });
-  }
-};
+  const { courseId } = req.params;
+  const course = await courseService.getViewCourse(courseId);
+  res.status(200).json(new ApiResponse(200, course));
+});
+
+export const addLesson = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { lessonTitle, lessonDescription, lessonVideo, lessonPdf, courseId } = req.body;
+  const lesson = await courseService.addLesson({
+    lessonTitle,
+    lessonDescription,
+    lessonVideo,
+    lessonPdf,
+    courseId,
+  });
+  res.status(201).json(new ApiResponse(201, lesson, 'Lesson added successfully!'));
+});
+
+export const deleteLesson = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { lessonId } = req.body;
+  await courseService.deleteLesson(lessonId);
+  res.status(200).json(new ApiResponse(200, null, 'Lesson deleted successfully.'));
+});
+
+export const getViewChapters = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { courseId } = req.params;
+  const lessons = await courseService.getLessonsByCourseId(courseId);
+  res.status(200).json(new ApiResponse(200, lessons));
+});
+
+export const getViewChapter = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { lessonId } = req.params;
+  const lesson = await courseService.getLessonById(lessonId);
+  res.status(200).json(new ApiResponse(200, lesson));
+});
+
+export const updateChapter = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { lessonId } = req.params;
+  const { lessonTitle, lessonDescription, lessonVideo, lessonPdf } = req.body;
+
+  const updatedLesson = await courseService.updateLesson(lessonId, {
+    lessonTitle,
+    lessonDescription,
+    lessonVideo,
+    lessonPdf,
+  });
+  res.status(200).json(new ApiResponse(200, updatedLesson, 'Lesson updated successfully.'));
+});
+
+export const editCourse = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { courseId } = req.params;
+  const courseData = req.body;
+  const updatedCourse = await courseService.editCourse(courseId, courseData);
+  res.status(200).json(new ApiResponse(200, updatedCourse, 'Course updated successfully'));
+});
+
+export const deleteCourse = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { courseId } = req.params;
+  const deletedCourse = await courseService.deleteCourse(courseId);
+  res.status(200).json(new ApiResponse(200, deletedCourse, 'Course deleted successfully'));
+});
+
+export const publishCourse = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { courseId } = req.params;
+  const course = await courseService.publishCourse(courseId);
+
+  // Real-time notification
+  socketService.emitNotification(course.instructorId.toString(), {
+    title: 'Course Published!',
+    message: `Your course "${course.title}" has been approved and published.`,
+    type: 'success'
+  });
+
+  res.status(200).json(new ApiResponse(200, course, 'Course published successfully'));
+});
+
+export const rejectCourse = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { courseId } = req.params;
+  const course = await courseService.rejectCourse(courseId);
+
+  // Real-time notification
+  socketService.emitNotification(course.instructorId.toString(), {
+    title: 'Course Rejected',
+    message: `Your course "${course.title}" needs some changes. Please review the feedback.`,
+    type: 'error'
+  });
+
+  res.status(200).json(new ApiResponse(200, course, 'Course rejected successfully'));
+});
+
+export const updateProgress = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const { completedLesson, videoSource } = req.body;
+  const { id: courseId } = req.params;
+  const studentId = req.userId!;
+
+  const result = await courseService.updateProgress(
+    courseId,
+    studentId,
+    completedLesson,
+    videoSource
+  );
+  res.status(result.message.includes('completed') ? 201 : 200).json(new ApiResponse(result.message.includes('completed') ? 201 : 200, result));
+});
+
+export const getEnrolledMyCourses = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const instructorId = req.userId!;
+  const count = await courseService.getEnrolledCoursesCount(instructorId);
+  res.status(200).json(new ApiResponse(200, { count }));
+});
+
+export const getMyCourses = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const instructorId = req.userId!;
+  const count = await courseService.getMyCoursesCount(instructorId);
+  res.status(200).json(new ApiResponse(200, { count }));
+});
+
+export const getMyStudents = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const instructorId = req.userId!;
+  const count = await courseService.getMyStudentsCount(instructorId);
+  res.status(200).json(new ApiResponse(200, { count }));
+});
+
+export const getMyEarnings = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const instructorId = req.userId!;
+  const earnings = await courseService.getMyEarnings(instructorId);
+  res.status(200).json(new ApiResponse(200, { totalEarnings: earnings }));
+});
+
+export const getEarningDetails = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const instructorId = req.userId!;
+  const details = await courseService.getEarningDetails(instructorId);
+  res.status(200).json(new ApiResponse(200, details));
+});
+
+export const getWithdrawalHistory = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const instructorId = req.userId!;
+  const withdrawalHistory = await courseService.getWithdrawalHistory(instructorId);
+  res.status(200).json(new ApiResponse(200, { withdrawalHistory }));
+});
+
+export const getNotifications = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const notifications = await courseService.getNotifications();
+  res.status(200).json(new ApiResponse(200, notifications, 'Notifications retrieved successfully'));
+});
 
 
 // import { Request, Response, NextFunction } from "express";
@@ -871,7 +626,7 @@ export const getNotifications = async (
 //     if (existingFeedback) {
 //       existingFeedback.rating = rating;
 //       existingFeedback.feedback = feedback;
-//       existingFeedback.updatedAt = new Date(); 
+//       existingFeedback.updatedAt = new Date();
 //     } else {
 //       course.ratingsAndFeedback.push({ userId, rating, feedback,createdAt: new Date(), updatedAt: new Date(), });
 //     }
@@ -1425,7 +1180,7 @@ export const getNotifications = async (
 
 // export const updateProgress = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
 //   const { completedLesson, videoSource } = req.body;
-//   const { id } = req.params; 
+//   const { id } = req.params;
 //   const studentId = req.userId;
 
 //   try {
@@ -1464,9 +1219,9 @@ export const getNotifications = async (
 //       await progress.save();
 //       res.status(201).json({ message: 'Course completed successfully!' });
 //     } else {
-//       res.status(201).json({ 
-//         message: 'Progress updated successfully', 
-//         progressPercentage: progress.progressPercentage 
+//       res.status(201).json({
+//         message: 'Progress updated successfully',
+//         progressPercentage: progress.progressPercentage
 //       });
 //     }
 //   } catch (err) {
