@@ -3,6 +3,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { userService } from '../../../infrastructure/api/userService';
 import api from '../../../infrastructure/api/api';
+import TableSkeleton from '../common/TableSkeleton';
 
 interface Course {
   _id: string;
@@ -108,8 +109,10 @@ const CartPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+      <div className="flex justify-center min-h-screen bg-gray-100 p-4 pt-24">
+        <div className="w-full max-w-7xl mx-auto flex-grow">
+          <TableSkeleton rows={4} />
+        </div>
       </div>
     );
   }

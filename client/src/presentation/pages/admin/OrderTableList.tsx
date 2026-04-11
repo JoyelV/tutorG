@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { adminService } from "../../../infrastructure/api/adminService";
-import { CircularProgress, Box, Typography, TextField, Pagination } from '@mui/material';
+import { Box, Typography, TextField, Pagination } from '@mui/material';
 import { useNavigate } from "react-router-dom";
+import TableSkeleton from "../../components/common/TableSkeleton";
 
 interface Order {
   _id: string;
@@ -85,17 +86,10 @@ const OrdersTable: React.FC = () => {
       <div className="p-6 overflow-y-auto">
         {loading ? (
           <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            height="100vh"
+            className="flex justify-center items-center h-full pt-10"
             bgcolor="#f9f9f9"
           >
-            <CircularProgress color="primary" size={50} />
-            <Typography variant="h6" color="textSecondary" mt={2}>
-              Loading, please wait...
-            </Typography>
+            <TableSkeleton columns={9} rows={5} />
           </Box>
         ) : (
           <>

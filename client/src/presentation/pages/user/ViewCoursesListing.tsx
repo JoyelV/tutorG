@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ImageCard from '../../components/users/ImageCard';
 import { courseService } from '../../../infrastructure/api/courseService';
-import { CircularProgress } from '@mui/material';
+import CardSkeleton from '../../components/common/CardSkeleton';
 
 const ViewCoursesListing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -82,8 +82,10 @@ const ViewCoursesListing: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="min-h-screen flex justify-center items-center h-64">
-          <CircularProgress color="primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
+          {Array.from(new Array(8)).map((_, index) => (
+             <CardSkeleton key={index} height={320} />
+          ))}
         </div>
       ) : (
         <ImageCard

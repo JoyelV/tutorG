@@ -3,7 +3,6 @@ import { adminService } from '../../../infrastructure/api/adminService';
 import {
   TextField,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -13,6 +12,7 @@ import {
   Pagination,
 } from '@mui/material';
 import Swal from 'sweetalert2';
+import TableSkeleton from '../../components/common/TableSkeleton';
 
 interface SubCategory {
   name: string;
@@ -208,17 +208,10 @@ const CategoryPage: React.FC = () => {
       <div className="p-6 overflow-y-auto">
         {loading ? (
           <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            height="100vh"
+            className="flex justify-center items-center h-full pt-10"
             bgcolor="#f9f9f9"
           >
-            <CircularProgress color="primary" size={50} />
-            <Typography variant="h6" color="textSecondary" mt={2}>
-              Loading, please wait...
-            </Typography>
+            <TableSkeleton columns={4} rows={6} />
           </Box>
         ) : (
           <>

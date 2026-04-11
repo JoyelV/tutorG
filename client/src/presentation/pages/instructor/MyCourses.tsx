@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { courseService } from "../../../infrastructure/api/courseService";
 import { useNavigate } from "react-router-dom";
-import { CircularProgress } from "@mui/material";
+import CardSkeleton from "../../components/common/CardSkeleton";
 
 interface Course {
   _id: string;
@@ -127,8 +127,10 @@ const MyCourses: React.FC = () => {
     <div className="p-4 sm:px-6">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">My Courses</h2>
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <CircularProgress color="primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          {Array.from(new Array(6)).map((_, index) => (
+            <CardSkeleton key={index} height={320} />
+          ))}
         </div>
       ) : (
         <>

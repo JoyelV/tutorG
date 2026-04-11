@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DetailedCourseSkeleton from '../../components/common/DetailedCourseSkeleton';
 import CourseDescription from '../../components/courses/CourseDescription';
 import CourseRequirements from '../../components/courses/CourseRequirements';
 import CourseHeader from '../../components/courses/courseHeader';
@@ -71,11 +72,7 @@ const CourseView = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
-      </div>
-    );
+    return <DetailedCourseSkeleton />;
   }
 
   if (error) {

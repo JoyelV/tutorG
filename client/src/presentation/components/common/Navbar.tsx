@@ -10,7 +10,7 @@ import {
     Menu,
     MenuItem,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -24,6 +24,7 @@ import api from '../../../infrastructure/api/api';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const isLoggedIn = localStorage.getItem('role') === 'user';
     const username = localStorage.getItem('username') || 'Guest';
     const theme = useTheme();
@@ -98,35 +99,60 @@ const Navbar: React.FC = () => {
                 <Box sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 3 }}>
                     <Typography
                         variant="body1"
-                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        sx={{ 
+                            cursor: 'pointer', 
+                            fontWeight: 500, 
+                            color: location.pathname === '/' ? '#0163FD' : 'inherit',
+                            '&:hover': { color: '#0163FD' } 
+                        }}
                         onClick={() => navigate('/')}
                     >
                         Home
                     </Typography>
                     <Typography
                         variant="body1"
-                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        sx={{ 
+                            cursor: 'pointer', 
+                            fontWeight: 500, 
+                            color: location.pathname === '/course-listing' ? '#0163FD' : 'inherit',
+                            '&:hover': { color: '#0163FD' } 
+                        }}
                         onClick={() => navigate('/course-listing')}
                     >
                         Courses
                     </Typography>
                     <Typography
                         variant="body1"
-                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        sx={{ 
+                            cursor: 'pointer', 
+                            fontWeight: 500, 
+                            color: location.pathname === '/about' ? '#0163FD' : 'inherit',
+                            '&:hover': { color: '#0163FD' } 
+                        }}
                         onClick={() => navigate('/about')}
                     >
                         About
                     </Typography>
                     <Typography
                         variant="body1"
-                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        sx={{ 
+                            cursor: 'pointer', 
+                            fontWeight: 500, 
+                            color: location.pathname === '/contact' ? '#0163FD' : 'inherit',
+                            '&:hover': { color: '#0163FD' } 
+                        }}
                         onClick={() => navigate('/contact')}
                     >
                         Contact
                     </Typography>
                     <Typography
                         variant="body1"
-                        sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                        sx={{ 
+                            cursor: 'pointer', 
+                            fontWeight: 500, 
+                            color: location.pathname === '/become-an-instructor' ? '#0163FD' : 'inherit',
+                            '&:hover': { color: '#0163FD' } 
+                        }}
                         onClick={() => navigate('/become-an-instructor')}
                     >
                         Become Instructor
@@ -134,7 +160,12 @@ const Navbar: React.FC = () => {
                     {isLoggedIn && (
                         <Typography
                             variant="body1"
-                            sx={{ cursor: 'pointer', fontWeight: 500, '&:hover': { color: '#0163FD' } }}
+                            sx={{ 
+                                cursor: 'pointer', 
+                                fontWeight: 500, 
+                                color: location.pathname === '/user-profile' ? '#0163FD' : 'inherit',
+                                '&:hover': { color: '#0163FD' } 
+                            }}
                             onClick={() => navigate('/user-profile')}
                         >
                             Profile
@@ -161,18 +192,18 @@ const Navbar: React.FC = () => {
                                 horizontal: 'right',
                             }}
                         >
-                            <MenuItem onClick={() => { navigate('/'); handleMenuClose(); }}>Home</MenuItem>
-                            <MenuItem onClick={() => { navigate('/course-listing'); handleMenuClose(); }}>Courses</MenuItem>
-                            <MenuItem onClick={() => { navigate('/about'); handleMenuClose(); }}>About</MenuItem>
-                            <MenuItem onClick={() => { navigate('/contact'); handleMenuClose(); }}>Contact</MenuItem>
-                            <MenuItem onClick={() => { navigate('/become-an-instructor'); handleMenuClose(); }}>Become Instructor</MenuItem>
+                            <MenuItem selected={location.pathname === '/'} onClick={() => { navigate('/'); handleMenuClose(); }}>Home</MenuItem>
+                            <MenuItem selected={location.pathname === '/course-listing'} onClick={() => { navigate('/course-listing'); handleMenuClose(); }}>Courses</MenuItem>
+                            <MenuItem selected={location.pathname === '/about'} onClick={() => { navigate('/about'); handleMenuClose(); }}>About</MenuItem>
+                            <MenuItem selected={location.pathname === '/contact'} onClick={() => { navigate('/contact'); handleMenuClose(); }}>Contact</MenuItem>
+                            <MenuItem selected={location.pathname === '/become-an-instructor'} onClick={() => { navigate('/become-an-instructor'); handleMenuClose(); }}>Become Instructor</MenuItem>
                             {isLoggedIn && (
-                                <MenuItem onClick={() => { navigate('/user-profile'); handleMenuClose(); }}>Profile</MenuItem>
+                                <MenuItem selected={location.pathname === '/user-profile'} onClick={() => { navigate('/user-profile'); handleMenuClose(); }}>Profile</MenuItem>
                             )}
                             <hr />
-                            <MenuItem onClick={() => { navigate('/notifications'); handleMenuClose(); }}>Notifications</MenuItem>
-                            <MenuItem onClick={() => { navigate('/wishlist'); handleMenuClose(); }}>Wish List</MenuItem>
-                            <MenuItem onClick={() => { navigate('/cart'); handleMenuClose(); }}>Cart</MenuItem>
+                            <MenuItem selected={location.pathname === '/notifications'} onClick={() => { navigate('/notifications'); handleMenuClose(); }}>Notifications</MenuItem>
+                            <MenuItem selected={location.pathname === '/wishlist'} onClick={() => { navigate('/wishlist'); handleMenuClose(); }}>Wish List</MenuItem>
+                            <MenuItem selected={location.pathname === '/cart'} onClick={() => { navigate('/cart'); handleMenuClose(); }}>Cart</MenuItem>
                             {isLoggedIn ? (
                                 <MenuItem onClick={() => { handleLogout(); handleMenuClose(); }}>Logout</MenuItem>
                             ) : (

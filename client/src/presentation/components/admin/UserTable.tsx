@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../infrastructure/api/api';
 import Swal from 'sweetalert2';
-import { CircularProgress, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button,useMediaQuery } from '@mui/material';
+import { Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Pagination, Button,useMediaQuery } from '@mui/material';
+import TableSkeleton from '../common/TableSkeleton';
 import { useTheme } from '@mui/material/styles';
 
 type User = {
@@ -87,11 +88,8 @@ const UserTable: React.FC = () => {
   };
 
   if (loading) return (
-    <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f9f9f9">
-      <CircularProgress color="primary" size={50} />
-      <Typography variant="h6" color="textSecondary" mt={2}>
-        Loading, please wait...
-      </Typography>
+    <Box className="flex justify-center items-center h-full pt-10">
+      <TableSkeleton columns={7} rows={5} />
     </Box>
   );
   if (error) return <div>{error}</div>;

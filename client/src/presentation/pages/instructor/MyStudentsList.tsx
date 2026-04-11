@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Pagination from "@mui/material/Pagination";
 import { courseService } from "../../../infrastructure/api/courseService";
-import { CircularProgress } from "@mui/material";
+import TableSkeleton from "../../components/common/TableSkeleton";
 
 interface Student {
   _id: string;
@@ -101,10 +101,9 @@ const StudentsList: React.FC = () => {
           </select>
         </div>
 
-        {/* Loading Spinner */}
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <CircularProgress color="primary" />
+          <div className="bg-white shadow rounded-lg p-4">
+            <TableSkeleton columns={7} rows={4} />
           </div>
         ) : (
           <div>

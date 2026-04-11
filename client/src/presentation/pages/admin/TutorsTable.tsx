@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { adminService } from '../../../infrastructure/api/adminService';
 import Swal from 'sweetalert2';
 import {
-  CircularProgress,
   Box,
   Typography,
   TextField,
@@ -19,6 +18,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
+import TableSkeleton from '../../components/common/TableSkeleton';
 
 type Tutor = {
   _id: string;
@@ -108,11 +108,8 @@ const TutorsTable: React.FC = () => {
 
   if (loading)
     return (
-      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f9f9f9">
-        <CircularProgress color="primary" size={50} />
-        <Typography variant="h6" color="textSecondary" mt={2}>
-          Loading, please wait...
-        </Typography>
+      <Box className="flex justify-center items-center h-full pt-10">
+        <TableSkeleton columns={6} rows={5} />
       </Box>
     );
 

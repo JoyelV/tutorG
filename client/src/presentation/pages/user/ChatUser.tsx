@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, TextField, IconButton, Typography, Badge, ListItem, List, ListItemAvatar, ListItemText, InputAdornment, Tooltip, CircularProgress, LinearProgress, Box } from '@mui/material';
+import { Avatar, TextField, IconButton, Typography, Badge, ListItem, List, ListItemAvatar, ListItemText, InputAdornment, Tooltip, LinearProgress, Box } from '@mui/material';
 import { Send, VideoCall, Mic, Stop, Search, AttachFile, Delete } from '@mui/icons-material';
 import { Check, DoneAll } from '@mui/icons-material';
 import { userService } from '../../../infrastructure/api/userService';
@@ -7,6 +7,7 @@ import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
+import ListSkeleton from '../../components/common/ListSkeleton';
 
 interface User {
   id: string;
@@ -456,7 +457,11 @@ const StudentChatInterface: React.FC<Props> = ({ userType = 'User' }) => {
   };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div className="flex justify-center items-center h-full p-4">
+        {loading && <ListSkeleton rows={8} />}
+      </div>
+    );
   }
 
   if (error) {

@@ -18,7 +18,7 @@ const stripe_1 = __importDefault(require("stripe"));
 const Orders_1 = __importDefault(require("../models/Orders"));
 const Cart_1 = __importDefault(require("../models/Cart"));
 const Instructor_1 = __importDefault(require("../models/Instructor"));
-const stripeSecretKey = process.env.STRIPE_KEY;
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) {
     throw new Error("Stripe secret key not provided");
 }

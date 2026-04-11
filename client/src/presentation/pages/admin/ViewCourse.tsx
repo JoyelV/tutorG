@@ -7,6 +7,7 @@ import CourseVideo from '../../components/admin/CourseVideo';
 import CourseHeader from '../../components/admin/CourseHeader';
 import CourseFeedbackTutor from '../../components/courses/CourseFeedbackTutor';
 import CurriculumPage from '../../components/courses/CourseCurriculums';
+import DetailedCourseSkeleton from '../../components/common/DetailedCourseSkeleton';
 
 type Section = 'Description' | 'Requirements' | 'Feedback' | 'Reviews';
 
@@ -90,11 +91,7 @@ const CourseViewPage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
-      </div>
-    );
+    return <DetailedCourseSkeleton />;
   }
 
   if (error) {
@@ -208,7 +205,7 @@ const CourseViewPage = () => {
           )}
           <h3 className="text-lg font-bold text-gray-800 mb-4">Curriculum</h3>
           <CurriculumPage
-            onLessonSelect={(videoUrl) => setSelectedVideoUrl(videoUrl)}
+            onLessonSelect={(videoUrl: string) => setSelectedVideoUrl(videoUrl)}
           />
         </div>
       </div>
