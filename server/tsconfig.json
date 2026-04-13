@@ -8,14 +8,10 @@
     "strictNullChecks": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "outDir": "./dist", // Output directory for compiled JS files
-    "baseUrl": "./",
-    "rootDir": "./",  // Specify the root directory of your TypeScript files
-    "paths": {
-      "*": ["*"] // Map paths for modules
-    },
+    "outDir": "./dist", 
+    "rootDir": "./",  
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["**/*.ts", "types/**/*.d.ts"],
-  "exclude": ["node_modules","dist"] // Exclude node_modules
+  "exclude": ["node_modules","dist"] 
 }
