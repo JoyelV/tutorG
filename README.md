@@ -104,31 +104,56 @@ TutorG follows a **Clean Layered Architecture** with **Repository Pattern**:
 ```text
 tutorG/
 ├── client/                        # 🎨 React + TypeScript Frontend
-│   ├── public/
-│   └── src/
-│       ├── components/            # Reusable components
-│       ├── pages/                 # Page components / routes
-│       ├── hooks/
-│       ├── contexts/
-│       ├── types/
-│       └── assets/
+│   ├── public/                    # Static assets and index.html
+│   ├── src/                       # Client application source code
+│   │   ├── App.tsx
+│   │   ├── index.tsx
+│   │   ├── assets.d.ts
+│   │   ├── react-app-env.d.ts
+│   │   ├── spinners.txt
+│   │   ├── types.ts
+│   │   ├── assets/
+│   │   ├── Constants/
+│   │   ├── infrastructure/
+│   │   │   ├── api/                # API service calls
+│   │   │   └── context/            # React context providers
+│   │   ├── presentation/
+│   │   │   ├── components/         # Reusable UI pieces
+│   │   │   ├── pages/              # Route page components
+│   │   │   └── routes/             # App routing configuration
+│   │   └── utils/
+│   ├── build/                     # Production build output
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── tsconfig.json
 │
 ├── server/                        # ⚙️ Node.js + Express + TypeScript Backend
-│   ├── src/
-│   │   ├── controllers/           # Request handlers
-│   │   ├── services/              # Business logic
-│   │   ├── repositories/          # Data access layer
-│   │   ├── models/                # Mongoose schemas
-│   │   ├── routes/                # API routes
-│   │   ├── middlewares/           # Auth, validation, errors
-│   │   ├── config/                # Env, DB, Cloudinary...
-│   │   ├── utils/                 # JWT, mailer, helpers...
-│   │   └── server.ts              # Entry point
-│   └── ...
+│   ├── config/                    # Cloudinary, env, swagger, multer
+│   ├── controllers/               # Request handlers
+│   ├── entities/                  # Type definitions / interfaces
+│   ├── logs/                      # Winston or app logs
+│   ├── middlewares/               # Validation, errors, rate limiting
+│   ├── models/                    # Mongoose schemas
+│   ├── repositories/              # Data access layer
+│   ├── routes/                    # API routes
+│   ├── scripts/                   # Migration / utility scripts
+│   ├── services/                  # Business logic
+│   ├── types/                     # Custom server types
+│   ├── utils/                     # Helpers and utilities
+│   ├── validations/               # Request validation schemas
+│   ├── dist/                      # Compiled production output
+│   ├── server.ts                  # Backend entry point
+│   ├── package.json
+│   └── tsconfig.json
 │
+├── docker-compose.yml            # Docker compose for frontend + backend
 ├── screenshots/                   # 📸 Images for README
-├── .env.example
-└── README.md
+├── README.md
+└── .git/
+```
 ---
 
 ## 🔐 Authentication & Security
