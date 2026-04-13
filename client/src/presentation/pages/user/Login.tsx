@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     TextField,
     Button,
@@ -22,7 +22,13 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { auth, login } = useAuth();
+
+    useEffect(() => {
+        if (auth?.token && auth.role === 'user') {
+            navigate('/', { replace: true });
+        }
+    }, [auth, navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,7 +48,7 @@ const Login: React.FC = () => {
                 role: user.role,
                 username: user.username,
             });
-            navigate('/');
+            navigate('/', { replace: true });
         } catch (error) {
             setError('Login failed. Please check your credentials and try again.');
             toast.error('Login failed. Please check your credentials and try again.');

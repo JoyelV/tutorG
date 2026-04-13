@@ -37,7 +37,7 @@ const stripePromise = loadStripe(stripePublicKey);
 
 const PrivateRoute = ({ element }: { element: JSX.Element }) => {
     const { auth } = useAuth();
-    return auth?.role === 'instructor' ? element : <Navigate to="/instructor/" />;
+    return auth?.role === 'instructor' ? element : <Navigate to="/instructor/" replace />;
 };
 
 const InstructorRoutes = () => {

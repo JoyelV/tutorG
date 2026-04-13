@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Button, Container, Typography, Paper, Box, Alert, Link, Grid } from '@mui/material';
 import { authService } from '../../../infrastructure/api/authService';
 import { assets } from '../../../assets/assets_user/assets';
@@ -11,7 +11,13 @@ const AdminLogin: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { auth, login } = useAuth();
+
+    useEffect(() => {
+        if (auth?.token && auth.role === 'admin') {
+            navigate('/admin/dashboard', { replace: true });
+        }
+    }, [auth, navigate]);
 
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();

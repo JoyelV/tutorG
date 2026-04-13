@@ -22,7 +22,7 @@ const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
 
 const PrivateRoute = ({ element }: { element: JSX.Element }) => {
     const { auth } = useAuth();
-    return auth?.role === 'admin' ? element : <Navigate to="/admin/" />;
+    return auth?.role === 'admin' ? element : <Navigate to="/admin/" replace />;
 };
 
 const AdminRoutes = () => {

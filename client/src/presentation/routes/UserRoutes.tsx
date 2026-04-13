@@ -27,7 +27,7 @@ const InstructorProfile = lazy(() => import('../pages/user/InstructorProfile'));
 
 const PrivateRoute = ({ element }: { element: JSX.Element }) => {
     const { auth } = useAuth();
-    return auth?.role === 'user' ? element : <Navigate to="/login" />;
+    return auth?.role === 'user' ? element : <Navigate to="/login" replace />;
 };
 
 const UserRoutes = () => {
